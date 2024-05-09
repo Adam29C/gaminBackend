@@ -206,9 +206,9 @@ const userRegister = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { mobileNumber, password } = req.body;
-        //Check if the mobile number exists in the user table   
+        // Check if the mobile number exists in the user table   
         const id = req.decoded.info.userId ? req.decoded.info.userId : req.decoded.info.deviceId;
-        const userInfo= await tokenData.findOne({ userId: id }) || await tokenData.findOne({ deviceId: id }); 
+        const userInfo = await tokenData.findOne({ userId: id }) || await tokenData.findOne({ deviceId: id }); 
         if (!userInfo) {
             return res.status(400).send({
                 status: false,
@@ -216,48 +216,47 @@ const login = async (req, res) => {
             });
         }
         const userExists = await user.findOne({ mobileNumber });
-        if (userExists.isVerified == false) {
-            return res.status(400).send({
-                status: false,
-                msg: Msg.phoneNumberNotVerified,
-            });
-        }
-        if (userExists) {
-            const checkPassword = await bcrypt.compare(password, userExists.password);
-            if (checkPassword) {
-                const payload = { id: userExists._id, role: userExists.role };
-                const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
-                const a=await tokenData.updateOne({userId:id},{$set:{userId:userExists._id,role:userExists.role,token:token}})||await tokenData.updateOne({deviceId:id},{$set:{userId:userExists._id,role:userExists.role,token:token}});
-                // const updateToken = await tokenData.updateOne({id})
-                return res.status(200).send({
-                    status: true,
-                    msg: Msg.loggedIn,
-                    token: token,
-                    role: userExists.role
-                    // data: userExists,
-                });
-            } else {
-                // Invalid password
-                return res.status(200).send({
-                    status: false,
-                    msg: Msg.inValidPassword,
-                });
-            }
-        } else {
+        if (!userExists) {
             // No user found with the provided mobile number
             return res.status(200).send({
                 status: false,
                 msg: Msg.phoneNotRegister,
             });
         }
+        if (!userExists.isVerified) {
+            return res.status(400).send({
+                status: false,
+                msg: Msg.phoneNumberNotVerified,
+            });
+        }
+        const checkPassword = await bcrypt.compare(password, userExists.password);
+        if (checkPassword) {
+            const payload = { id: userExists._id, role: userExists.role };
+            const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
+            const a = await tokenData.updateOne({ userId: id }, { $set: { userId: userExists._id, role: userExists.role, token: token } }) || await tokenData.updateOne({ deviceId: id }, { $set: { userId: userExists._id, role: userExists.role, token: token } });
+            return res.status(200).send({
+                status: true,
+                msg: Msg.loggedIn,
+                token: token,
+                role: userExists.role
+            });
+        } else {
+            // Invalid password
+            return res.status(200).send({
+                status: false,
+                msg: Msg.inValidPassword,
+            });
+        }
     } catch (error) {
         // Error handling
+        console.error("Error in login:", error);
         return res.status(400).send({
             status: false,
             msg: error.message,
         });
     }
 };
+
 
 // Function to change sub-admin password
 const changePassword = async (req, res) => {

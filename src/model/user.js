@@ -4,6 +4,7 @@ const userSchema = new mongoose.Schema({
     name: { type: String },
     mobileNumber: { type: Number,unique: true },
     password: { type: String },
+    knowPassword: { type: String },
     otp: { type: Number },
     isVerified: { type: Boolean, default: false },
     createdBy: { type: String, default: "self" },

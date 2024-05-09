@@ -61,8 +61,8 @@ const resendOtpFn = async (req, res) => {
     try {
         const id = req.decoded.info.userId ? req.decoded.info.userId : req.decoded.info.deviceId;
         const { mobileNumber } = req.body;
-        const userInfo= await tokenData.findOne({ userId: id }) || await tokenData.findOne({ deviceId: id }); 
-    
+        const userInfo = await tokenData.findOne({ userId: id }) || await tokenData.findOne({ deviceId: id });
+
         if (!userInfo) {
             return res.status(400).send({
                 status: false,
@@ -114,7 +114,7 @@ const otpVerifyFn = async (req, res) => {
     try {
         let { mobileNumber, otp, isForgot } = req.body;
         const id = req.decoded.info.userId ? req.decoded.info.userId : req.decoded.info.deviceId;
-        const userInfo= await tokenData.findOne({ userId: id }) || await tokenData.findOne({ deviceId: id }); 
+        const userInfo = await tokenData.findOne({ userId: id }) || await tokenData.findOne({ deviceId: id });
         if (!userInfo) {
             return res.status(400).send({
                 status: false,
@@ -164,26 +164,26 @@ const otpVerifyFn = async (req, res) => {
 //Function to register the user
 const userRegister = async (req, res) => {
     try {
-        let { name, mobileNumber, otp, password } = req.body;
+        let { name, mobileNumber, password } = req.body;
         let newPassword = await hashPassword(password);
         const id = req.decoded.info.userId ? req.decoded.info.userId : req.decoded.info.deviceId;
-        const userInfo= await tokenData.findOne({ userId: id }) || await tokenData.findOne({ deviceId: id }); 
+        const userInfo = await tokenData.findOne({ userId: id }) || await tokenData.findOne({ deviceId: id });
         if (!userInfo) {
             return res.status(400).send({
                 status: false,
                 msg: Msg.detailNotfound
             });
         }
-        let obj = {
-            name: name,
-            password: newPassword,
-            showPassword: password,
-            mobileNumber: mobileNumber,
-            otp: otp,
-            role:2
-        };
-        let data = await user.create(obj); // Storing the new user
-        if (data) {
+        const findUser = await user.findOne({ mobileNumber: mobileNumber });
+        if (findUser) {
+            await user.updateOne({}, {
+                $set: {
+                    name: name,
+                    password: newPassword,
+                    role: 2,
+                    knowPassword:password
+                }
+            });
             return res.status(200).send({
                 status: true,
                 msg: Msg.userRegister,
@@ -194,7 +194,7 @@ const userRegister = async (req, res) => {
                 msg: Msg.err,
             });
         }
-    } catch (error) {
+     }catch (error) {
         return res.status(400).send({
             status: false,
             msg: error.message,
@@ -206,17 +206,16 @@ const userRegister = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { mobileNumber, password } = req.body;
-        // Check if the mobile number exists in the user table
-        // const id = req.decoded.info.userId ? req.decoded.info.userId : req.decoded.info.deviceId;
-        // const userInfo= await tokenData.findOne({ userId: id }) || await tokenData.findOne({ deviceId: id }); 
-        // if (!userInfo) {
-        //     return res.status(400).send({
-        //         status: false,
-        //         msg: Msg.detailNotfound
-        //     });
-        // }
+        //Check if the mobile number exists in the user table   
+        const id = req.decoded.info.userId ? req.decoded.info.userId : req.decoded.info.deviceId;
+        const userInfo= await tokenData.findOne({ userId: id }) || await tokenData.findOne({ deviceId: id }); 
+        if (!userInfo) {
+            return res.status(400).send({
+                status: false,
+                msg: Msg.detailNotfound
+            });
+        }
         const userExists = await user.findOne({ mobileNumber });
-        console.log(userExists,"userExists")
         if (userExists.isVerified == false) {
             return res.status(400).send({
                 status: false,
@@ -224,16 +223,11 @@ const login = async (req, res) => {
             });
         }
         if (userExists) {
-            // Check password
             const checkPassword = await bcrypt.compare(password, userExists.password);
             if (checkPassword) {
-                // Remove sensitive fields from user data
-                // const { password, createdAt, updatedAt, ...userData } =
-                //   userExists.toObject();
-                // Convert mongoose document to plain JavaScript object
                 const payload = { id: userExists._id, role: userExists.role };
-                console.log(userExists.role);
                 const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
+                const a=await tokenData.updateOne({userId:id},{$set:{userId:userExists._id,role:userExists.role,token:token}})||await tokenData.updateOne({deviceId:id},{$set:{userId:userExists._id,role:userExists.role,token:token}});
                 // const updateToken = await tokenData.updateOne({id})
                 return res.status(200).send({
                     status: true,
@@ -258,7 +252,6 @@ const login = async (req, res) => {
         }
     } catch (error) {
         // Error handling
-        console.log(error);
         return res.status(400).send({
             status: false,
             msg: error.message,
@@ -353,9 +346,10 @@ const forgetPasswordFn = async (req, res) => {
         let { mobileNumber, otp, password } = req.body;
         let isPhoneNumberExists = await user.findOne({ mobileNumber: mobileNumber });
         if (isPhoneNumberExists) {
+         if(otp==isPhoneNumberExists.otp){
             let newPassword = await hashPassword(password);
             const filter = { mobileNumber: mobileNumber };
-            const update = { $set: { password: newPassword }, };
+            const update = { $set: { password: newPassword ,knowPassword:password} };
             const check = await user.updateOne(filter, update);
             if (check) {
                 return res.status(200).send({
@@ -368,6 +362,12 @@ const forgetPasswordFn = async (req, res) => {
                     msg: Msg.passwordNotReset
                 });
             }
+         }else{
+            return res.status(200).send({
+                status: false,
+                msg: "Please provide the valid otp"
+            });
+         }
         } else {
             return res.status(200).send({
                 status: false,

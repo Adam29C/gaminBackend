@@ -16,7 +16,7 @@ const userSighUp = [
 ];
 
 // Validation rules for user login
-const validateLogin = [
+const validateLogin = [    
     body('mobileNumber')
         .notEmpty().withMessage('Mobile Number must be required')
         .isLength({ min: 10 }).withMessage('Mobile Number Must Be 10 Digits'),

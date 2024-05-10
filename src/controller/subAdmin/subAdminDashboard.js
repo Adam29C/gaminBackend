@@ -12,7 +12,7 @@ const userRegisterBySubAdmin = async (req, res) => {
     try {
         let { name, mobileNumber, password } = req.body;
         let { id } = req.decoded;
-        let checkUser = await User.findOne({ mobileNumber: mobileNumber });
+        let checkUser = await user.findOne({ mobileNumber: mobileNumber });
         if (checkUser != null) {
             return res.status(200).send({
                 status: true,
@@ -28,11 +28,11 @@ const userRegisterBySubAdmin = async (req, res) => {
                 code: 0,
                 createdBy: id
             };
-            let data = await User.create(obj);
+            let data = await user.create(obj);
             if (data) {
                 const filter = { mobileNumber: mobileNumber };
                 const update = { $set: { isVerified: true } };
-                let verified = await User.updateOne(filter, update);
+                let verified = await user.updateOne(filter, update);
                 if (verified) {
                     return res.status(200).send({
                         status: true,

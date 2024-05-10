@@ -41,7 +41,7 @@ exports.authenticateToken = async (req, res, next) => {
         req.decoded = decoded;
         next();
     } catch (error) {
-        res.status(403).send('Invalid token');
+        res.status(403).send({err:'Invalid token'});
     }
 }
 

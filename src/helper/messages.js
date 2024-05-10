@@ -66,6 +66,7 @@ const messages = {
     infoNotFound:"Failed to retrieve user information",
     failure:"Internal Server Error",
     detailNotfound:"The Detail Not Found ",
+    amountAdded:"Amount Added Successfully"
 };
 
 // Export the messages

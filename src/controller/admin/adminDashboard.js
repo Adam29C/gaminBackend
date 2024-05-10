@@ -5,6 +5,7 @@ const secretKey = process.env.JWT_SECRET_KEY;
 const Msg = require('../../helper/messages');
 const user = require('../../model/user');
 const games = require("../../model/game");
+const waled =require("../../model/waled")
 
 // Function to handle creation of sub-admin
 const createSubAdminFn = async (req, res) => {
@@ -305,16 +306,40 @@ const gamesList = async (req, res) => {
 };
 
 const addAmount =async(req,res)=>{
-   try{
-     const{userId,amount}=req.body
-     console.log(req.body);
-     
-    }catch(err){
-    return res.status(500).send({
-     status:false,
-     msg:Msg.failure
-    })
-   } 
+    try {
+        let Role = req.decoded.role;
+        const{userId,amount,description}=req.body;
+        if (Role === 0) {
+            let amountSave = new waled({userId,amount,description}).save();
+            if (amountSave) {
+                return res.status(200).send({
+                    status: true,
+                    msg: Msg.amountAdded,
+                    data: amountSave
+                });
+            } else {
+                return res.status(200).send({
+                    status: false,
+                    msg: Msg.gameNotFound,
+                    data: []
+                });
+            }
+        } else {
+            return res.status(200).send({
+                status: false,
+                msg: Msg.adminCanAccess
+            });
+        }
+    } catch (error) {
+        return res.status(400).send({
+            status: false,
+            msg: error.message
+        });
+    }
+
+
+
+   
 }
 
 module.exports = { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList,addAmount }

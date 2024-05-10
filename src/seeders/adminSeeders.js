@@ -8,13 +8,15 @@ async function seedAdmin() {
         useUnifiedTopology: true, // Use the new server discovery and monitoring engine
     });
     console.log("this is test file")
-    const existingAdmin = await user.findOne()
+    const existingAdmin = await user.findOne({role:1})
+    console.log(existingAdmin,"existingAdmin")
     if (!existingAdmin) {
         const adminCredentials = {
             name: "super admin",
             mobileNumber: 1234567890,
             role: 0,
-            password: "superAdmin123"
+            password: "superAdmin123",
+            isVerified:true
         }
 
         // Hash the password

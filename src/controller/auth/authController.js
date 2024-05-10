@@ -176,7 +176,7 @@ const userRegister = async (req, res) => {
         }
         const findUser = await user.findOne({ mobileNumber: mobileNumber });
         if (findUser) {
-            await user.updateOne({}, {
+            await user.updateOne({mobileNumber}, {
                 $set: {
                     name: name,
                     password: newPassword,

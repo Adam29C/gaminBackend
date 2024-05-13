@@ -66,7 +66,10 @@ const messages = {
     infoNotFound:"Failed to retrieve user information",
     failure:"Internal Server Error",
     detailNotfound:"The Detail Not Found ",
-    amountAdded:"Amount Added Successfully"
+    amountAdded:"Amount Added Successfully",
+    paymentHistory:"Payment History Shown Successfully",
+    waledInformation:"Waled Information Shown Successfully",
+    noWaledInformation:"There is no information available"
 };
 
 // Export the messages

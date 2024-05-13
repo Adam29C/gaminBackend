@@ -9,4 +9,4 @@ const paymentHistorySchema = new Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model('Game', paymentHistorySchema);
+module.exports = mongoose.model('paymentHistory', paymentHistorySchema);

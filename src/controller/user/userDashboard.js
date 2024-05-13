@@ -3,7 +3,7 @@ const {
   hashPassword,
   generateRandomNumber,
   sendSMS,
-} = require("../../helper/middleware"); 
+} = require("../../helper/middleware");
 const jwt = require("jsonwebtoken");
 const secretKey = process.env.JWT_SECRET_KEY;
 const Msg = require("../../helper/messages");
@@ -13,11 +13,10 @@ const withdrawal = require("../../model/withdrawal");
 const game = require("../../model/game");
 const path = require('node:path');
 var fs = require('file-system');
-const user = require("../../model/user");
+const paymentHistory = require("../../model/paymentHistory");
 
 // user Can deposit There Money With The Help Of Utr Number
-const 
-depositFn = async (req, res) => {
+const depositFn = async (req, res) => {
   try {
     let userId = req.decoded.userId;
     let { utrNumber, amount } = req.body;
@@ -160,36 +159,62 @@ const gamesList = async (req, res) => {
 };
 
 //series list third party api data
-const seriesList = async (req,res) =>{
-  try{
-    const{sportsId}=req.body;
+const seriesList = async (req, res) => {
+  try {
+    const { sportsId } = req.body;
     return res.json(200).send({
-      status:true,
-      list:[]
+      status: true,
+      list: []
     })
-    
-  }catch(error){
+
+  } catch (error) {
     return res.json(500).send({
-      status:false,
-      msg :Msg.failure
+      status: false,
+      msg: Msg.failure
     })
   }
 };
 
 //Match list third party api data
-const matchList= async (req, res)=>{
-  try{
-  const {seriesId}=req.body;
-  res.json(200).send({
-    status:true,
-    list:[]    
-  })
-  }catch{
-   res.json(500).send({
-    status:false,
-    msg:Msg.failure
-   })
+const matchList = async (req, res) => {
+  try {
+    const { seriesId } = req.body;
+    res.json(200).send({
+      status: true,
+      list: []
+    })
+  } catch {
+    res.json(500).send({
+      status: false,
+      msg: Msg.failure
+    })
   }
 };
 
-module.exports={depositFn, withdrawalCreatePassword,withdraw,gamesList,seriesList,matchList}
+//User Waled Information  
+const viewWaled = async (req, res) => {
+  try {
+      let userId = req.decoded.id;
+      let findInfo = await paymentHistory.findOne({ userId: userId });
+      if (findInfo) {
+          return res.status(200).json({
+              status: true,
+              message: Msg.waledInformation,
+              list: findInfo
+          });
+      } else {
+          return res.status(400).json({
+              status: false,
+              message:Msg.noWaledInformation,
+              list: []
+          });
+      }
+  } catch (error) {
+      return res.status(500).json({
+          status: false,
+          message: error.message
+      });
+  }
+};
+
+module.exports = { depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWaled }

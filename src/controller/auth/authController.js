@@ -233,7 +233,7 @@ const login = async (req, res) => {
         if (checkPassword) {
             const payload = { id: userExists._id, role: userExists.role };
             const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
-            const a = await tokenData.updateOne({ userId: id }, { $set: { userId: userExists._id, role: userExists.role, token: token } }) || await tokenData.updateOne({ deviceId: id }, { $set: { userId: userExists._id, role: userExists.role, token: token } });
+            await tokenData.updateOne({ userId: id }, { $set: { userId: userExists._id, role: userExists.role, token: token } }) || await tokenData.updateOne({ deviceId: id }, { $set: { userId: userExists._id, role: userExists.role, token: token } });
             return res.status(200).send({
                 status: true,
                 msg: Msg.loggedIn,

@@ -12,7 +12,7 @@ const PaymentHistory = require('../../model/paymentHistory');
 const createSubAdminFn = async (req, res) => {
     try {
         let Role = req.decoded.role;
-        let { mobileNumber, password, role, permission } = req.body;
+        let { name,mobileNumber, password, role, permission } = req.body;
         if (Role === 0) {
             let isExists = await user.findOne({ mobileNumber: mobileNumber });
             if (isExists && isExists.role === 1) {
@@ -23,7 +23,7 @@ const createSubAdminFn = async (req, res) => {
             } else {
                 let newPassword = await hashPassword(password);
                 let obj = {
-                    name: "",
+                    name: name,
                     email: "",
                     address: "",
                     otp: 0,

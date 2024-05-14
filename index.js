@@ -27,5 +27,5 @@ app.use('/api/v1', route);
 // Start the server
 let port = process.env.PORT; 
 app.listen(port, () => {
-    console.log(`Server started at http://localhost:${port}`);
+    console.log(`Server started at ${port}`);
 });

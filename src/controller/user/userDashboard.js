@@ -194,7 +194,7 @@ const matchList = async (req, res) => {
 //User Waled Information  
 const viewWalled = async (req, res) => {
   try {
-      let userId = req.decoded.id;
+      let userId = req.decoded.userId;
       let findInfo = await paymentHistory.findOne({ userId: userId });
       if (findInfo) {
           return res.status(200).json({

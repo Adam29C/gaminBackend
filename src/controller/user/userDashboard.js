@@ -192,7 +192,7 @@ const matchList = async (req, res) => {
 };
 
 //User Waled Information  
-const viewWalled = async (req, res) => {
+const viewWallet = async (req, res) => {
   try {
       let userId = req.decoded.userId;
       let findInfo = await paymentHistory.findOne({ userId: userId });
@@ -217,4 +217,4 @@ const viewWalled = async (req, res) => {
   }
 };
 
-module.exports = { depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWalled }
+module.exports = { depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet }

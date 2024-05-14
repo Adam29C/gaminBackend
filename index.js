@@ -12,12 +12,17 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false })); 
 app.use(bodyParser.json()); 
 
+//For testing
+app.get('/',(req,res)=>{
+    res.send("hello")
+})
+
 // Define routes
 app.use('/api/v1', route); 
 
 //---------seeders start----------------//
 
-// require('./src/seeders/adminSeeders');
+//  require('./src/seeders/adminSeeders');
 
 // Start the server
 let port = process.env.PORT; 

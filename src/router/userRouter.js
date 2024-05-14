@@ -12,7 +12,7 @@ app.post('/withdrawal', authenticateToken, controller.userDashboard.withdraw)
 app.get('/gameList', authenticateToken,controller.userDashboard.gamesList)
 app.get('/seriesList',authenticateToken,controller.userDashboard.seriesList)
 app.get('/matchList',authenticateToken,controller.userDashboard.matchList)
-app.get('/viewWaled',authenticateToken,controller.userDashboard.viewWaled)
+app.get('/viewWalled',authenticateToken,controller.userDashboard.viewWalled)
 
 
 module.exports=app

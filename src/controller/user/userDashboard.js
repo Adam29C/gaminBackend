@@ -200,13 +200,13 @@ const viewWalled = async (req, res) => {
           return res.status(200).json({
               status: true,
               message: Msg.waledInformation,
-              list: findInfo
+              WalledInfo: findInfo
           });
       } else {
           return res.status(400).json({
               status: false,
               message:Msg.noWaledInformation,
-              list: []
+              WalledInfo: []
           });
       }
   } catch (error) {

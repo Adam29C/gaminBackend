@@ -14,6 +14,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json()); 
 app.use(morgan("dev"))
 app.get("/",(req,res)=>{
+    console.log("Hello me yaha par hu")
     res.send("<h1>this is for testing</h1>")
 })
 

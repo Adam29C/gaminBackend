@@ -84,9 +84,10 @@ const gamesCreatedBySubAdmin = async (req, res) => {
             });
         }
     } catch (error) {
-        return res.status(400).send({
-            status: false,
-            msg: Msg.err
+        return res.status(500).send({
+            status: "failure",
+            statusCode:500,
+            msg: error.message
         });
     }
 };
@@ -112,9 +113,10 @@ const gamesUpdatedSubAdmin = async (req, res) => {
             });
         }
     } catch (error) {
-        return res.status(400).send({
-            status: false,
-            msg: Msg.err
+        return res.status(500).send({
+            status: "failure",
+            statusCode:500,
+            msg: error.message
         });
     }
 };
@@ -145,9 +147,10 @@ const gameDeletedBySubAdmin = async (req, res) => {
             });
         }
     } catch (error) {
-        return res.status(400).send({
-            status: false,
-            msg: Msg.err
+        return res.status(500).send({
+            status: "failure",
+            statusCode:500,
+            msg: error.message
         });
     }
 };
@@ -179,9 +182,10 @@ const gamesList = async (req, res) => {
             });
         }
     } catch (error) {
-        return res.status(400).send({
-            status: false,
-            msg: Msg.err
+        return res.status(500).send({
+            status: "failure",
+            statusCode:500,
+            msg: error.message
         });
     }
 };
@@ -204,9 +208,10 @@ const getSubAdminProfileFn = async (req, res) => {
             });
         }
     } catch (error) {
-        return res.status(400).send({
-            status: false,
-            msg: Msg.err
+        return res.status(500).send({
+            status: "failure",
+            statusCode:500,
+            msg: error.message
         });
     }
 };
@@ -231,9 +236,10 @@ const updateSubAdminProfileFn = async (req, res) => {
             });
         }
     } catch (error) {
-        return res.status(400).send({
-            status: false,
-            msg:Msg.err
+        return res.status(500).send({
+            status: "failure",
+            statusCode:500,
+            msg: error.message
         });
     }
 };

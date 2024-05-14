@@ -62,10 +62,11 @@ const depositFn = async (req, res) => {
       }
     });
   } catch (error) {
-    return res.status(400).send({
+    return res.json(500).send({
+      statusCode:500,
       status: false,
-      msg: error.message
-    });
+      msg: Msg.failure
+    })
   }
 };
 
@@ -92,10 +93,11 @@ const withdrawalCreatePassword = async (req, res) => {
       });
     }
   } catch (error) {
-    return res.status(400).send({
+    return res.json(500).send({
+      statusCode:500,
       status: false,
-      msg: error.message
-    });
+      msg: Msg.failure
+    })
   }
 };
 
@@ -126,10 +128,11 @@ const withdraw = async (req, res) => {
       });
     }
   } catch (error) {
-    return res.status(400).send({
+    return res.json(500).send({
+      statusCode:500,
       status: false,
-      msg: error.message
-    });
+      msg: Msg.failure
+    })
   }
 };
 
@@ -151,10 +154,11 @@ const gamesList = async (req, res) => {
       });
     }
   } catch (error) {
-    return res.status(400).send({
+    return res.json(500).send({
+      statusCode:500,
       status: false,
-      msg: error.message
-    });
+      msg: Msg.failure
+    })
   }
 };
 
@@ -169,6 +173,7 @@ const seriesList = async (req, res) => {
 
   } catch (error) {
     return res.json(500).send({
+      statusCode:500,
       status: false,
       msg: Msg.failure
     })
@@ -211,6 +216,7 @@ const viewWallet = async (req, res) => {
       }
   } catch (error) {
       return res.status(500).json({
+          statusCode:500,
           status: false,
           message: error.message
       });

@@ -336,10 +336,6 @@ const addAmount =async(req,res)=>{
             msg: error.message
         });
     }
-
-
-
-   
 }
 
 module.exports = { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList,addAmount }

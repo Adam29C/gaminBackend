@@ -11,7 +11,7 @@ const game = require("../../model/game");
 const userRegisterBySubAdmin = async (req, res) => {
     try {
         let { name, mobileNumber, password } = req.body;
-        let { id } = req.decoded;
+        let  userId  = req.decoded.info.userId;
         let checkUser = await user.findOne({ mobileNumber: mobileNumber });
         if (checkUser != null) {
             return res.status(200).send({
@@ -26,7 +26,7 @@ const userRegisterBySubAdmin = async (req, res) => {
                 mobileNumber: mobileNumber,
                 password: newPassword,
                 code: 0,
-                createdBy: id
+                createdBy: userId
             };
             let data = await user.create(obj);
             if (data) {
@@ -47,9 +47,10 @@ const userRegisterBySubAdmin = async (req, res) => {
             }
         }
     } catch (error) {
-        return res.status(400).send({
-            status: false,
-            msg: Msg.err
+        return res.status(500).send({
+            status: "failure",
+            statusCode:500,
+            msg: error.message
         });
     }
 };

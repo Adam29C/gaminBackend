@@ -194,7 +194,7 @@ const matchList = async (req, res) => {
 //User Waled Information  
 const viewWallet = async (req, res) => {
   try {
-      let userId = req.decoded.userId;
+      let userId = req.decoded.info.userId;
       let findInfo = await paymentHistory.findOne({ userId: userId });
       if (findInfo) {
           return res.status(200).json({

@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
-
+const TokenData = require("../model/token")
 const client = require('twilio')(accountSid, authToken);
 
 // Function to hash the given password using bcrypt
@@ -38,6 +38,13 @@ exports.authenticateToken = async (req, res, next) => {
     let token = authToken.split(' ').slice(-1)[0];
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+        // Check if the token exists in the database
+        const tokenExists = await TokenData.exists({ token });
+        if (!tokenExists) {
+            return res.status(403).send({ err: 'Token not found' });
+        }
+
         req.decoded = decoded;
         next();
     } catch (error) {

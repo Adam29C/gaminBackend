@@ -13,6 +13,10 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false })); 
 app.use(bodyParser.json()); 
 
+app.get("/",(req,res)=>{
+    res.send("<h1>this is for testing</h1>")
+})
+
 // Define routes
 app.use('/api/v1', route); 
 

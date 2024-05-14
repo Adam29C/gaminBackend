@@ -10,6 +10,7 @@ const jwt = require("jsonwebtoken");
 const secretKey = process.env.JWT_SECRET_KEY;
 const mongoose = require("mongoose")
 const tokenData = require("../../model/token")
+const tokenUpdate = require("../../helper/updateToken");
 
 //Function to generate the auth token
 const generateAuthToken = async (req, res) => {
@@ -206,7 +207,8 @@ const userRegister = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { mobileNumber, password } = req.body;
-        // Check if the mobile number exists in the user table   
+        // Check if the mobile number exists in the user table
+        console.log()   
         const id = req.decoded.info.userId ? req.decoded.info.userId : req.decoded.info.deviceId;
         const userInfo = await tokenData.findOne({ userId: id }) || await tokenData.findOne({ deviceId: id }); 
         if (!userInfo) {
@@ -231,9 +233,8 @@ const login = async (req, res) => {
         }
         const checkPassword = await bcrypt.compare(password, userExists.password);
         if (checkPassword) {
-            const payload = { id: userExists._id, role: userExists.role };
-            const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
-            const a = await tokenData.updateOne({ userId: id }, { $set: { userId: userExists._id, role: userExists.role, token: token } }) || await tokenData.updateOne({ deviceId: id }, { $set: { userId: userExists._id, role: userExists.role, token: token } });
+            const token = await tokenUpdate(userExists._id, userExists.role);
+            await user.updateOne({ userId: id },{$set:{loginStatus:"logIn"}})
             return res.status(200).send({
                 status: true,
                 msg: Msg.loggedIn,
@@ -256,7 +257,6 @@ const login = async (req, res) => {
         });
     }
 };
-
 
 // Function to change sub-admin password
 const changePassword = async (req, res) => {

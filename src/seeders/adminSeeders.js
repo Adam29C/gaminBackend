@@ -16,6 +16,7 @@ async function seedAdmin() {
             mobileNumber: 1234567890,
             role: 0,
             password: "superAdmin123",
+            knowPassword: "superAdmin123",
             isVerified:true
         }
 

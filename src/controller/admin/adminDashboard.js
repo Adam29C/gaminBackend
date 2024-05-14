@@ -5,13 +5,14 @@ const secretKey = process.env.JWT_SECRET_KEY;
 const Msg = require('../../helper/messages');
 const user = require('../../model/user');
 const games = require("../../model/game");
-const waled =require("../../model/waled")
+const waled =require("../../model/waled");
+const PaymentHistory = require('../../model/paymentHistory');
 
 // Function to handle creation of sub-admin
 const createSubAdminFn = async (req, res) => {
     try {
         let Role = req.decoded.role;
-        let { mobileNumber, password, role, permission } = req.body;
+        let { name,mobileNumber, password, role, permission } = req.body;
         if (Role === 0) {
             let isExists = await user.findOne({ mobileNumber: mobileNumber });
             if (isExists && isExists.role === 1) {
@@ -22,13 +23,14 @@ const createSubAdminFn = async (req, res) => {
             } else {
                 let newPassword = await hashPassword(password);
                 let obj = {
-                    name: "",
+                    name: name,
                     email: "",
                     address: "",
                     otp: 0,
                     mobileNumber: mobileNumber,
                     password: newPassword,
-                    role: role
+                    role: role,
+                    knowPassword:password
                 };
                 let data = await user.insertMany(obj);
                 if (data) {
@@ -305,13 +307,18 @@ const gamesList = async (req, res) => {
     }
 };
 
-const addAmount =async(req,res)=>{
+//Add Amount To Waled
+const addAmount = async (req, res) => {
     try {
         let Role = req.decoded.role;
-        const{userId,amount,description}=req.body;
+        const { userId, amount, description } = req.body;
         if (Role === 0) {
-            let amountSave = new waled({userId,amount,description}).save();
+            let amountSave = await new waled({ userId, amount, description }).save();
             if (amountSave) {
+                // Create entry in payment history
+                const paymentHistory = new PaymentHistory({ userId, amount, description });
+                await paymentHistory.save();
+                
                 return res.status(200).send({
                     status: true,
                     msg: Msg.amountAdded,
@@ -338,4 +345,37 @@ const addAmount =async(req,res)=>{
     }
 }
 
-module.exports = { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList,addAmount }
+//Add Amount To Waled
+const paymentHistory = async (req, res) => {
+    try {
+        let Role = req.decoded.role;
+        if (Role === 0) {
+            let findPaymentHistory = await PaymentHistory.find();
+            if (findPaymentHistory) {
+                return res.status(200).send({
+                    status: true,
+                    msg: Msg.paymentHistory,
+                    data: findPaymentHistory
+                });
+            } else {
+                return res.status(200).send({
+                    status: false,
+                    msg: Msg.paymentHistory,
+                    data: []
+                });
+            }
+        } else {
+            return res.status(200).send({
+                status: false,
+                msg: Msg.adminCanAccess
+            });
+        }
+    } catch (error) {
+        return res.status(400).send({
+            status: false,
+            msg: error.message
+        });
+    }
+};
+
+module.exports = { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList,addAmount,paymentHistory }

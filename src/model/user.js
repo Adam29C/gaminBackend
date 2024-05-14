@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
     otp: { type: Number },
     isVerified: { type: Boolean, default: false },
     createdBy: { type: String, default: "self" },
+    loginStatus: {type: String, default: "logOut"},
     role: { type: Number }, // Role will be defined for each user
     // Additional fields specific to admin
     userName: { type: String },

@@ -1,12 +1,13 @@
-const { axios } = require("axios");
+const axios = require("axios");
 let match_token = process.env.MATCH_TOKEN
 const getAllMatchesList = async (req, res) => {
     try {
-        let allmatchesList = await axios.get(`https://rest.entitysport.com/exchange/matches?token=${match_token}&status=3`);
+        const response = await axios.get(`https://rest.entitysport.com/exchange/matches?token=${match_token}&status=3`);
+        const allMatchesList = response.data;
         return res.status(200).send({
             statusCode: 200,
             status: "success",
-            data: allmatchesList
+            data: allMatchesList
         });
     } catch (error) {
         console.log(error)

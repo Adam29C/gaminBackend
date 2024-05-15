@@ -413,7 +413,7 @@ const getUserProfileFn = async (req, res) => {
         return res.status(500).send({
             statusCode: 500,
             status: false,
-            msg: error.message
+            msg: Msg.failure
         });
     }
 };

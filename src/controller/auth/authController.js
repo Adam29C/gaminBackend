@@ -52,7 +52,7 @@ const generateAuthToken = async (req, res) => {
         return res.status(500).json({
             statusCode: 500,
             status: "failure",
-            message: err.message,
+            message: Msg.failure,
         });
     }
 };
@@ -104,8 +104,9 @@ const resendOtpFn = async (req, res) => {
         }
     } catch (error) {
         return res.status(500).send({
-            status: false,
-            msg: error.message
+            statusCode: 500,
+            status:false,
+            msg: Msg.failure
         });
     }
 };
@@ -155,9 +156,10 @@ const otpVerifyFn = async (req, res) => {
             });
         }
     } catch (error) {
-        return res.status(400).send({
-            status: false,
-            msg: error.message,
+        return res.status(500).json({
+            statusCode: 500,
+            status: "failure",
+            message: err.message,
         });
     }
 };
@@ -196,9 +198,10 @@ const userRegister = async (req, res) => {
             });
         }
      }catch (error) {
-        return res.status(400).send({
+        return res.status(500).send({
+            statusCode: 500,
             status: false,
-            msg: error.message,
+            msg: Msg.failure,
         });
     }
 };
@@ -207,7 +210,6 @@ const userRegister = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { mobileNumber, password } = req.body;
-        // Check if the mobile number exists in the user table
         console.log()   
         const id = req.decoded.info.userId ? req.decoded.info.userId : req.decoded.info.deviceId;
         const userInfo = await tokenData.findOne({ userId: id }) || await tokenData.findOne({ deviceId: id }); 
@@ -219,7 +221,6 @@ const login = async (req, res) => {
         }
         const userExists = await user.findOne({ mobileNumber });
         if (!userExists) {
-            // No user found with the provided mobile number
             return res.status(200).send({
                 status: false,
                 msg: Msg.phoneNotRegister,
@@ -234,26 +235,30 @@ const login = async (req, res) => {
         const checkPassword = await bcrypt.compare(password, userExists.password);
         if (checkPassword) {
             const token = await tokenUpdate(userExists._id, userExists.role);
-            await user.updateOne({ userId: id },{$set:{loginStatus:"logIn"}})
+            await user.updateOne({ userId: id },{$set:{loginStatus:"logIn"}});
+            let obj = {
+                mobileNumber:userExists.mobileNumber,
+                id:userExists._id,
+                name:userExists.name,
+                role:userExists.role
+            }
             return res.status(200).send({
                 status: true,
                 msg: Msg.loggedIn,
                 token: token,
-                role: userExists.role
+                details:obj,
             });
         } else {
-            // Invalid password
             return res.status(200).send({
                 status: false,
                 msg: Msg.inValidPassword,
             });
         }
     } catch (error) {
-        // Error handling
-        console.error("Error in login:", error);
-        return res.status(400).send({
+        return res.status(500).send({
+            statusCode:500,
             status: false,
-            msg: error.message,
+            msg: Msg.failure,
         });
     }
 };
@@ -296,9 +301,10 @@ const changePassword = async (req, res) => {
             });
         }
     } catch (error) {
-        return res.status(400).send({
+        return res.status(500).send({
+            statusCode: 500,
             status: false,
-            msg: error.message
+            msg: Msg.failure
         });
     }
 };
@@ -332,9 +338,10 @@ const forgetPasswordSendOtpFn = async (req, res) => {
             });
         }
     } catch (error) {
-        return res.status(400).send({
+        return res.status(500).send({
+            statusCode:500,
             status: false,
-            msg: error.message
+            msg: Msg.failure
         });
     }
 };
@@ -374,9 +381,10 @@ const forgetPasswordFn = async (req, res) => {
             });
         }
     } catch (error) {
-        return res.status(400).send({
+        return res.status(500).send({
+            statusCode: 500,
             status: false,
-            msg: error.message
+            msg: Msg.failure
         });
     }
 };
@@ -400,9 +408,10 @@ const getUserProfileFn = async (req, res) => {
             });
         }
     } catch (error) {
-        return res.status(400).send({
+        return res.status(500).send({
+            statusCode: 500,
             status: false,
-            msg: error.message
+            msg: Msg.failure
         });
     }
 };

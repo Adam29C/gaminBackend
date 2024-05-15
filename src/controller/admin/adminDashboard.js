@@ -5,14 +5,14 @@ const secretKey = process.env.JWT_SECRET_KEY;
 const Msg = require('../../helper/messages');
 const user = require('../../model/user');
 const games = require("../../model/game");
-const waled =require("../../model/waled");
+const waled = require("../../model/waled");
 const PaymentHistory = require('../../model/paymentHistory');
 
 // Function to handle creation of sub-admin
 const createSubAdminFn = async (req, res) => {
     try {
         let Role = req.decoded.role;
-        let { name,mobileNumber, password, role, permission } = req.body;
+        let { name, mobileNumber, password, role, permission } = req.body;
         if (Role === 0) {
             let isExists = await user.findOne({ mobileNumber: mobileNumber });
             if (isExists && isExists.role === 1) {
@@ -30,7 +30,7 @@ const createSubAdminFn = async (req, res) => {
                     mobileNumber: mobileNumber,
                     password: newPassword,
                     role: role,
-                    knowPassword:password
+                    knowPassword: password
                 };
                 let data = await user.insertMany(obj);
                 if (data) {
@@ -88,10 +88,11 @@ const createSubAdminFn = async (req, res) => {
             });
         }
     } catch (error) {
-        return res.status(400).send({
+        return res.json(500).send({
+            statusCode: 500,
             status: false,
-            msg: error.message
-        });
+            msg: Msg.failure
+        })
     }
 };
 
@@ -117,10 +118,11 @@ const userAndSubAdminList = async (req, res) => {
             data: response
         });
     } catch (error) {
-        return res.status(400).send({
+        return res.json(500).send({
+            statusCode: 500,
             status: false,
-            msg: error.message
-        });
+            msg: Msg.failure
+        })
     }
 };
 
@@ -159,10 +161,11 @@ const usersCreatedBySubAdmin = async (req, res) => {
         }
 
     } catch (error) {
-        return res.status(400).send({
+        return res.json(500).send({
+            statusCode: 500,
             status: false,
-            msg: error.message
-        });
+            msg: Msg.failure
+        })
     }
 };
 
@@ -200,10 +203,11 @@ const gamesCreatedByAdmin = async (req, res) => {
             });
         }
     } catch (error) {
-        return res.status(400).send({
+        return res.json(500).send({
+            statusCode: 500,
             status: false,
-            msg: error.message
-        });
+            msg: Msg.failure
+        })
     }
 };
 
@@ -235,10 +239,11 @@ const gamesUpdatedByAdmin = async (req, res) => {
             });
         }
     } catch (error) {
-        return res.status(400).send({
+        return res.json(500).send({
+            statusCode: 500,
             status: false,
-            msg: error.message
-        });
+            msg: Msg.failure
+        })
     }
 };
 
@@ -267,10 +272,11 @@ const gamesDeletedByAdmin = async (req, res) => {
             });
         }
     } catch (error) {
-        return res.status(400).send({
+        return res.json(500).send({
+            statusCode: 500,
             status: false,
-            msg: error.message
-        });
+            msg: Msg.failure
+        })
     }
 };
 
@@ -300,10 +306,11 @@ const gamesList = async (req, res) => {
             });
         }
     } catch (error) {
-        return res.status(400).send({
+        return res.json(500).send({
+            statusCode: 500,
             status: false,
-            msg: error.message
-        });
+            msg: Msg.failure
+        })
     }
 };
 
@@ -318,7 +325,7 @@ const addAmount = async (req, res) => {
                 // Create entry in payment history
                 const paymentHistory = new PaymentHistory({ userId, amount, description });
                 await paymentHistory.save();
-                
+
                 return res.status(200).send({
                     status: true,
                     msg: Msg.amountAdded,
@@ -338,10 +345,11 @@ const addAmount = async (req, res) => {
             });
         }
     } catch (error) {
-        return res.status(400).send({
+        return res.json(500).send({
+            statusCode: 500,
             status: false,
-            msg: error.message
-        });
+            msg: Msg.failure
+        })
     }
 }
 
@@ -371,11 +379,12 @@ const paymentHistory = async (req, res) => {
             });
         }
     } catch (error) {
-        return res.status(400).send({
+        return res.json(500).send({
+            statusCode: 500,
             status: false,
-            msg: error.message
-        });
+            msg: Msg.failure
+        })
     }
 };
-
 module.exports = { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList,addAmount,paymentHistory }
+

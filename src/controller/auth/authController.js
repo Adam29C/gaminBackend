@@ -388,13 +388,16 @@ const forgetPasswordFn = async (req, res) => {
 // Function to get user profile
 const getUserProfileFn = async (req, res) => {
     try {
-        let userId = req.decoded.id;
-        let isuserExists = await user.findOne({ _id: userId });
-        if (isuserExists && isuserExists !== null) {
+        // let userId = req.decoded.id;
+        let {userId} = req.query;
+        console.log({userId},"{userId}")
+        let findInfo = await user.findOne({ _id: userId });
+        console.log(findInfo,"findInfo")
+        if (findInfo) {
             return res.status(200).send({
                 status: true,
                 msg: Msg.userProfileFoundSuccess,
-                data: isuserExists
+                data: findInfo
             });
         } else {
             return res.status(200).send({
@@ -407,7 +410,7 @@ const getUserProfileFn = async (req, res) => {
         return res.status(500).send({
             statusCode: 500,
             status: false,
-            msg: Msg.failure
+            msg: error.message
         });
     }
 };

@@ -411,7 +411,7 @@ const getUserProfileFn = async (req, res) => {
     } catch (error) {
         return res.status(500).send({
             statusCode: 500,
-            status: false,
+            status: "Failure",
             msg: Msg.failure
         });
     }

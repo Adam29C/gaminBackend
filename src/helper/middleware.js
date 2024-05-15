@@ -5,6 +5,7 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const TokenData = require("../model/token")
 const client = require('twilio')(accountSid, authToken);
+const Msg =require("../helper/messages")
 
 // Function to hash the given password using bcrypt
 exports.hashPassword = async (password, saltRounds = 10) => {
@@ -33,7 +34,7 @@ exports.comparePassword = async (pass, hash) => {
 // Middleware function to authenticate a token
 exports.authenticateToken = async (req, res, next) => {
     const authToken = req.header('Authorization');
-    if (!authToken) return res.status(401).send('Please provide a token');
+    if (!authToken) return res.status(400).send('Please provide a token');
  
     let token = authToken.split(' ').slice(-1)[0];
     try {
@@ -42,13 +43,17 @@ exports.authenticateToken = async (req, res, next) => {
         // Check if the token exists in the database
         const tokenExists = await TokenData.exists({ token });
         if (!tokenExists) {
-            return res.status(403).send({ err: 'Token not found' });
+            return res.status(400).send({ err: 'Token not found' });
         }
 
         req.decoded = decoded;
         next();
     } catch (error) {
-        res.status(403).send({err:'Invalid token'});
+        return res.status(500).send({
+            status: Msg.failure,
+            statusCode:500,
+            msg: Msg.invalidToken
+        });
     }
 }
 

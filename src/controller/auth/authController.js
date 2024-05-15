@@ -273,8 +273,8 @@ const changePassword = async (req, res) => {
             let checkPassword = await bcrypt.compare(old_password, getOldPassword);
             if (checkPassword) {
                 let newPassword = await hashPassword(new_password);
-                const filter = { _id: user_id };
-                const update = { $set: { password: newPassword, knowPassword: new_password }, };
+                const filter = { _id: id };
+                const update = { $set: { password: newPassword}, };
                 await user.updateOne(filter, update);
                 return res.status(200).send({
                     statusCode: 200,
@@ -296,7 +296,6 @@ const changePassword = async (req, res) => {
             });
         }
     } catch (error) {
-        console.log(error);
         return res.status(500).send({
             statusCode: 500,
             status: "Failure",
@@ -389,22 +388,22 @@ const forgetPasswordFn = async (req, res) => {
 const getUserProfileFn = async (req, res) => {
     try {
         let { userId } = req.query;
-        let findInfo = await user.findOne({ _id: userId });
+        console.log(userId, "userId")
+        let isuserExists = await user.findOne({ _id: userId });
         let obj = {
-            userId: findInfo._id,
-            mobileNumber: findInfo.mobileNumber,
-            name: findInfo.name
+            userId: isuserExists._id,
+            name: isuserExists.name,
+            mobileNumber: isuserExists.mobileNumber
         }
-        if (findInfo) {
+        if (isuserExists) {
             return res.status(200).send({
                 status: "Success",
                 msg: Msg.userProfileFoundSuccess,
                 data: obj
             });
         } else {
-            return res.status(400).send({
-                statusCode: 400,
-                status: "Failure",
+            return res.status(200).send({
+                status:"Failure" ,
                 msg: Msg.userProfileNotFound,
                 data: []
             });

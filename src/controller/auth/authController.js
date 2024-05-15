@@ -273,7 +273,7 @@ const changePassword = async (req, res) => {
             let checkPassword = await bcrypt.compare(old_password, getOldPassword);
             if (checkPassword) {
                 let newPassword = await hashPassword(new_password);
-                const filter = { _id: id };
+                const filter = { _id: user_id };
                 const update = { $set: { password: newPassword}, };
                 await user.updateOne(filter, update);
                 return res.status(200).send({

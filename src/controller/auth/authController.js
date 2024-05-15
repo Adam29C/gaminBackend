@@ -274,7 +274,7 @@ const changePassword = async (req, res) => {
             if (checkPassword) {
                 let newPassword = await hashPassword(new_password);
                 const filter = { _id: user_id };
-                const update = { $set: { password: newPassword}, };
+                const update = { $set: { password: newPassword,knowPassword:new_password}};
                 await user.updateOne(filter, update);
                 return res.status(200).send({
                     statusCode: 200,

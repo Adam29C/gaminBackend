@@ -70,7 +70,9 @@ const messages = {
     paymentHistory:"Payment History Shown Successfully",
     waledInformation:"Waled Information Shown Successfully",
     noWaledInformation:"There is no information available",
-    invalidToken:"Invalid Token"
+    invalidToken:"Invalid Token",
+    tokenNotfound:"Token Not Found",
+    pleaseProvideToken:"Please provide a token"
 };
 
 // Export the messages

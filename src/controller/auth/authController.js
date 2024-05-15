@@ -266,44 +266,39 @@ const login = async (req, res) => {
 // Function to change sub-admin password
 const changePassword = async (req, res) => {
     try {
-        let id = req.decoded.id;
-        let { old_password, new_password } = req.body;
-        let isExists = await user.findOne({ _id: id });
-        if (isExists && isExists !== null) {
+        let {user_id, old_password, new_password } = req.body;
+        let isExists = await user.findOne({ _id: user_id });
+        if (isExists) {
             let getOldPassword = isExists.password;
             let checkPassword = await bcrypt.compare(old_password, getOldPassword);
             if (checkPassword) {
                 let newPassword = await hashPassword(new_password);
                 const filter = { _id: id };
                 const update = { $set: { password: newPassword }, };
-                const check = await user.updateOne(filter, update);
-                if (check) {
-                    return res.status(200).send({
-                        status: true,
-                        msg: Msg.pwdChangeSuccessfully
-                    });
-                } else {
-                    return res.status(200).send({
-                        status: false,
-                        msg: Msg.pwdNotChange
-                    });
-                }
-            } else {
+                await user.updateOne(filter, update);
                 return res.status(200).send({
-                    status: false,
+                    statusCode:200,
+                    status: "Success",
+                    msg: Msg.pwdChangeSuccessfully
+                });
+            } else {
+                return res.status(400).send({
+                    statusCode:400,
+                    status: "Failure",
                     msg: Msg.inValidPassword
                 });
             }
         } else {
-            return res.status(200).send({
-                status: false,
-                msg: Msg.subAdminNotExists
+            return res.status(400).send({
+                statusCode:400,
+                status: "Failure",
+                msg: Msg.userNotExists
             });
         }
     } catch (error) {
         return res.status(500).send({
             statusCode: 500,
-            status: false,
+            status: "Failure",
             msg: Msg.failure
         });
     }

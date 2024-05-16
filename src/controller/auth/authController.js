@@ -210,7 +210,6 @@ const userRegister = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { mobileNumber, password } = req.body;
-        console.log()
         const id = req.decoded.info.userId ? req.decoded.info.userId : req.decoded.info.deviceId;
         const userInfo = await tokenData.findOne({ userId: id }) || await tokenData.findOne({ deviceId: id });
         if (!userInfo) {
@@ -235,7 +234,7 @@ const login = async (req, res) => {
         const checkPassword = await bcrypt.compare(password, userExists.password);
         if (checkPassword) {
             const token = await tokenUpdate(userExists._id, userExists.role);
-            await user.updateOne({ userId: id }, { $set: { loginStatus: "logIn" } });
+            await user.updateOne({ mobileNumber: userExists.mobileNumber }, { $set: { loginStatus: "logIn" } });             
             let obj = {
                 mobileNumber: userExists.mobileNumber,
                 id: userExists._id,
@@ -388,7 +387,6 @@ const forgetPasswordFn = async (req, res) => {
 const getUserProfileFn = async (req, res) => {
     try {
         let { userId } = req.query;
-        console.log(userId, "userId")
         let isuserExists = await user.findOne({ _id: userId });
         let obj = {
             userId: isuserExists._id,

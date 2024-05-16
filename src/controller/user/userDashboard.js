@@ -14,6 +14,8 @@ const game = require("../../model/game");
 const path = require('node:path');
 var fs = require('file-system');
 const paymentHistory = require("../../model/paymentHistory");
+const wallet = require("../../model/waled");
+const user = require("../../model/user")
 
 // user Can deposit There Money With The Help Of Utr Number
 const depositFn = async (req, res) => {
@@ -63,7 +65,7 @@ const depositFn = async (req, res) => {
     });
   } catch (error) {
     return res.json(500).send({
-      statusCode:500,
+      statusCode: 500,
       status: false,
       msg: Msg.failure
     })
@@ -94,7 +96,7 @@ const withdrawalCreatePassword = async (req, res) => {
     }
   } catch (error) {
     return res.json(500).send({
-      statusCode:500,
+      statusCode: 500,
       status: false,
       msg: Msg.failure
     })
@@ -129,7 +131,7 @@ const withdraw = async (req, res) => {
     }
   } catch (error) {
     return res.json(500).send({
-      statusCode:500,
+      statusCode: 500,
       status: false,
       msg: Msg.failure
     })
@@ -155,7 +157,7 @@ const gamesList = async (req, res) => {
     }
   } catch (error) {
     return res.json(500).send({
-      statusCode:500,
+      statusCode: 500,
       status: false,
       msg: Msg.failure
     })
@@ -173,7 +175,7 @@ const seriesList = async (req, res) => {
 
   } catch (error) {
     return res.json(500).send({
-      statusCode:500,
+      statusCode: 500,
       status: false,
       msg: Msg.failure
     })
@@ -196,31 +198,102 @@ const matchList = async (req, res) => {
   }
 };
 
-//User Waled Information  
-const viewWallet = async (req, res) => {
+//Add withdraw request
+const withdrawPayment = async (req, res) => {
   try {
-      let {userId} = req.query;
-      let findInfo = await paymentHistory.findOne({ userId: userId });
-      if (findInfo) {
-          return res.status(200).json({
-              status: true,
-              message: Msg.waledInformation,
-              WalledInfo: findInfo
-          });
-      } else {
-          return res.status(400).json({
-              status: false,
-              message:Msg.noWaledInformation,
-              WalledInfo: []
-          });
-      }
-  } catch (error) {
-      return res.status(500).json({
-          statusCode:500,
-          status: false,
-          message: error.message
+    const { userId, amount } = req.body;
+    if (!userId || !amount) {
+      return res.status(400).json({
+        statusCode: 400,
+        status: "failure",
+        message: "Please provide valid data: userId and amount are required"
       });
+    }
+    const userInfo = await user.findOne({ _id: userId });
+    if (userInfo) {
+      const walletInfo = await wallet.findOne({ userId: userId });
+      if (walletInfo.amount >= amount) {
+        const updateAmt = walletInfo.amount - amount;
+        const updateDebitBuffer=walletInfo.debitBuffer+amount;
+        await wallet.updateOne({ userId }, { $set: { amount: updateAmt, debitBuffer: updateDebitBuffer} })
+        await new paymentHistory({
+          userId: userId,
+          amount: amount,
+          paymentStatus: "debit",
+        }).save();
+        return res.status(200).json({
+          statusCode: 200,
+          status: "Success",
+          msg: Msg.addFountRequest
+        });
+      } else {
+        return res.status(400).json({
+          statusCode: 400,
+          status: "Failure",
+          msg: Msg.insufficientFound,
+        });
+      }
+    }
+  } catch (error) {
+    return res.status(500).json({
+      status: "Failure",
+      msg: Msg.failure,
+    });
   }
 };
 
-module.exports = { depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet }
+//User Waled Information  
+const viewWallet = async (req, res) => {
+  try {
+    let { userId } = req.query;
+    let findInfo = await wallet.findOne({ userId: userId });
+    if (findInfo) {
+      return res.status(200).json({
+        status:true,
+        message: Msg.waledInformation,
+        WalledInfo: findInfo
+      });
+    } else {
+      return res.status(400).json({
+        status: false,
+        message: Msg.noWaledInformation,
+        WalledInfo: 0
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      statusCode: 500,
+      status: false,
+      message: Msg.failure
+    });
+  }
+};
+
+//User All Transaction History  
+const viewPaymentHistory = async (req, res) => {
+  try {
+    let { userId } = req.query;
+    let findInfo = await paymentHistory.findOne({ userId: userId });
+    if (findInfo) {
+      return res.status(200).json({
+        status: "Success",
+        message: Msg.userTransactionHistory,
+        paymentInfo: findInfo
+      });
+    } else {
+      return res.status(400).json({
+        status: "Failure",
+        message: Msg.noTransactionFound,
+        WalledInfo: []
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      statusCode: 500,
+      status: "Failure",
+      message: Msg.failure
+    });
+  }
+};
+
+module.exports = { depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment,viewPaymentHistory }

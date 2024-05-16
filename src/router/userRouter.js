@@ -13,6 +13,7 @@ app.get('/gameList', authenticateToken,controller.userDashboard.gamesList)
 app.get('/seriesList',authenticateToken,controller.userDashboard.seriesList)
 app.get('/matchList',authenticateToken,controller.userDashboard.matchList)
 app.get('/viewWallet',authenticateToken,controller.userDashboard.viewWallet)
-
+app.post('/withdrawPayment',authenticateToken,controller.userDashboard.withdrawPayment)
+app.get('/viewPaymentHistory',authenticateToken,controller.userDashboard.viewPaymentHistory)
 
 module.exports=app

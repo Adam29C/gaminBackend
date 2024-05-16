@@ -351,7 +351,7 @@ const addAmount = async (req, res) => {
             msg: Msg.failure
         })
     }
-};
+}
 
 //Add Amount To Waled
 const paymentHistory = async (req, res) => {
@@ -386,5 +386,5 @@ const paymentHistory = async (req, res) => {
         })
     }
 };
+module.exports = { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList,addAmount,paymentHistory }
 
-module.exports = { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory }

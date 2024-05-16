@@ -5,6 +5,7 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const TokenData = require("../model/token")
 const client = require('twilio')(accountSid, authToken);
+const Msg =require("../helper/messages")
 
 // Function to hash the given password using bcrypt
 exports.hashPassword = async (password, saltRounds = 10) => {
@@ -15,7 +16,7 @@ exports.hashPassword = async (password, saltRounds = 10) => {
         console.log(error);
     }
     return null;
-}
+};
 
 // Function to compare the given password with a hash using bcrypt
 exports.comparePassword = async (pass, hash) => {
@@ -28,12 +29,18 @@ exports.comparePassword = async (pass, hash) => {
         console.log(error);
     }
     return false;
-}
+};
 
 // Middleware function to authenticate a token
 exports.authenticateToken = async (req, res, next) => {
     const authToken = req.header('Authorization');
-    if (!authToken) return res.status(401).send('Please provide a token');
+    if (!authToken){
+        return res.status(400).send({
+            statusCode:400,
+            status: Msg.failure,
+            msg: Msg.pleaseProvideToken
+        });
+    } 
  
     let token = authToken.split(' ').slice(-1)[0];
     try {
@@ -42,20 +49,28 @@ exports.authenticateToken = async (req, res, next) => {
         // Check if the token exists in the database
         const tokenExists = await TokenData.exists({ token });
         if (!tokenExists) {
-            return res.status(403).send({ err: 'Token not found' });
+            return res.status(400).send({
+                statusCode:400,
+                status: Msg.failure,
+                msg: Msg.tokenNotfound
+            });
         }
 
         req.decoded = decoded;
         next();
     } catch (error) {
-        res.status(403).send({err:'Invalid token'});
+        return res.status(500).send({
+            statusCode:500,
+            status: Msg.failure,
+            msg: Msg.invalidToken
+        });
     }
-}
+};
 
 // Function to generate a random number within the specified range
 exports.generateRandomNumber = async (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+};
 
 // Function to send a sms to given number
 exports.sendSMS = async (phone, otp) => {
@@ -66,6 +81,6 @@ exports.sendSMS = async (phone, otp) => {
     } catch (error) {
         return error
     }
-}
+};
 
 

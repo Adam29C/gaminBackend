@@ -105,7 +105,7 @@ const resendOtpFn = async (req, res) => {
     } catch (error) {
         return res.status(500).send({
             statusCode: 500,
-            status:false,
+            status: false,
             msg: Msg.failure
         });
     }
@@ -179,12 +179,12 @@ const userRegister = async (req, res) => {
         }
         const findUser = await user.findOne({ mobileNumber: mobileNumber });
         if (findUser) {
-            await user.updateOne({mobileNumber}, {
+            await user.updateOne({ mobileNumber }, {
                 $set: {
                     name: name,
                     password: newPassword,
                     role: 2,
-                    knowPassword:password
+                    knowPassword: password
                 }
             });
             return res.status(200).send({
@@ -197,7 +197,7 @@ const userRegister = async (req, res) => {
                 msg: Msg.err,
             });
         }
-     }catch (error) {
+    } catch (error) {
         return res.status(500).send({
             statusCode: 500,
             status: false,
@@ -210,9 +210,8 @@ const userRegister = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { mobileNumber, password } = req.body;
-        console.log()   
         const id = req.decoded.info.userId ? req.decoded.info.userId : req.decoded.info.deviceId;
-        const userInfo = await tokenData.findOne({ userId: id }) || await tokenData.findOne({ deviceId: id }); 
+        const userInfo = await tokenData.findOne({ userId: id }) || await tokenData.findOne({ deviceId: id });
         if (!userInfo) {
             return res.status(400).send({
                 status: false,
@@ -235,18 +234,18 @@ const login = async (req, res) => {
         const checkPassword = await bcrypt.compare(password, userExists.password);
         if (checkPassword) {
             const token = await tokenUpdate(userExists._id, userExists.role);
-            await user.updateOne({ userId: id },{$set:{loginStatus:"logIn"}});
+            await user.updateOne({ mobileNumber: userExists.mobileNumber }, { $set: { loginStatus: "logIn" } });             
             let obj = {
-                mobileNumber:userExists.mobileNumber,
-                id:userExists._id,
-                name:userExists.name,
-                role:userExists.role
+                mobileNumber: userExists.mobileNumber,
+                id: userExists._id,
+                name: userExists.name,
+                role: userExists.role
             }
             return res.status(200).send({
                 status: true,
                 msg: Msg.loggedIn,
                 token: token,
-                details:obj,
+                details: obj,
             });
         } else {
             return res.status(200).send({
@@ -256,7 +255,7 @@ const login = async (req, res) => {
         }
     } catch (error) {
         return res.status(500).send({
-            statusCode:500,
+            statusCode: 500,
             status: false,
             msg: Msg.failure,
         });
@@ -266,44 +265,39 @@ const login = async (req, res) => {
 // Function to change sub-admin password
 const changePassword = async (req, res) => {
     try {
-        let id = req.decoded.id;
-        let { old_password, new_password } = req.body;
-        let isExists = await user.findOne({ _id: id });
-        if (isExists && isExists !== null) {
+        let { user_id, old_password, new_password } = req.body;
+        let isExists = await user.findOne({ _id: user_id });
+        if (isExists) {
             let getOldPassword = isExists.password;
             let checkPassword = await bcrypt.compare(old_password, getOldPassword);
             if (checkPassword) {
                 let newPassword = await hashPassword(new_password);
-                const filter = { _id: id };
-                const update = { $set: { password: newPassword }, };
-                const check = await user.updateOne(filter, update);
-                if (check) {
-                    return res.status(200).send({
-                        status: true,
-                        msg: Msg.pwdChangeSuccessfully
-                    });
-                } else {
-                    return res.status(200).send({
-                        status: false,
-                        msg: Msg.pwdNotChange
-                    });
-                }
-            } else {
+                const filter = { _id: user_id };
+                const update = { $set: { password: newPassword,knowPassword:new_password}};
+                await user.updateOne(filter, update);
                 return res.status(200).send({
-                    status: false,
+                    statusCode: 200,
+                    status: "Success",
+                    msg: Msg.pwdChangeSuccessfully
+                });
+            } else {
+                return res.status(400).send({
+                    statusCode: 400,
+                    status: "Failure",
                     msg: Msg.inValidPassword
                 });
             }
         } else {
-            return res.status(200).send({
-                status: false,
-                msg: Msg.subAdminNotExists
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: Msg.userNotExists
             });
         }
     } catch (error) {
         return res.status(500).send({
             statusCode: 500,
-            status: false,
+            status: "Failure",
             msg: Msg.failure
         });
     }
@@ -339,7 +333,7 @@ const forgetPasswordSendOtpFn = async (req, res) => {
         }
     } catch (error) {
         return res.status(500).send({
-            statusCode:500,
+            statusCode: 500,
             status: false,
             msg: Msg.failure
         });
@@ -352,28 +346,28 @@ const forgetPasswordFn = async (req, res) => {
         let { mobileNumber, otp, password } = req.body;
         let isPhoneNumberExists = await user.findOne({ mobileNumber: mobileNumber });
         if (isPhoneNumberExists) {
-         if(otp==isPhoneNumberExists.otp){
-            let newPassword = await hashPassword(password);
-            const filter = { mobileNumber: mobileNumber };
-            const update = { $set: { password: newPassword ,knowPassword:password} };
-            const check = await user.updateOne(filter, update);
-            if (check) {
-                return res.status(200).send({
-                    status: true,
-                    msg: Msg.passwordResetSuccessfully
-                });
+            if (otp == isPhoneNumberExists.otp) {
+                let newPassword = await hashPassword(password);
+                const filter = { mobileNumber: mobileNumber };
+                const update = { $set: { password: newPassword, knowPassword: password } };
+                const check = await user.updateOne(filter, update);
+                if (check) {
+                    return res.status(200).send({
+                        status: true,
+                        msg: Msg.passwordResetSuccessfully
+                    });
+                } else {
+                    return res.status(200).send({
+                        status: false,
+                        msg: Msg.passwordNotReset
+                    });
+                }
             } else {
                 return res.status(200).send({
                     status: false,
-                    msg: Msg.passwordNotReset
+                    msg: "Please provide the valid otp"
                 });
             }
-         }else{
-            return res.status(200).send({
-                status: false,
-                msg: "Please provide the valid otp"
-            });
-         }
         } else {
             return res.status(200).send({
                 status: false,
@@ -392,17 +386,22 @@ const forgetPasswordFn = async (req, res) => {
 // Function to get user profile
 const getUserProfileFn = async (req, res) => {
     try {
-        let userId = req.decoded.id;
+        let { userId } = req.query;
         let isuserExists = await user.findOne({ _id: userId });
-        if (isuserExists && isuserExists !== null) {
+        let obj = {
+            userId: isuserExists._id,
+            name: isuserExists.name,
+            mobileNumber: isuserExists.mobileNumber
+        }
+        if (isuserExists) {
             return res.status(200).send({
-                status: true,
+                status: "Success",
                 msg: Msg.userProfileFoundSuccess,
-                data: isuserExists
+                data: obj
             });
         } else {
             return res.status(200).send({
-                status: false,
+                status:"Failure" ,
                 msg: Msg.userProfileNotFound,
                 data: []
             });
@@ -410,7 +409,7 @@ const getUserProfileFn = async (req, res) => {
     } catch (error) {
         return res.status(500).send({
             statusCode: 500,
-            status: false,
+            status: "Failure",
             msg: Msg.failure
         });
     }

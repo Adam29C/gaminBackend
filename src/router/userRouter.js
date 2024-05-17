@@ -4,9 +4,10 @@ const controller = require('../controller/user')
 const {validateLogin,userSighUp, handleValidationErrors } = require('../helper/validation')
 const { authenticateToken } = require('../helper/middleware')
 const uploads = require('../helper/fileUpload').upload
-const{depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp,withdrawalPasswordVerifyOtp}=require("../controller/user/userDashboard")
+const{depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp,withdrawalPasswordVerifyOtp,addAccountDetail}=require("../controller/user/userDashboard")
 //==============================User Dashboard Router============================================================================
 app.post('/deposit', authenticateToken,uploads, depositFn)
+app.post('/addAccountDetail', authenticateToken,addAccountDetail)
 app.post('/generateWithdrawalPassword', authenticateToken,withdrawalCreatePassword)
 app.post('/withdrawalPasswordSendOtp', authenticateToken,withdrawalPasswordSendOtp)
 app.put('/withdrawalPasswordVerifyOtp', authenticateToken,withdrawalPasswordVerifyOtp)

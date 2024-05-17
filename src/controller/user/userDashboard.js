@@ -16,6 +16,7 @@ var fs = require('file-system');
 const paymentHistory = require("../../model/paymentHistory");
 const wallet = require("../../model/waled");
 const user = require("../../model/user")
+const AccountDetail = require("../../model/accountDetails")
 
 // user Can deposit There Money With The Help Of Utr Number
 const depositFn = async (req, res) => {
@@ -224,6 +225,134 @@ const withdrawalPasswordVerifyOtp = async (req, res) => {
   }
 };
 
+//Add Account Details
+const addAccountDetail = async (req, res) => {
+  try {
+    const { userId, isBank, accountNumber, ifscCode, bankName, upiId, upiName } = req.body;
+
+    // Validate userId
+    if (!userId || !isBank == undefined) {
+      return res.status(400).send({
+        statusCode: 400,
+        status: "Failure",
+        msg: "User ID and isBank field is required."
+      });
+    }
+
+    const findUser = await user.findOne({ _id: userId });
+    if (!findUser) {
+      return res.status(400).send({
+        statusCode: 400,
+        status: "Failure",
+        msg: Msg.userNotExists
+      });
+    }
+
+    // Check for existing accountNumber or upiId
+    if (accountNumber) {
+      const existingAccount = await AccountDetail.findOne({
+        userId: userId,
+        'bank.accountNumber': accountNumber
+      });
+      if (existingAccount) {
+        return res.status(400).send({
+          statusCode: 400,
+          status: "Failure",
+          msg: "Account number already exists."
+        });
+      }
+    }
+
+    if (upiId) {
+      const existingUpi = await AccountDetail.findOne({
+        userId: userId,
+        'upi.upiId': upiId
+      });
+      if (existingUpi) {
+        return res.status(400).send({
+          statusCode: 400,
+          status: "Failure",
+          msg: "UPI ID already exists."
+        });
+      }
+    }
+
+    let updateData = {};
+    if (isBank) {
+      updateData = { $push: { bank: { accountNumber, ifscCode, bankName } }, $set: { updatedAt: Date.now() } };
+    } else {
+      updateData = { $push: { upi: { upiId, upiName } }, $set: { updatedAt: Date.now() } };
+    }
+
+    // Find the existing account details document or create a new one
+    const accountDetail = await AccountDetail.findOneAndUpdate(
+      { userId: userId },
+      updateData,
+      { new: true, upsert: true }
+    );
+
+    return res.status(200).send({
+      statusCode: 200,
+      status: "Success",
+      msg: Msg.accountDetailsSave
+    });
+  } catch (error) {
+    return res.status(500).send({
+      statusCode: 500,
+      status: "Failure",
+      msg: Msg.failure,
+    });
+  }
+};
+
+//Add Account Details
+const userAccountDetail = async (req, res) => {
+  try {
+    const { userId } = req.query;
+
+    // Validate userId
+    if (!userId) {
+      return res.status(400).send({
+        statusCode: 400,
+        status: "Failure",
+        msg: "User ID is required."
+      });
+    }
+
+    const findUser = await user.findOne({ _id: userId });
+    if (!findUser) {
+      return res.status(400).send({
+        statusCode: 400,
+        status: "Failure",
+        msg: Msg.userNotExists
+      });
+    }
+
+    // Check for existing accountNumber or upiId
+    const accountInfo= await AccountDetail.find({userId:userId});
+
+    if (accountInfo) {
+      return res.status(200).send({
+        statusCode: 200,
+        status: "Success",
+        msg: Msg.userAccountDetail
+      });
+    }else{
+      return res.status(200).send({
+        statusCode: 200,
+        status: "Success",
+        msg: Msg.userAccountDetail
+      });
+    }
+  } catch (error) {
+    return res.status(500).send({
+      statusCode: 500,
+      status: "Failure",
+      msg: Msg.failure,
+      error: error.message
+    });
+  }
+};
 // user can withdraw the amount
 const withdraw = async (req, res) => {
   try {
@@ -416,4 +545,4 @@ const viewPaymentHistory = async (req, res) => {
   }
 };
 
-module.exports = { depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp }
+module.exports = { depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail }

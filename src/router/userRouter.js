@@ -4,16 +4,16 @@ const controller = require('../controller/user')
 const {validateLogin,userSighUp, handleValidationErrors } = require('../helper/validation')
 const { authenticateToken } = require('../helper/middleware')
 const uploads = require('../helper/fileUpload').upload
-
+const{depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory}=require("../controller/user/userDashboard")
 //==============================User Dashboard Router============================================================================
-app.post('/deposit', authenticateToken,uploads, controller.userDashboard.depositFn)
-app.post('/generateWithdrawalPassword', authenticateToken, controller.userDashboard.withdrawalCreatePassword)
-app.post('/withdrawal', authenticateToken, controller.userDashboard.withdraw)
-app.get('/gameList', authenticateToken,controller.userDashboard.gamesList)
-app.get('/seriesList',authenticateToken,controller.userDashboard.seriesList)
-app.get('/matchList',authenticateToken,controller.userDashboard.matchList)
-app.get('/viewWallet',authenticateToken,controller.userDashboard.viewWallet)
-app.post('/withdrawPayment',authenticateToken,controller.userDashboard.withdrawPayment)
-app.get('/viewPaymentHistory',authenticateToken,controller.userDashboard.viewPaymentHistory)
+app.post('/deposit', authenticateToken,uploads, depositFn)
+app.post('/generateWithdrawalPassword', authenticateToken,withdrawalCreatePassword)
+app.post('/withdrawal', authenticateToken,withdraw)
+app.get('/gameList', authenticateToken,gamesList)
+app.get('/seriesList',authenticateToken,seriesList)
+app.get('/matchList',authenticateToken,matchList)
+app.get('/viewWallet',authenticateToken,viewWallet)
+app.post('/withdrawPayment',authenticateToken,withdrawPayment)
+app.get('/viewPaymentHistory',authenticateToken,viewPaymentHistory)
 
 module.exports=app

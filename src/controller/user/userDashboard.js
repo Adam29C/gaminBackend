@@ -99,7 +99,7 @@ const withdrawalCreatePassword = async (req, res) => {
 
     const updatedUser = await user.updateOne(
       { _id: userId },
-      { $set: { withdrawalPassword: newPassword, isWithdraw: true, knowWithdrawalPassword : withdrawalPassword } }
+      { $set: { withdrawalPassword: newPassword, isWithdraw: true, knowWithdrawalPassword: withdrawalPassword } }
     );
 
     if (updatedUser) {
@@ -120,6 +120,106 @@ const withdrawalCreatePassword = async (req, res) => {
       statusCode: 500,
       status: false,
       msg: Msg.failure
+    });
+  }
+};
+
+// user can create withdrawalCreatePassword
+const withdrawalPasswordSendOtp = async (req, res) => {
+  try {
+    let { mobileNumber } = req.body;
+
+    // Validate mobileNumber
+    if (!mobileNumber) {
+      return res.status(400).send({
+        statusCode: 400,
+        status: "Failure",
+        msg: "Mobile number is required."
+      });
+    }
+
+    const findUser = await user.findOne({ mobileNumber: mobileNumber });
+    if (!findUser) {
+      return res.status(400).send({
+        statusCode: 400,
+        status: "Failure",
+        msg: Msg.userNotExists
+      });
+    }
+
+    const randomNumber = await generateRandomNumber(10000, 20000);
+    await user.updateOne(
+      { mobileNumber: mobileNumber },
+      { $set: { otp: randomNumber } }
+    );
+    await sendSMS(mobileNumber, randomNumber);
+
+    return res.status(200).send({
+      statusCode: 200,
+      status: "Success",
+      msg: Msg.otpSend
+    });
+  } catch (error) {
+    return res.status(500).send({
+      statusCode: 500,
+      status: "Failure",
+      msg: Msg.failure,
+    });
+  }
+};
+
+// user can create withdrawalCreatePassword
+const withdrawalPasswordVerifyOtp = async (req, res) => {
+  try {
+    let { mobileNumber, otp, password } = req.body;
+
+    // Validate mobileNumber
+    if (!mobileNumber || !otp || !password) {
+      return res.status(400).send({
+        statusCode: 400,
+        status: "Failure",
+        msg: "Mobile number,otp and password is required."
+      });
+    }
+
+    const findUser = await user.findOne({ mobileNumber: mobileNumber });
+    if (!findUser) {
+      return res.status(400).send({
+        statusCode: 400,
+        status: "Failure",
+        msg: Msg.userNotExists
+      });
+    }
+    const code = typeof parseInt(findUser.otp)
+    if (otp == code) {
+      return res.status(400).send({
+        statusCode: 400,
+        status: "Failure",
+        msg: Msg.wrongOtp
+      });
+    }
+    let newPassword = await hashPassword(password);
+    const filter = { mobileNumber: mobileNumber };
+    const update = { $set: { withdrawalPassword: newPassword, knowWithdrawalPassword: password, } };
+    const check = await user.updateOne(filter, update);
+    if (check) {
+      return res.status(200).send({
+        statusCode: 200,
+        status: "Success",
+        msg: Msg.passwordResetSuccessfully
+      });
+    } else {
+      return res.status(400).send({
+        statusCode: 400,
+        status: "Failure",
+        msg: Msg.somethingWentWrong
+      });
+    }
+  } catch (error) {
+    return res.status(500).send({
+      statusCode: 500,
+      status: "Failure",
+      msg: Msg.failure,
     });
   }
 };
@@ -316,4 +416,4 @@ const viewPaymentHistory = async (req, res) => {
   }
 };
 
-module.exports = { depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory }
+module.exports = { depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp }

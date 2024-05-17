@@ -76,6 +76,7 @@ const depositFn = async (req, res) => {
 const withdrawalCreatePassword = async (req, res) => {
   try {
     let { userId, withdrawalPassword } = req.body;
+
     // Validate userId and withdrawalPassword
     if (!userId || !withdrawalPassword) {
       return res.status(400).send({
@@ -86,7 +87,6 @@ const withdrawalCreatePassword = async (req, res) => {
     }
 
     const findUser = await user.findOne({ _id: userId });
-
     if (!findUser) {
       return res.status(400).send({
         statusCode: 400,
@@ -96,13 +96,13 @@ const withdrawalCreatePassword = async (req, res) => {
     }
 
     let newPassword = await hashPassword(withdrawalPassword);
-    let obj = {
-      withdrawalPassword: newPassword
-    };
 
-    const data = await withdrawal.create(obj);
-    if (data) {
-      await user.updateOne({ _id: userId }, { $set: { isWithdraw: true } });
+    const updatedUser = await user.updateOne(
+      { _id: userId },
+      { $set: { withdrawalPassword: newPassword, isWithdraw: true, knowWithdrawalPassword : withdrawalPassword } }
+    );
+
+    if (updatedUser) {
       return res.status(201).send({
         statusCode: 201,
         status: "Success",
@@ -119,8 +119,7 @@ const withdrawalCreatePassword = async (req, res) => {
     return res.status(500).send({
       statusCode: 500,
       status: false,
-      msg: Msg.failure,
-      error: error.message // Include the error message for better debugging
+      msg: Msg.failure
     });
   }
 };

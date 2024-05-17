@@ -30,9 +30,8 @@ const userSchema = new mongoose.Schema({
        type:Boolean,
        default:false
     },
-    withdrawalPassword:{
-        type:String
-    },
+    withdrawalPassword:{ type:String},
+    knowWithdrawalPassword:{type:String},
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
 }, { timestamps: true });

@@ -75,39 +75,59 @@ const depositFn = async (req, res) => {
 // user can create withdrawalCreatePassword
 const withdrawalCreatePassword = async (req, res) => {
   try {
-    let userId = req.decoded.userId;
-    let { password } = req.body;
-    let newPassword = await hashPassword(password);
-    let obj = {
-      password: newPassword,
-      userId: userId
-    };
-    let data = await withdrawal.insertMany(obj)
-    if (data) {
-      return res.status(200).send({
-        status: true,
+    let { userId, withdrawalPassword } = req.body;
+
+    // Validate userId and withdrawalPassword
+    if (!userId || !withdrawalPassword) {
+      return res.status(400).send({
+        statusCode: 400,
+        status: "Failure",
+        msg: "UserId and withdrawalPassword are required."
+      });
+    }
+
+    const findUser = await user.findOne({ _id: userId });
+    if (!findUser) {
+      return res.status(400).send({
+        statusCode: 400,
+        status: "Failure",
+        msg: Msg.userNotExists
+      });
+    }
+
+    let newPassword = await hashPassword(withdrawalPassword);
+
+    const updatedUser = await user.updateOne(
+      { _id: userId },
+      { $set: { withdrawalPassword: newPassword, isWithdraw: true, knowWithdrawalPassword : withdrawalPassword } }
+    );
+
+    if (updatedUser) {
+      return res.status(201).send({
+        statusCode: 201,
+        status: "Success",
         msg: Msg.passwordGeneratedSuccessfully,
       });
     } else {
-      return res.status(200).send({
-        status: false,
-        msg: Msg.passwordNotGenerated
+      return res.status(400).send({
+        statusCode: 400,
+        status: "Failure",
+        msg: Msg.somethingWentWrong
       });
     }
   } catch (error) {
-    return res.json(500).send({
+    return res.status(500).send({
       statusCode: 500,
       status: false,
       msg: Msg.failure
-    })
+    });
   }
 };
 
 // user can withdraw the amount
 const withdraw = async (req, res) => {
   try {
-    let userId = req.decoded.userId;
-    let { password } = req.body;
+    let { userId, password } = req.body;
     let isExists = await withdrawal.findOne({ userId: userId });
     if (isExists) {
       let pass = isExists.password;
@@ -214,8 +234,8 @@ const withdrawPayment = async (req, res) => {
       const walletInfo = await wallet.findOne({ userId: userId });
       if (walletInfo.amount >= amount) {
         const updateAmt = walletInfo.amount - amount;
-        const updateDebitBuffer=walletInfo.debitBuffer+amount;
-        await wallet.updateOne({ userId }, { $set: { amount: updateAmt, debitBuffer: updateDebitBuffer} })
+        const updateDebitBuffer = walletInfo.debitBuffer + amount;
+        await wallet.updateOne({ userId }, { $set: { amount: updateAmt, debitBuffer: updateDebitBuffer } })
         await new paymentHistory({
           userId: userId,
           amount: amount,
@@ -249,7 +269,7 @@ const viewWallet = async (req, res) => {
     let findInfo = await wallet.findOne({ userId: userId });
     if (findInfo) {
       return res.status(200).json({
-        status:true,
+        status: true,
         message: Msg.waledInformation,
         WalledInfo: findInfo
       });
@@ -296,4 +316,4 @@ const viewPaymentHistory = async (req, res) => {
   }
 };
 
-module.exports = { depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment,viewPaymentHistory }
+module.exports = { depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory }

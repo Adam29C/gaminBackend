@@ -22,7 +22,7 @@ const messages = {
     amountDepositSuccess: "Amount Deposit successfully",
     amountNotDeposit: "Amount Not Deposit",
     passwordGenerated: "Generate Your Password",
-    passwordGeneratedSuccessfully: "Your Password Generated Successfully",
+    passwordGeneratedSuccessfully: "Your Withdrawal Password Generated Successfully",
     passwordNotGenerated: "Password Not Generated",
     userProfileFoundSuccess: "User Profile Found Successfully",
     userProfileNotFound: "User Profile Not Found",

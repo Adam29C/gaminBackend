@@ -72,7 +72,11 @@ const messages = {
     noWaledInformation:"There is no information available",
     invalidToken:"Invalid Token",
     tokenNotfound:"Token Not Found",
-    pleaseProvideToken:"Please provide a token"
+    pleaseProvideToken:"Please provide a token",
+    addFountRequest:"Fund Request Add Successfully",
+    insufficientFound:"Insufficient Found please Try Another Amount",
+    noTransactionFound:"No Transaction found",
+    userTransactionHistory:"All Transaction History Show Successfully"
 };
 
 // Export the messages

@@ -14,5 +14,6 @@ app.delete('/gameDeletedBySubAdmin',authenticateToken,gameDeletedBySubAdmin)
 app.get('/gameList',authenticateToken,gamesList)
 app.get('/getSubAdminProfile',authenticateToken,getSubAdminProfileFn)
 app.put('/updateSubAdminProfile',authenticateToken,updateSubAdminProfileFn)
+// app.get('/viewPaymentHistory',authenticateToken,viewPaymentHistory)
  
 module.exports = app

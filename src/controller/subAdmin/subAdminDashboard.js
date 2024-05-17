@@ -11,7 +11,7 @@ const game = require("../../model/game");
 const userRegisterBySubAdmin = async (req, res) => {
     try {
         let { name, mobileNumber, password } = req.body;
-        let  userId  = req.decoded.info.userId;
+        let userId = req.decoded.info.userId;
         let checkUser = await user.findOne({ mobileNumber: mobileNumber });
         if (checkUser != null) {
             return res.status(200).send({
@@ -49,7 +49,7 @@ const userRegisterBySubAdmin = async (req, res) => {
     } catch (error) {
         return res.status(500).send({
             status: "failure",
-            statusCode:500,
+            statusCode: 500,
             msg: error.message
         });
     }
@@ -86,7 +86,7 @@ const gamesCreatedBySubAdmin = async (req, res) => {
     } catch (error) {
         return res.status(500).send({
             status: "failure",
-            statusCode:500,
+            statusCode: 500,
             msg: error.message
         });
     }
@@ -115,7 +115,7 @@ const gamesUpdatedSubAdmin = async (req, res) => {
     } catch (error) {
         return res.status(500).send({
             status: "failure",
-            statusCode:500,
+            statusCode: 500,
             msg: error.message
         });
     }
@@ -149,7 +149,7 @@ const gameDeletedBySubAdmin = async (req, res) => {
     } catch (error) {
         return res.status(500).send({
             status: "failure",
-            statusCode:500,
+            statusCode: 500,
             msg: error.message
         });
     }
@@ -184,7 +184,7 @@ const gamesList = async (req, res) => {
     } catch (error) {
         return res.status(500).send({
             status: "failure",
-            statusCode:500,
+            statusCode: 500,
             msg: error.message
         });
     }
@@ -210,7 +210,7 @@ const getSubAdminProfileFn = async (req, res) => {
     } catch (error) {
         return res.status(500).send({
             status: "failure",
-            statusCode:500,
+            statusCode: 500,
             msg: error.message
         });
     }
@@ -222,7 +222,7 @@ const updateSubAdminProfileFn = async (req, res) => {
         let id = req.decoded.id;
         let { name, mobileNumber, email, address } = req.body;
         const filter = { _id: id };
-        const update = {$set: {name: name, mobileNumber: mobileNumber,email: email,address: address }, };
+        const update = { $set: { name: name, mobileNumber: mobileNumber, email: email, address: address }, };
         let check = await subAdmin.findByIdAndUpdate(filter, update, { new: true });
         if (check) {
             return res.status(200).send({
@@ -238,10 +238,10 @@ const updateSubAdminProfileFn = async (req, res) => {
     } catch (error) {
         return res.status(500).send({
             status: "failure",
-            statusCode:500,
-            msg: error.message
+            statusCode: 500,
+            msg: Msg.failure
         });
     }
 };
 
-module.exports={userRegisterBySubAdmin,gamesCreatedBySubAdmin,gamesUpdatedSubAdmin,gameDeletedBySubAdmin,gamesList,getSubAdminProfileFn,updateSubAdminProfileFn}
+module.exports = { userRegisterBySubAdmin, gamesCreatedBySubAdmin, gamesUpdatedSubAdmin, gameDeletedBySubAdmin, gamesList, getSubAdminProfileFn, updateSubAdminProfileFn }

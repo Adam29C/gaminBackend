@@ -328,20 +328,26 @@ const userAccountDetail = async (req, res) => {
       });
     }
 
-    // Check for existing accountNumber or upiId
     const accountInfo= await AccountDetail.find({userId:userId});
-
+    let obj={
+      userId:accountInfo[0].userId,
+      bankList:accountInfo[0].bank,
+      upiList:accountInfo[0].upi
+    }
+    
     if (accountInfo) {
       return res.status(200).send({
         statusCode: 200,
         status: "Success",
-        msg: Msg.userAccountDetail
+        msg: Msg.userAccountDetail,
+        data:obj
       });
     }else{
       return res.status(200).send({
         statusCode: 200,
         status: "Success",
-        msg: Msg.userAccountDetail
+        msg: Msg.userAccountDetail,
+        data:[]
       });
     }
   } catch (error) {
@@ -545,4 +551,4 @@ const viewPaymentHistory = async (req, res) => {
   }
 };
 
-module.exports = { depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail }
+module.exports = { depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail,userAccountDetail }

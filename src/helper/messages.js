@@ -1,3 +1,5 @@
+const accountDetails = require("../model/accountDetails");
+
 // Define your messages
 const messages = {
     emailExists: "This Email Already Register",
@@ -60,6 +62,8 @@ const messages = {
     pwdChangSuccess:"Password Change Successfully",
     pwdNotChang:"Password Not Change",
     userNotExists:"User Not Exists",
+    userAccountDetail:"User Account Detail Show Successfully",
+    accountDetailsNotFound:"No Account Details Is Found",
     userRegister:"User Register Successfully",
     somethingWentWrong:"Something Went Wrong",
     mobileAlreadyInUse:"Mobile number already in use",
@@ -76,7 +80,8 @@ const messages = {
     addFountRequest:"Fund Request Add Successfully",
     insufficientFound:"Insufficient Found please Try Another Amount",
     noTransactionFound:"No Transaction found",
-    userTransactionHistory:"All Transaction History Show Successfully"
+    userTransactionHistory:"All Transaction History Show Successfully",
+    accountDetailsSave:"Account Details Save Successfully"
 };
 
 // Export the messages

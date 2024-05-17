@@ -190,8 +190,8 @@ const withdrawalPasswordVerifyOtp = async (req, res) => {
         msg: Msg.userNotExists
       });
     }
-    const code = typeof parseInt(findUser.otp)
-    if (otp == code) {
+    const code = parseInt(findUser.otp);
+    if (otp !== code) {
       return res.status(400).send({
         statusCode: 400,
         status: "Failure",

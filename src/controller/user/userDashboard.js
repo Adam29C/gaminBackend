@@ -228,14 +228,14 @@ const withdrawalPasswordVerifyOtp = async (req, res) => {
 //Add Account Details
 const addAccountDetail = async (req, res) => {
   try {
-    const { userId, isBank, accountNumber, ifscCode, bankName, upiId, upiName } = req.body;
+    const { userId, isBank, accountNumber, ifscCode, bankName, upiId, upiName, password } = req.body;
 
-    // Validate userId
-    if (!userId || !isBank == undefined) {
+   // Validate userId, password, and isBank field
+    if (!password || !userId || typeof isBank === 'undefined') {
       return res.status(400).send({
         statusCode: 400,
         status: "Failure",
-        msg: "User ID and isBank field is required."
+        msg: "User ID, Password, and isBank field are required."
       });
     }
 
@@ -244,7 +244,17 @@ const addAccountDetail = async (req, res) => {
       return res.status(400).send({
         statusCode: 400,
         status: "Failure",
-        msg: Msg.userNotExists
+        msg: "User does not exist."
+      });
+    }
+    
+    const oldPassword = findUser.withdrawalPassword; 
+    const checkPassword = await bcrypt.compare(password,oldPassword);
+    if (!checkPassword) {
+      return res.status(400).send({
+        statusCode: 400,
+        status: "Failure",
+        msg: "Password does not match."
       });
     }
 
@@ -285,7 +295,7 @@ const addAccountDetail = async (req, res) => {
     }
 
     // Find the existing account details document or create a new one
-    const accountDetail = await AccountDetail.findOneAndUpdate(
+    await AccountDetail.findOneAndUpdate(
       { userId: userId },
       updateData,
       { new: true, upsert: true }

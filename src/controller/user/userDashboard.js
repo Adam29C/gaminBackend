@@ -328,26 +328,26 @@ const userAccountDetail = async (req, res) => {
       });
     }
 
-    const accountInfo= await AccountDetail.find({userId:userId});
-    let obj={
-      userId:accountInfo[0].userId,
-      bankList:accountInfo[0].bank,
-      upiList:accountInfo[0].upi
+    const accountInfo = await AccountDetail.find({ userId: userId });
+    let obj = {
+      userId: accountInfo[0].userId,
+      bankList: accountInfo[0].bank,
+      upiList: accountInfo[0].upi
     }
-    
+
     if (accountInfo) {
       return res.status(200).send({
         statusCode: 200,
         status: "Success",
         msg: Msg.userAccountDetail,
-        data:obj
+        data: obj
       });
-    }else{
+    } else {
       return res.status(200).send({
         statusCode: 200,
         status: "Success",
         msg: Msg.userAccountDetail,
-        data:[]
+        data: []
       });
     }
   } catch (error) {
@@ -359,97 +359,53 @@ const userAccountDetail = async (req, res) => {
     });
   }
 };
-// user can withdraw the amount
-const withdraw = async (req, res) => {
+
+//delete Account Details
+const deleteAccountDetail = async (req, res) => {
   try {
-    let { userId, password } = req.body;
-    let isExists = await withdrawal.findOne({ userId: userId });
-    if (isExists) {
-      let pass = isExists.password;
-      let checkPassword = await bcrypt.compare(password, pass);
-      if (checkPassword) {
-        return res.status(200).send({
-          status: true,
-          msg: Msg.success,
-        });
-      } else {
-        return res.status(200).send({
-          status: false,
-          msg: Msg.inValidPassword
-        });
-      }
-    } else {
-      return res.status(200).send({
-        status: false,
-        msg: Msg.passwordGenerated
+    const { userId, isBank, id } = req.body;
+
+    // Check if the user exists
+    const findUser = await user.findOne({ _id: userId });
+    if (!findUser) {
+      return res.status(400).send({
+        statusCode: 400,
+        status: "Failure",
+        msg: Msg.userNotExists
       });
     }
-  } catch (error) {
-    return res.json(500).send({
-      statusCode: 500,
-      status: false,
-      msg: Msg.failure
-    })
-  }
-};
 
-// user Can View The List Of All Games
-const gamesList = async (req, res) => {
-  try {
-    let fetchGameList = await game.find();
-    if (fetchGameList && fetchGameList.length >= 0) {
+    let query;
+    if (isBank) {
+      query = { $pull: { 'bank': { _id: id } } }
+    } else {
+      query = { $pull: { 'upi': { _id: id } } }
+    }
+
+    const result = await AccountDetail.updateOne(
+      { userId: userId }, query
+    );
+
+    if (result.modifiedCount > 0) {
       return res.status(200).send({
-        status: true,
-        msg: Msg.gameListFound,
-        data: fetchGameList
+        statusCode: 200,
+        status: "Success",
+        msg: "Account detail deleted successfully."
       });
     } else {
-      return res.status(200).send({
-        status: false,
-        msg: Msg.gameNotFound,
-        data: []
+      return res.status(404).send({
+        statusCode: 404,
+        status: "Failure",
+        msg: "Account detail not found or already deleted."
       });
     }
-  } catch (error) {
-    return res.json(500).send({
-      statusCode: 500,
-      status: false,
-      msg: Msg.failure
-    })
-  }
-};
-
-//series list third party api data
-const seriesList = async (req, res) => {
-  try {
-    const { sportsId } = req.body;
-    return res.json(200).send({
-      status: true,
-      list: []
-    })
 
   } catch (error) {
-    return res.json(500).send({
+    return res.status(500).send({
       statusCode: 500,
-      status: false,
+      status: "Failure",
       msg: Msg.failure
-    })
-  }
-};
-
-//Match list third party api data
-const matchList = async (req, res) => {
-  try {
-    const { seriesId } = req.body;
-    res.json(200).send({
-      status: true,
-      list: []
-    })
-  } catch {
-    res.json(500).send({
-      status: false,
-      msg: Msg.failure
-    })
+    });
   }
 };
 
@@ -551,4 +507,120 @@ const viewPaymentHistory = async (req, res) => {
   }
 };
 
-module.exports = { depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail,userAccountDetail }
+//add credit request
+const addCreditRequest = async (req, res) => {
+  try {
+    const { userId, amount } = req.body;
+    if (!userId || !amount) {
+      return res.status(400).json({
+        statusCode: 400,
+        status: "failure",
+        message: "Please provide valid data: userId and amount are required"
+      });
+    }
+
+    const userInfo = await user.findOne({ _id: userId });
+    if (userInfo) {
+      const walletInfo = await wallet.findOne({ userId: userId });
+
+      if (walletInfo) {
+        const updateAmt = walletInfo.amount + amount;
+        const updateCreditBuffer = walletInfo.creditBuffer + amount;
+
+        await wallet.updateOne({ userId }, { $set: { amount: updateAmt, creditBuffer: updateCreditBuffer } });
+
+        const paymentObj = {
+          userId: userId,
+          amount: amount,
+          paymentStatus: "credit",
+        };
+
+        await paymentHistory.create(paymentObj);
+
+        return res.status(200).json({
+          statusCode: 200,
+          status: "Success",
+          msg: Msg.addFountRequest
+        });
+      } else {
+        return res.status(400).json({
+          statusCode: 400,
+          status: "Failure",
+          msg: Msg.insufficientFound,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        statusCode: 404,
+        status: "Failure",
+        message: "User not found",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      status: "Failure",
+      msg: error.message,
+    });
+  }
+};
+
+// user Can View The List Of All Games
+const gamesList = async (req, res) => {
+  try {
+    let fetchGameList = await game.find();
+    if (fetchGameList && fetchGameList.length >= 0) {
+      return res.status(200).send({
+        status: true,
+        msg: Msg.gameListFound,
+        data: fetchGameList
+      });
+    } else {
+      return res.status(200).send({
+        status: false,
+        msg: Msg.gameNotFound,
+        data: []
+      });
+    }
+  } catch (error) {
+    return res.json(500).send({
+      statusCode: 500,
+      status: false,
+      msg: Msg.failure
+    })
+  }
+};
+
+//series list third party api data
+const seriesList = async (req, res) => {
+  try {
+    const { sportsId } = req.body;
+    return res.json(200).send({
+      status: true,
+      list: []
+    })
+
+  } catch (error) {
+    return res.json(500).send({
+      statusCode: 500,
+      status: false,
+      msg: Msg.failure
+    })
+  }
+};
+
+//Match list third party api data
+const matchList = async (req, res) => {
+  try {
+    const { seriesId } = req.body;
+    res.json(200).send({
+      status: true,
+      list: []
+    })
+  } catch {
+    res.json(500).send({
+      status: false,
+      msg: Msg.failure
+    })
+  }
+};
+module.exports = { depositFn, withdrawalCreatePassword, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail, addCreditRequest }

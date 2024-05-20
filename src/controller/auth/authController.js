@@ -11,6 +11,7 @@ const secretKey = process.env.JWT_SECRET_KEY;
 const mongoose = require("mongoose")
 const tokenData = require("../../model/token")
 const tokenUpdate = require("../../helper/updateToken");
+const wallet = require("../../model/waled")
 
 //Function to generate the auth token
 const generateAuthToken = async (req, res) => {
@@ -187,6 +188,14 @@ const userRegister = async (req, res) => {
                     knowPassword: password
                 }
             });
+            console.log("1s")
+
+            let obj={
+                userId:findUser._id,
+                amount:0
+            }
+            const a =await wallet.create(obj);
+            console.log(a,"a");
             return res.status(200).send({
                 status: true,
                 msg: Msg.userRegister,

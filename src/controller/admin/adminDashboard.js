@@ -391,7 +391,7 @@ const paymentHistory = async (req, res) => {
 const addRules = async (req, res) => {
     try {
         const { role } = req.decoded;
-        const { userId, description } = req.body;
+        const { userId,title,description } = req.body;
 
         if (role !== 0) {
             return res.status(400).send({
@@ -411,7 +411,8 @@ const addRules = async (req, res) => {
 
         const newRule = new rule({
             userId,
-            description
+            description,
+            title
         })
         await newRule.save();
 
@@ -433,7 +434,7 @@ const addRules = async (req, res) => {
 const updateRules = async (req, res) => {
     try {
         const { role } = req.decoded;
-        const { ruleId, status } = req.body;
+        const { ruleId, status,title,description } = req.body;
 
         if (role !== 0) {
             return res.status(403).send({
@@ -453,7 +454,7 @@ const updateRules = async (req, res) => {
 
         const ruleToUpdate = await rule.findByIdAndUpdate(
             ruleId,
-            { $set: { status: status, updatedAt: new Date() } },
+            { $set: { status: status,title:title,description:description,updatedAt: new Date() } },
             { new: true }
         );
 

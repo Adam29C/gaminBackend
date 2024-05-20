@@ -7,7 +7,7 @@ const user = require('../../model/user');
 const games = require("../../model/game");
 const waled = require("../../model/waled");
 const PaymentHistory = require('../../model/paymentHistory');
-
+const rule = require("../../model/rule")
 // Function to handle creation of sub-admin
 const createSubAdminFn = async (req, res) => {
     try {
@@ -386,5 +386,151 @@ const paymentHistory = async (req, res) => {
         })
     }
 };
-module.exports = { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList,addAmount,paymentHistory }
+
+//Add Game Rules
+const addRules = async (req, res) => {
+    try {
+        const { role } = req.decoded;
+        const { userId, description } = req.body;
+
+        if (role !== 0) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "failure",
+                msg: Msg.adminCanAccess
+            });
+        }
+
+        if (!userId || !description) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: false,
+                msg: 'UserId and message are required'
+            });
+        }
+
+        const newRule = new rule({
+            userId,
+            description
+        })
+        await newRule.save();
+
+        return res.status(201).send({
+            statusCode: 201,
+            status: "Success",
+            msg: Msg.rulesAddedSuccessfully
+        });
+
+    } catch (error) {
+        return res.status(500).send({
+            statusCode: 500,
+            status: false,
+            msg: Msg.failure
+        });
+    }
+};
+
+const updateRules = async (req, res) => {
+    try {
+        const { role } = req.decoded;
+        const { ruleId, status } = req.body;
+
+        if (role !== 0) {
+            return res.status(403).send({
+                statusCode: 403,
+                status: "Failure",
+                msg: Msg.adminCanAccess
+            });
+        }
+
+        if (!ruleId || typeof status !== 'boolean') {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: 'ruleId and status are required and status must be a boolean'
+            });
+        }
+
+        const ruleToUpdate = await rule.findByIdAndUpdate(
+            ruleId,
+            { $set: { status: status, updatedAt: new Date() } },
+            { new: true }
+        );
+
+        if (!ruleToUpdate) {
+            return res.status(400).send({
+                statusCode: 404,
+                status: "Failure",
+                msg: Msg.ruleNotFound
+            });
+        }
+
+        return res.status(200).send({
+            statusCode: 200,
+            status: "Success",
+            msg: Msg.ruleUpdateSuccessfully
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: Msg.failure
+        });
+    }
+};
+
+const deleteRules = async (req, res) => {
+    try {
+        const { role } = req.decoded;
+        const { ruleId } = req.query;
+
+        if (role !== 0) {
+            return res.status(403).send({
+                statusCode: 403,
+                status: "Failure",
+                msg: Msg.adminCanAccess
+            });
+        }
+
+        if (!ruleId) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: 'ruleId is required'
+            });
+        }
+
+        const ruleDelete = await rule.deleteOne({
+            ruleId:ruleId
+        });
+        console.log(ruleDelete,'ruleDelete')
+
+        if (!ruleToUpdate) {
+            return res.status(400).send({
+                statusCode: 404,
+                status: "Failure",
+                msg: Msg.ruleNotFound
+            });
+        }
+
+        return res.status(200).send({
+            statusCode: 200,
+            status: "Success",
+            msg: Msg.ruleUpdateSuccessfully
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: Msg.failure
+        });
+    }
+};
+
+
+module.exports = { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules,deleteRules }
 

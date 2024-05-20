@@ -360,7 +360,7 @@ const userAccountDetail = async (req, res) => {
   }
 };
 
-//Add Account Details
+//delete Account Details
 const deleteAccountDetail = async (req, res) => {
   try {
     const { userId, isBank, id } = req.body;
@@ -406,102 +406,6 @@ const deleteAccountDetail = async (req, res) => {
       status: "Failure",
       msg: Msg.failure
     });
-  }
-};
-
-
-
-// user can withdraw the amount
-const withdraw = async (req, res) => {
-  try {
-    let { userId, password } = req.body;
-    let isExists = await withdrawal.findOne({ userId: userId });
-    if (isExists) {
-      let pass = isExists.password;
-      let checkPassword = await bcrypt.compare(password, pass);
-      if (checkPassword) {
-        return res.status(200).send({
-          status: true,
-          msg: Msg.success,
-        });
-      } else {
-        return res.status(200).send({
-          status: false,
-          msg: Msg.inValidPassword
-        });
-      }
-    } else {
-      return res.status(200).send({
-        status: false,
-        msg: Msg.passwordGenerated
-      });
-    }
-  } catch (error) {
-    return res.json(500).send({
-      statusCode: 500,
-      status: false,
-      msg: Msg.failure
-    })
-  }
-};
-
-// user Can View The List Of All Games
-const gamesList = async (req, res) => {
-  try {
-    let fetchGameList = await game.find();
-    if (fetchGameList && fetchGameList.length >= 0) {
-      return res.status(200).send({
-        status: true,
-        msg: Msg.gameListFound,
-        data: fetchGameList
-      });
-    } else {
-      return res.status(200).send({
-        status: false,
-        msg: Msg.gameNotFound,
-        data: []
-      });
-    }
-  } catch (error) {
-    return res.json(500).send({
-      statusCode: 500,
-      status: false,
-      msg: Msg.failure
-    })
-  }
-};
-
-//series list third party api data
-const seriesList = async (req, res) => {
-  try {
-    const { sportsId } = req.body;
-    return res.json(200).send({
-      status: true,
-      list: []
-    })
-
-  } catch (error) {
-    return res.json(500).send({
-      statusCode: 500,
-      status: false,
-      msg: Msg.failure
-    })
-  }
-};
-
-//Match list third party api data
-const matchList = async (req, res) => {
-  try {
-    const { seriesId } = req.body;
-    res.json(200).send({
-      status: true,
-      list: []
-    })
-  } catch {
-    res.json(500).send({
-      status: false,
-      msg: Msg.failure
-    })
   }
 };
 
@@ -603,4 +507,110 @@ const viewPaymentHistory = async (req, res) => {
   }
 };
 
-module.exports = { depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail }
+//add credit request
+const addCreditRequest = async (req, res) => {
+  try {
+    const { userId, amount } = req.body;
+    if (!userId || !amount) {
+      return res.status(400).json({
+        statusCode: 400,
+        status: "failure",
+        message: "Please provide valid data: userId and amount are required"
+      });
+    };
+    const userInfo = await user.findOne({ _id: userId });
+    if (userInfo) {
+      const walletInfo = await wallet.findOne({ userId: userId });
+      console.log(walletInfo,"walletInfo")
+      if (walletInfo) {
+        const updateAmt = walletInfo.amount + amount;
+        const updateCreditBuffer = walletInfo.creditBuffer + amount;
+        await wallet.updateOne({ userId }, { $set: { amount: updateAmt, creditBuffers: updateCreditBuffer } })
+        const a=await new paymentHistory({
+          userId: userId,
+          amount: amount,
+          paymentStatus: "Credit",
+        }).save();
+        console.log(a,"664af27f051b0ee4ff45baa6")
+        return res.status(200).json({
+          statusCode: 200,
+          status: "Success",
+          msg: Msg.addFountRequest
+        });
+      } else {
+        return res.status(400).json({
+          statusCode: 400,
+          status: "Failure",
+          msg: Msg.insufficientFound,
+        });
+      }
+    }
+  } catch (error) {
+    return res.status(500).json({
+      status: "Failure",
+      msg: Msg.failure,
+    });
+  }
+};
+
+
+// user Can View The List Of All Games
+const gamesList = async (req, res) => {
+  try {
+    let fetchGameList = await game.find();
+    if (fetchGameList && fetchGameList.length >= 0) {
+      return res.status(200).send({
+        status: true,
+        msg: Msg.gameListFound,
+        data: fetchGameList
+      });
+    } else {
+      return res.status(200).send({
+        status: false,
+        msg: Msg.gameNotFound,
+        data: []
+      });
+    }
+  } catch (error) {
+    return res.json(500).send({
+      statusCode: 500,
+      status: false,
+      msg: Msg.failure
+    })
+  }
+};
+
+//series list third party api data
+const seriesList = async (req, res) => {
+  try {
+    const { sportsId } = req.body;
+    return res.json(200).send({
+      status: true,
+      list: []
+    })
+
+  } catch (error) {
+    return res.json(500).send({
+      statusCode: 500,
+      status: false,
+      msg: Msg.failure
+    })
+  }
+};
+
+//Match list third party api data
+const matchList = async (req, res) => {
+  try {
+    const { seriesId } = req.body;
+    res.json(200).send({
+      status: true,
+      list: []
+    })
+  } catch {
+    res.json(500).send({
+      status: false,
+      msg: Msg.failure
+    })
+  }
+};
+module.exports = { depositFn, withdrawalCreatePassword,  gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail,addCreditRequest }

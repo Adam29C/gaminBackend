@@ -517,21 +517,26 @@ const addCreditRequest = async (req, res) => {
         status: "failure",
         message: "Please provide valid data: userId and amount are required"
       });
-    };
+    }
+
     const userInfo = await user.findOne({ _id: userId });
     if (userInfo) {
       const walletInfo = await wallet.findOne({ userId: userId });
-      console.log(walletInfo,"walletInfo")
+
       if (walletInfo) {
         const updateAmt = walletInfo.amount + amount;
         const updateCreditBuffer = walletInfo.creditBuffer + amount;
-        await wallet.updateOne({ userId }, { $set: { amount: updateAmt, creditBuffers: updateCreditBuffer } })
-        const a=await new paymentHistory({
+
+        await wallet.updateOne({ userId }, { $set: { amount: updateAmt, creditBuffer: updateCreditBuffer } });
+
+        const paymentObj = {
           userId: userId,
           amount: amount,
-          paymentStatus: "Credit",
-        }).save();
-        console.log(a,"664af27f051b0ee4ff45baa6")
+          paymentStatus: "credit",
+        };
+
+        await paymentHistory.create(paymentObj);
+
         return res.status(200).json({
           statusCode: 200,
           status: "Success",
@@ -544,15 +549,20 @@ const addCreditRequest = async (req, res) => {
           msg: Msg.insufficientFound,
         });
       }
+    } else {
+      return res.status(404).json({
+        statusCode: 404,
+        status: "Failure",
+        message: "User not found",
+      });
     }
   } catch (error) {
     return res.status(500).json({
       status: "Failure",
-      msg: Msg.failure,
+      msg: error.message,
     });
   }
 };
-
 
 // user Can View The List Of All Games
 const gamesList = async (req, res) => {
@@ -613,4 +623,4 @@ const matchList = async (req, res) => {
     })
   }
 };
-module.exports = { depositFn, withdrawalCreatePassword,  gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail,addCreditRequest }
+module.exports = { depositFn, withdrawalCreatePassword, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail, addCreditRequest }

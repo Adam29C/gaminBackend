@@ -493,7 +493,7 @@ const deleteRules = async (req, res) => {
                 msg: Msg.adminCanAccess
             });
         }
-
+        console.log("1");
         if (!ruleId) {
             return res.status(400).send({
                 statusCode: 400,
@@ -501,25 +501,17 @@ const deleteRules = async (req, res) => {
                 msg: 'ruleId is required'
             });
         }
-
+        console.log("2");
         const ruleDelete = await rule.deleteOne({
             ruleId:ruleId
         });
-        console.log(ruleDelete,'ruleDelete')
-
-        if (!ruleToUpdate) {
-            return res.status(400).send({
-                statusCode: 404,
-                status: "Failure",
-                msg: Msg.ruleNotFound
+        if(ruleDelete){
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                msg: Msg.rulesDeleteSuccessfully
             });
         }
-
-        return res.status(200).send({
-            statusCode: 200,
-            status: "Success",
-            msg: Msg.ruleUpdateSuccessfully
-        });
 
     } catch (error) {
         console.error(error);

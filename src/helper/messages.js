@@ -85,7 +85,9 @@ const messages = {
     rulesAddedSuccessfully:'Rule Added successfully',
     ruleUpdate:"Rule Update Successfully",
     ruleNotFound:"Rule Not Found",
-    ruleUpdateSuccessfully:"Rule updated successfully"
+    ruleUpdateSuccessfully:"Rule updated successfully",
+    allRulesFound:"All Rules Show Successfully",
+    rulesDeleteSuccessfully:"Rules Delete Successfully"
 };
 
 // Export the messages

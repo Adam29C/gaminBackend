@@ -81,7 +81,11 @@ const messages = {
     insufficientFound:"Insufficient Found please Try Another Amount",
     noTransactionFound:"No Transaction found",
     userTransactionHistory:"All Transaction History Show Successfully",
-    accountDetailsSave:"Account Details Save Successfully"
+    accountDetailsSave:"Account Details Save Successfully",
+    rulesAddedSuccessfully:'Rule Added successfully',
+    ruleUpdate:"Rule Update Successfully",
+    ruleNotFound:"Rule Not Found",
+    ruleUpdateSuccessfully:"Rule updated successfully"
 };
 
 // Export the messages

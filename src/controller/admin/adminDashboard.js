@@ -531,6 +531,43 @@ const deleteRules = async (req, res) => {
     }
 };
 
+const getRules = async (req, res) => {
+    try {
+        const { role } = req.decoded;
 
-module.exports = { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules,deleteRules }
+        if (role !== 0) {
+            return res.status(403).send({
+                statusCode: 403,
+                status: "Failure",
+                msg: Msg.adminCanAccess
+            });
+        }
+        const rules = await rule.find({});
+
+        if (rules) {
+            return res.status(400).send({
+                statusCode: 200,
+                status: "Success",
+                msg: Msg.allRulesFound,
+                data:rules
+            });
+        }else{
+            return res.status(400).send({
+            statusCode: 400,
+            status: "Failure",
+            msg: Msg.allRulesFound,
+            data:rules
+        });
+      }
+    } catch (error) {
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: Msg.failure
+        });
+    }
+};
+
+
+module.exports = { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules,deleteRules,getRules }
 

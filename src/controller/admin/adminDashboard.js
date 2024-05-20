@@ -538,7 +538,7 @@ const getRules = async (req, res) => {
         const rules = await rule.find({});
 
         if (rules) {
-            return res.status(400).send({
+            return res.status(200).send({
                 statusCode: 200,
                 status: "Success",
                 msg: Msg.allRulesFound,

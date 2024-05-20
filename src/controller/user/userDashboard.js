@@ -328,26 +328,26 @@ const userAccountDetail = async (req, res) => {
       });
     }
 
-    const accountInfo= await AccountDetail.find({userId:userId});
-    let obj={
-      userId:accountInfo[0].userId,
-      bankList:accountInfo[0].bank,
-      upiList:accountInfo[0].upi
+    const accountInfo = await AccountDetail.find({ userId: userId });
+    let obj = {
+      userId: accountInfo[0].userId,
+      bankList: accountInfo[0].bank,
+      upiList: accountInfo[0].upi
     }
-    
+
     if (accountInfo) {
       return res.status(200).send({
         statusCode: 200,
         status: "Success",
         msg: Msg.userAccountDetail,
-        data:obj
+        data: obj
       });
-    }else{
+    } else {
       return res.status(200).send({
         statusCode: 200,
         status: "Success",
         msg: Msg.userAccountDetail,
-        data:[]
+        data: []
       });
     }
   } catch (error) {
@@ -359,6 +359,58 @@ const userAccountDetail = async (req, res) => {
     });
   }
 };
+
+//Add Account Details
+const deleteAccountDetail = async (req, res) => {
+  try {
+    const { userId, isBank, id } = req.body;
+
+    // Check if the user exists
+    const findUser = await user.findOne({ _id: userId });
+    if (!findUser) {
+      return res.status(400).send({
+        statusCode: 400,
+        status: "Failure",
+        msg: Msg.userNotExists
+      });
+    }
+
+    let query;
+    if (isBank) {
+      query = { $pull: { 'bank': { _id: id } } }
+    } else {
+      query = { $pull: { 'upi': { _id: id } } }
+    }
+
+    const result = await AccountDetail.updateOne(
+      { userId: userId }, query
+    );
+
+    if (result.modifiedCount > 0) {
+      return res.status(200).send({
+        statusCode: 200,
+        status: "Success",
+        msg: "Account detail deleted successfully."
+      });
+    } else {
+      return res.status(404).send({
+        statusCode: 404,
+        status: "Failure",
+        msg: "Account detail not found or already deleted."
+      });
+    }
+
+  } catch (error) {
+    return res.status(500).send({
+      statusCode: 500,
+      status: "Failure",
+      msg: Msg.failure
+    });
+  }
+};
+
+
+
 // user can withdraw the amount
 const withdraw = async (req, res) => {
   try {
@@ -551,4 +603,4 @@ const viewPaymentHistory = async (req, res) => {
   }
 };
 
-module.exports = { depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail,userAccountDetail }
+module.exports = { depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail }

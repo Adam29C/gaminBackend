@@ -4,7 +4,7 @@ const controller = require('../controller/user')
 const {validateLogin,userSighUp, handleValidationErrors } = require('../helper/validation')
 const { authenticateToken } = require('../helper/middleware')
 const uploads = require('../helper/fileUpload').upload
-const{depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp,withdrawalPasswordVerifyOtp,addAccountDetail, userAccountDetail, deleteAccountDetail,addCreditRequest}=require("../controller/user/userDashboard")
+const{depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp,withdrawalPasswordVerifyOtp,addAccountDetail, userAccountDetail, deleteAccountDetail,addCreditRequest,filterPaymentHistory}=require("../controller/user/userDashboard")
 const {getRules } = require('../controller/admin/adminDashboard')
 //==============================User Dashboard Router============================================================================
 app.post('/deposit', authenticateToken,uploads, depositFn)
@@ -22,6 +22,7 @@ app.get('/viewWallet',authenticateToken,viewWallet)
 app.post('/withdrawPayment',authenticateToken,withdrawPayment)
 app.post('/addCreditRequest',authenticateToken,addCreditRequest)
 app.get('/viewPaymentHistory',authenticateToken,viewPaymentHistory)
+app.get('/filterPaymentHistory',authenticateToken,filterPaymentHistory)
 app.get('/getRules', authenticateToken, getRules)
 
 

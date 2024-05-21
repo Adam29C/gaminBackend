@@ -221,7 +221,7 @@ const gamesUpdatedByAdmin = async (req, res) => {
     try {
         let Role = req.decoded.role;
         let { gameId, gameName, isShow } = req.body;
-        if (!gameName || !isShow) {
+        if (!gameName || typeof isShow === 'undefined') {
             return res.status(400).send({
                 statusCode: 400,
                 status: "Failure",
@@ -265,30 +265,40 @@ const gamesUpdatedByAdmin = async (req, res) => {
 const gamesDeletedByAdmin = async (req, res) => {
     try {
         let Role = req.decoded.role;
-        let { gameId } = req.body;
+        let { gameId } = req.query;
+        if (!gameId) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "Game Id is required"
+            });
+        }
         if (Role === 0) {
-            let gameDeleted = await games.deleteOne({ _id: gameId });
+            let gameDeleted = await game.deleteOne({ _id: gameId });
             if (gameDeleted) {
                 return res.status(200).send({
-                    status: true,
+                    statusCode: 200,
+                    status: "Success",
                     msg: Msg.gameDeletedSuccessfully
                 });
             } else {
-                return res.status(200).send({
-                    status: false,
+                return res.status(400).send({
+                    statusCode: 400,
+                    status: "Failure",
                     msg: Msg.gameNotDeleted
                 });
             }
         } else {
-            return res.status(200).send({
-                status: false,
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
                 msg: Msg.adminCanAccess
             });
         }
     } catch (error) {
         return res.json(500).send({
             statusCode: 500,
-            status: false,
+            status: "Failure",
             msg: Msg.failure
         })
     }
@@ -297,32 +307,26 @@ const gamesDeletedByAdmin = async (req, res) => {
 //Get List Of Game
 const gamesList = async (req, res) => {
     try {
-        let Role = req.decoded.role;
-        if (Role === 0) {
-            let fetchGameList = await games.find();
-            if (fetchGameList && fetchGameList.length >= 0) {
-                return res.status(200).send({
-                    status: true,
-                    msg: Msg.gameListFound,
-                    data: fetchGameList
-                });
-            } else {
-                return res.status(200).send({
-                    status: false,
-                    msg: Msg.gameNotFound,
-                    data: []
-                });
-            }
-        } else {
+        const gameList = await game.find();
+        if (gameList) {
             return res.status(200).send({
-                status: false,
-                msg: Msg.adminCanAccess
+                statusCode: 200,
+                status: "Success",
+                msg: Msg.gameListFound,
+                data: gameList
+            });
+        } else {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: Msg.gameNotFound,
+                data: []
             });
         }
     } catch (error) {
         return res.json(500).send({
             statusCode: 500,
-            status: false,
+            status: "Failure",
             msg: Msg.failure
         })
     }
@@ -588,7 +592,7 @@ const deleteRules = async (req, res) => {
     }
 };
 
-const   getRules = async (req, res) => {
+const getRules = async (req, res) => {
     try {
 
         const rules = await rule.find({});

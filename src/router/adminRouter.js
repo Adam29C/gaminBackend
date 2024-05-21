@@ -3,7 +3,7 @@ var app = express()
 const controller = require('../controller/admin')
 const { subAdminCreateValidate, validateLogin, handleValidationErrors } = require('../helper/validation')
 const { authenticateToken } = require('../helper/middleware')
-const { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount,paymentHistory, addRules,updateRules, deleteRules,getRules } = require('../controller/admin/adminDashboard')
+const { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount,paymentHistory, addRules,updateRules, deleteRules,getRules,updateGameRulesStatus } = require('../controller/admin/adminDashboard')
 
 //==============================Admin Dashboard============================================================================
 app.post('/createSubAdmin', authenticateToken, subAdminCreateValidate, handleValidationErrors, createSubAdminFn)
@@ -17,6 +17,7 @@ app.post('/addAmount', authenticateToken, addAmount)
 app.get('/paymentHistory', authenticateToken, paymentHistory)
 app.post('/addRules', authenticateToken, addRules)
 app.patch('/updateRules', authenticateToken, updateRules)
+app.patch('/updateGameRulesStatus', authenticateToken, updateGameRulesStatus)
 app.delete('/deleteRules', authenticateToken, deleteRules)
 app.get('/getRules', authenticateToken, getRules)
 module.exports = app

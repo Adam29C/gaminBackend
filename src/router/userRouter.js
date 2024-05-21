@@ -5,6 +5,7 @@ const {validateLogin,userSighUp, handleValidationErrors } = require('../helper/v
 const { authenticateToken } = require('../helper/middleware')
 const uploads = require('../helper/fileUpload').upload
 const{depositFn, withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp,withdrawalPasswordVerifyOtp,addAccountDetail, userAccountDetail, deleteAccountDetail,addCreditRequest}=require("../controller/user/userDashboard")
+const {getRules } = require('../controller/admin/adminDashboard')
 //==============================User Dashboard Router============================================================================
 app.post('/deposit', authenticateToken,uploads, depositFn)
 app.post('/addAccountDetail', authenticateToken,addAccountDetail)

@@ -21,6 +21,7 @@ app.get('/viewWallet',authenticateToken,viewWallet)
 app.post('/withdrawPayment',authenticateToken,withdrawPayment)
 app.post('/addCreditRequest',authenticateToken,addCreditRequest)
 app.get('/viewPaymentHistory',authenticateToken,viewPaymentHistory)
+app.get('/getRules', authenticateToken, getRules)
 
 
 module.exports=app

@@ -494,7 +494,6 @@ const deleteRules = async (req, res) => {
                 msg: Msg.adminCanAccess
             });
         }
-        console.log("1");
         if (!ruleId) {
             return res.status(400).send({
                 statusCode: 400,
@@ -502,10 +501,10 @@ const deleteRules = async (req, res) => {
                 msg: 'ruleId is required'
             });
         }
-        console.log("2");
         const ruleDelete = await rule.deleteOne({
-            ruleId:ruleId
+            _id:ruleId
         });
+        console.log(ruleDelete,"ruleDeleteruleDelete")
         if(ruleDelete){
             return res.status(200).send({
                 statusCode: 200,
@@ -526,15 +525,7 @@ const deleteRules = async (req, res) => {
 
 const getRules = async (req, res) => {
     try {
-        const { role } = req.decoded;
 
-        if (role !== 0) {
-            return res.status(403).send({
-                statusCode: 403,
-                status: "Failure",
-                msg: Msg.adminCanAccess
-            });
-        }
         const rules = await rule.find({});
 
         if (rules) {

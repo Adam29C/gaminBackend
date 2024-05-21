@@ -289,9 +289,9 @@ const addAccountDetail = async (req, res) => {
 
     let updateData = {};
     if (isBank) {
-      updateData = { $push: { bank: { accountNumber, ifscCode, bankName } }, $set: { updatedAt: Date.now() } };
+      updateData = { $push: { bank: { accountNumber, ifscCode, bankName,isBank } }, $set: { updatedAt: Date.now() } };
     } else {
-      updateData = { $push: { upi: { upiId, upiName } }, $set: { updatedAt: Date.now() } };
+      updateData = { $push: { upi: { upiId, upiName,isBank } }, $set: { updatedAt: Date.now() } };
     }
 
     // Find the existing account details document or create a new one

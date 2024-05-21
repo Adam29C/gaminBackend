@@ -10,6 +10,8 @@ const paymentHistorySchema = new Schema({
     enum: ['accept', 'pending', 'decline'], 
     default: 'pending' 
   },
+  isBank:{type: Boolean, required: true},
+  accountId:{type:String,required: true},
   paymentStatus: { 
     type: String, 
     enum: ['debit', 'credit'] 

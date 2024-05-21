@@ -96,13 +96,13 @@ const withdrawalCreatePassword = async (req, res) => {
       });
     };
 
-    if(findUser.isWithdraw){
+    if (findUser.isWithdraw) {
       return res.status(400).send({
         statusCode: 400,
         status: "Failure",
         msg: "Password Is Already Created"
       });
-    }    
+    }
 
 
     let newPassword = await hashPassword(withdrawalPassword);
@@ -238,7 +238,7 @@ const addAccountDetail = async (req, res) => {
   try {
     const { userId, isBank, accountNumber, ifscCode, bankName, upiId, upiName, password } = req.body;
 
-   // Validate userId, password, and isBank field
+    // Validate userId, password, and isBank field
     if (!password || !userId || typeof isBank === 'undefined') {
       return res.status(400).send({
         statusCode: 400,
@@ -255,9 +255,9 @@ const addAccountDetail = async (req, res) => {
         msg: "User does not exist."
       });
     }
-    
-    const oldPassword = findUser.withdrawalPassword; 
-    const checkPassword = await bcrypt.compare(password,oldPassword);
+
+    const oldPassword = findUser.withdrawalPassword;
+    const checkPassword = await bcrypt.compare(password, oldPassword);
     if (!checkPassword) {
       return res.status(400).send({
         statusCode: 400,
@@ -297,9 +297,9 @@ const addAccountDetail = async (req, res) => {
 
     let updateData = {};
     if (isBank) {
-      updateData = { $push: { bank: { accountNumber, ifscCode, bankName,isBank } }, $set: { updatedAt: Date.now() } };
+      updateData = { $push: { bank: { accountNumber, ifscCode, bankName, isBank } }, $set: { updatedAt: Date.now() } };
     } else {
-      updateData = { $push: { upi: { upiId, upiName,isBank } }, $set: { updatedAt: Date.now() } };
+      updateData = { $push: { upi: { upiId, upiName, isBank } }, $set: { updatedAt: Date.now() } };
     }
 
     // Find the existing account details document or create a new one
@@ -430,41 +430,55 @@ const deleteAccountDetail = async (req, res) => {
 //Add withdraw request
 const withdrawPayment = async (req, res) => {
   try {
-    const { userId, amount } = req.body;
-    if (!userId || !amount) {
+    const { userId, amount, isBank, accountId } = req.body;
+
+    // Validate input
+    if (!userId || !amount || typeof isBank === 'undefined' || !accountId) {
       return res.status(400).json({
         statusCode: 400,
-        status: "failure",
-        message: "Please provide valid data: userId and amount are required"
+        status: "Failure",
+        message: "Please provide valid data: userId, amount, isBank, and accountId are required."
       });
     }
+
     const userInfo = await user.findOne({ _id: userId });
-    if (userInfo) {
-      const walletInfo = await wallet.findOne({ userId: userId });
-      if (walletInfo.amount >= amount) {
-        const updateAmt = walletInfo.amount - amount;
-        const updateDebitBuffer = walletInfo.debitBuffer + amount;
-        await wallet.updateOne({ userId }, { $set: { amount: updateAmt, debitBuffer: updateDebitBuffer } })
-        await new paymentHistory({
-          userId: userId,
-          amount: amount,
-          paymentStatus: "debit",
-        }).save();
-        return res.status(200).json({
-          statusCode: 200,
-          status: "Success",
-          msg: Msg.addFountRequest
-        });
-      } else {
-        return res.status(400).json({
-          statusCode: 400,
-          status: "Failure",
-          msg: Msg.insufficientFound,
-        });
-      }
+    if (!userInfo) {
+      return res.status(404).json({
+        statusCode: 404,
+        status: "Failure",
+        msg: Msg.userNotExists
+      });
     }
+
+    const walletInfo = await wallet.findOne({ userId: userId });
+    if (!walletInfo || walletInfo.amount < amount) {
+      return res.status(400).json({
+        statusCode: 400,
+        status: "Failure",
+        msg: Msg.insufficientFound,
+      });
+    }
+
+    const updateAmt = walletInfo.amount - amount;
+    const updateDebitBuffer = walletInfo.debitBuffer + amount;
+    await wallet.updateOne({ userId }, { $set: { amount: updateAmt, debitBuffer: updateDebitBuffer } });
+
+    await new paymentHistory({
+      userId: userId,
+      accountId: accountId,
+      isBank: isBank,
+      amount: amount,
+      paymentStatus: "debit",
+    }).save();
+
+    return res.status(200).json({
+      statusCode: 200,
+      status: "Success",
+      msg: Msg.addFountRequest
+    });
   } catch (error) {
     return res.status(500).json({
+      statusCode: 500,
       status: "Failure",
       msg: Msg.failure,
     });

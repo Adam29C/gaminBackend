@@ -86,6 +86,7 @@ const messages = {
     ruleUpdate:"Rule Update Successfully",
     ruleNotFound:"Rule Not Found",
     ruleUpdateSuccessfully:"Rule updated successfully",
+    statusUpdateSuccessfully:"Status Update Successfully",
     allRulesFound:"All Rules Show Successfully",
     rulesDeleteSuccessfully:"Rules Delete Successfully"
 };

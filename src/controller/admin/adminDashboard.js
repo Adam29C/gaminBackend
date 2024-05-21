@@ -538,7 +538,7 @@ const updateRulesStatus = async (req, res) => {
         return res.status(200).send({
             statusCode: 200,
             status: "Success",
-            msg: Msg.ruleUpdateSuccessfully
+            msg: Msg.statusUpdateSuccessfully
         });
 
     } catch (error) {

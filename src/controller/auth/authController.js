@@ -400,7 +400,9 @@ const getUserProfileFn = async (req, res) => {
         let obj = {
             userId: isuserExists._id,
             name: isuserExists.name,
-            mobileNumber: isuserExists.mobileNumber
+            mobileNumber: isuserExists.mobileNumber,
+            isVarify:isuserExists.isVerified,
+            isWithdraw:isuserExists.isWithdraw
         }
         if (isuserExists) {
             return res.status(200).send({

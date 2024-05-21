@@ -538,6 +538,46 @@ const viewPaymentHistory = async (req, res) => {
     });
   }
 };
+  
+// User All Transaction History  based on credit or debit  
+const filterPaymentHistory = async (req, res) => {
+  try {
+    let { userId, paymentstatus } = req.body;
+
+    // Validate userId and paymentStatus
+    if (!userId || !paymentstatus) {
+      return res.status(400).json({
+        status: "Failure",
+        message: "User ID and payment status are required."
+      });
+    }
+
+    // Find payment history with userId and paymentStatus
+    let findInfo = await paymentHistory.find({ userId: userId, paymentStatus: paymentstatus });
+
+    if (findInfo.length > 0) { // Check if any records are found
+      return res.status(200).json({
+        status: "Success",
+        message: Msg.userTransactionHistory,
+        paymentInfo: findInfo
+      });
+    } else {
+      return res.status(400).json({
+        status: "Failure",
+        message: Msg.noTransactionFound,
+        paymentInfo: []
+      });
+    }
+  } catch (error) {
+    console.error("Error in filterPaymentHistory:", error);
+    return res.status(500).json({
+      statusCode: 500,
+      status: "Failure",
+      message: Msg.failure,
+      error: error.message
+    });
+  }
+};
 
 //add credit request
 const addCreditRequest = async (req, res) => {
@@ -655,4 +695,4 @@ const matchList = async (req, res) => {
     })
   }
 };
-module.exports = { depositFn, withdrawalCreatePassword, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail, addCreditRequest }
+module.exports = { depositFn, withdrawalCreatePassword, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail, addCreditRequest, filterPaymentHistory }

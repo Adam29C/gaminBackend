@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const secretKey = process.env.JWT_SECRET_KEY;
 const Msg = require('../../helper/messages');
 const user = require('../../model/user');
-const games = require("../../model/game");
+const game = require("../../model/game");
 const waled = require("../../model/waled");
 const PaymentHistory = require('../../model/paymentHistory');
 const rule = require("../../model/rule")
@@ -173,39 +173,44 @@ const usersCreatedBySubAdmin = async (req, res) => {
 const gamesCreatedByAdmin = async (req, res) => {
     try {
         let Role = req.decoded.role;
-        let { gameName } = req.body;
-        if (!gameName) {
-            return res.status(200).send({
-                status: true,
-                msg: Msg.gameRequire
+        let { gameName, isShow } = req.body;
+        if (!gameName || !isShow) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "Game name and isShow is required"
             });
         }
         if (Role === 0) {
             let obj = {
-                gameName: gameName
+                gameName: gameName,
+                isShow: isShow
             };
-            let data = await Games.create(obj);
+            let data = await game.create(obj);
             if (data) {
-                return res.status(200).send({
-                    status: true,
+                return res.status(201).send({
+                    statusCode: 201,
+                    status: "Success",
                     msg: Msg.gameCreatedSuccessfully
                 });
             } else {
-                return res.status(200).send({
-                    status: false,
+                return res.status(400).send({
+                    statusCode: 400,
+                    status: "Success",
                     msg: Msg.gameNotCreated
                 });
             }
         } else {
-            return res.status(200).send({
-                status: false,
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
                 msg: Msg.adminCanAccess
             });
         }
     } catch (error) {
         return res.json(500).send({
             statusCode: 500,
-            status: false,
+            status: "Failure",
             msg: Msg.failure
         })
     }
@@ -215,33 +220,42 @@ const gamesCreatedByAdmin = async (req, res) => {
 const gamesUpdatedByAdmin = async (req, res) => {
     try {
         let Role = req.decoded.role;
-        let { gameId, editGameName } = req.body;
+        let { gameId, gameName, isShow } = req.body;
+        if (!gameName || !isShow) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "Game name and isShow is required"
+            });
+        }
         if (Role === 0) {
-            let isExists = await games.findById({ _id: gameId });
+            let isExists = await game.findOne({ _id: gameId });
+            console.log(isExists, "isExists")
             if (isExists) {
-                const filter = { _id: gameId };
-                const update = { $set: { gameName: editGameName } };
-                await games.updateOne(filter, update);
+                await game.updateOne({ _id: gameId }, { $set: { gameName: gameName, isShow: isShow } })
                 return res.status(200).send({
-                    status: true,
+                    statusCode: 200,
+                    status: "Success",
                     msg: Msg.gameEditedSuccessfully
                 });
             } else {
-                return res.status(200).send({
-                    status: false,
+                return res.status(400).send({
+                    statusCode: 400,
+                    status: "Failure",
                     msg: Msg.gameNotFound
                 });
             }
         } else {
-            return res.status(200).send({
-                status: false,
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
                 msg: Msg.adminCanAccess
             });
         }
     } catch (error) {
         return res.json(500).send({
             statusCode: 500,
-            status: false,
+            status: "Failure",
             msg: Msg.failure
         })
     }
@@ -391,7 +405,7 @@ const paymentHistory = async (req, res) => {
 const addRules = async (req, res) => {
     try {
         const { role } = req.decoded;
-        const { userId,title,description } = req.body;
+        const { userId, title, description } = req.body;
 
         if (role !== 0) {
             return res.status(400).send({
@@ -434,7 +448,7 @@ const addRules = async (req, res) => {
 const updateRules = async (req, res) => {
     try {
         const { role } = req.decoded;
-        const { ruleId, status,title,description } = req.body;
+        const { ruleId, status, title, description } = req.body;
 
         if (role !== 0) {
             return res.status(403).send({
@@ -454,7 +468,7 @@ const updateRules = async (req, res) => {
 
         const ruleToUpdate = await rule.findByIdAndUpdate(
             ruleId,
-            { $set: { status: status,title:title,description:description,updatedAt: new Date() } },
+            { $set: { status: status, title: title, description: description, updatedAt: new Date() } },
             { new: true }
         );
 
@@ -485,7 +499,7 @@ const updateRules = async (req, res) => {
 const updateRulesStatus = async (req, res) => {
     try {
         const { role } = req.decoded;
-        const { ruleId, status} = req.body;
+        const { ruleId, status } = req.body;
 
         if (role !== 0) {
             return res.status(403).send({
@@ -505,7 +519,7 @@ const updateRulesStatus = async (req, res) => {
 
         const ruleToUpdate = await rule.findByIdAndUpdate(
             ruleId,
-            { $set: { status: status,updatedAt: new Date() } },
+            { $set: { status: status, updatedAt: new Date() } },
             { new: true }
         );
 
@@ -553,10 +567,10 @@ const deleteRules = async (req, res) => {
             });
         }
         const ruleDelete = await rule.deleteOne({
-            _id:ruleId
+            _id: ruleId
         });
-        console.log(ruleDelete,"ruleDeleteruleDelete")
-        if(ruleDelete){
+        console.log(ruleDelete, "ruleDeleteruleDelete")
+        if (ruleDelete) {
             return res.status(200).send({
                 statusCode: 200,
                 status: "Success",
@@ -574,7 +588,7 @@ const deleteRules = async (req, res) => {
     }
 };
 
-const getRules = async (req, res) => {
+const   getRules = async (req, res) => {
     try {
 
         const rules = await rule.find({});
@@ -584,16 +598,16 @@ const getRules = async (req, res) => {
                 statusCode: 200,
                 status: "Success",
                 msg: Msg.allRulesFound,
-                data:rules
+                data: rules
             });
-        }else{
+        } else {
             return res.status(400).send({
-            statusCode: 400,
-            status: "Failure",
-            msg: Msg.allRulesFound,
-            data:rules
-        });
-      }
+                statusCode: 400,
+                status: "Failure",
+                msg: Msg.allRulesFound,
+                data: rules
+            });
+        }
     } catch (error) {
         return res.status(500).send({
             statusCode: 500,
@@ -603,6 +617,5 @@ const getRules = async (req, res) => {
     }
 };
 
-
-module.exports = { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules,deleteRules,getRules,updateRulesStatus }
+module.exports = { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus }
 

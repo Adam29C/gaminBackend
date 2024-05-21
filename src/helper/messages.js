@@ -46,7 +46,7 @@ const messages = {
     gameCreatedSuccessfully:"Game Created Successfully",
     gameNotCreated:"Game Not Created",
     gameRequire:"Game Must Be Required",
-    gameEditedSuccessfully:"Game Edited Successfully",
+    gameEditedSuccessfully:"Game Update Successfully",
     gameNotFound:"Game Not Found",
     gameDeletedSuccessfully:"Game Deleted Successfully",
     gameNotDeleted:"Game Not Deleted",

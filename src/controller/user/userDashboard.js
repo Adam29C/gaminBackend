@@ -94,7 +94,16 @@ const withdrawalCreatePassword = async (req, res) => {
         status: "Failure",
         msg: Msg.userNotExists
       });
-    }
+    };
+
+    if(findUser.isWithdraw){
+      return res.status(400).send({
+        statusCode: 400,
+        status: "Failure",
+        msg: "Password Is Already Created"
+      });
+    }    
+
 
     let newPassword = await hashPassword(withdrawalPassword);
 
@@ -102,7 +111,6 @@ const withdrawalCreatePassword = async (req, res) => {
       { _id: userId },
       { $set: { withdrawalPassword: newPassword, isWithdraw: true, knowWithdrawalPassword: withdrawalPassword } }
     );
-
     if (updatedUser) {
       return res.status(201).send({
         statusCode: 201,

@@ -7,7 +7,8 @@ const user = require('../../model/user');
 const game = require("../../model/game");
 const waled = require("../../model/waled");
 const PaymentHistory = require('../../model/paymentHistory');
-const rule = require("../../model/rule")
+const rule = require("../../model/rule");
+const adminAccountDetails = require('../../model/adminAccountDetails');
 // Function to handle creation of sub-admin
 const createSubAdminFn = async (req, res) => {
     try {
@@ -621,5 +622,98 @@ const getRules = async (req, res) => {
     }
 };
 
-module.exports = { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus }
+//Add Account Details
+const addAdminAccountDetail = async (req, res) => {
+    try {
+        const { userId, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName,image } = req.body;
+        console.log(req.file);
+        console.log(req.files,"$#######")
+        // Validate userId, password, and isBank field
+        if (!password || !userId || typeof isBank === 'undefined') {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "User ID, Password, and isBank field are required."
+            });
+        }
+
+        const findUser = await user.findOne({ _id: userId });
+        if (!findUser) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "User does not exist."
+            });
+        }
+
+        // Check for existing accountNumber or upiId
+        if (accountNumber) {
+            const existingAccount = await adminAccountDetails.findOne({
+                userId: userId,
+                'bank.accountNumber': accountNumber
+            });
+            if (existingAccount) {
+                return res.status(400).send({
+                    statusCode: 400,
+                    status: "Failure",
+                    msg: "Account number already exists."
+                });
+            }
+        }
+
+        if (upiId) {
+            const existingUpi = await adminAccountDetails.findOne({
+                userId: userId,
+                'upi.upiId': upiId
+            });
+            if (existingUpi) {
+                return res.status(400).send({
+                    statusCode: 400,
+                    status: "Failure",
+                    msg: "UPI ID already exists."
+                });
+            }
+        }
+        // Process image uploads
+        let backImageUrl = null;
+        let upiImageUrl = null;
+        if (req.files) {
+            if (req.files.backImage) {
+                backImageUrl = req.files.backImage[0].location;
+            }
+            if (req.files.upiImage) {
+                upiImageUrl = req.files.upiImage[0].location;
+            }
+        }
+
+
+        let updateData = {};
+        if (isBank) {
+            updateData = { $push: { bank: { accountNumber, accountHolderName, ifscCode, bankName, isBank } }, $set: { updatedAt: Date.now() } };
+        } else {
+            updateData = { $push: { upi: { upiId, upiName, isBank, upiImage } }, $set: { updatedAt: Date.now() } };
+        }
+
+        // Find the existing account details document or create a new one
+        await adminAccountDetails.findOneAndUpdate(
+            { userId: userId },
+            updateData,
+            { new: true, upsert: true }
+        );
+
+        return res.status(200).send({
+            statusCode: 200,
+            status: "Success",
+            msg: Msg.accountDetailsSave
+        });
+    } catch (error) {
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: Msg.failure,
+        });
+    }
+};
+
+module.exports = { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, addAdminAccountDetail }
 

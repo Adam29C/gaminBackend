@@ -1,33 +1,37 @@
-const multer = require('multer');
-const multerS3 = require('multer-s3');
-const aws = require('aws-sdk');
 
-// Configure AWS credentials
-aws.config.update({
-  accessKeyId: 'your_access_key_id',
-  secretAccessKey: 'your_secret_access_key',
-  region: 'your_s3_bucket_region' // Replace with your S3 bucket region
-});
+import multer from 'multer';
+import multerS3 from 'multer-s3';
+import { S3Client } from '@aws-sdk/client-s3';
+// import { AWS_ACCESS_KEY_ID, AWS_BUCKET_REGION, AWS_SECRET_ACCESS_KEY } from '../config/env.config.js';
 
-// Create an S3 instance
-const s3 = new aws.S3();
+const s3 = new S3Client({
+  region: process.env.AWS_BUCKET_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+  }
+})
 
-// Define multer upload middleware
-const upload = multer({
-  storage: multerS3({
+const getMulterStorage = (storagePath) => {
+  const s3Storage = multerS3({
     s3: s3,
-    bucket: 'your_s3_bucket_name',
-    contentType: multerS3.AUTO_CONTENT_TYPE, // Set the content type automatically
-    acl: 'public-read', // Set the file permissions (public-read for public access)
-    metadata: function (req, file, cb) {
-      cb(null, { fieldName: file.fieldname });
+    bucket: "hot-gaming", // change it as per your project requirement
+    acl: "public-read", // storage access type
+    metadata: (req, file, cb) => {
+        cb(null, {fieldname: file.fieldname})
     },
-    key: function (req, file, cb) {
-      cb(null, Date.now().toString() + '-' + file.originalname); // Generate unique key for the file
-    }
-  })
-});
-
-module.exports = {
-  upload
+    key: (req, file, cb) => {
+        const fileName = `${storagePath}/${file.fieldname}_${Date.now()}_${file.originalname}`;
+        cb(null, fileName);
+    },
+  });
+  const multerInstanceForUpload = multer({
+    storage: s3Storage,
+  });
+  
+  return multerInstanceForUpload;
 };
+
+export {
+  getMulterStorage
+}

@@ -5,12 +5,11 @@ const { subAdminCreateValidate, validateLogin, handleValidationErrors } = requir
 const { authenticateToken } = require('../helper/middleware')
 const { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, addAdminAccountDetail } = require('../controller/admin/adminDashboard')
 const getMulterStorage  = require("../helper/fileUpload")
-
 const adminFinanceDetails = getMulterStorage("uploads/adminFinanceDetails");
 
 //==============================Admin Dashboard============================================================================
 app.post('/createSubAdmin', authenticateToken, subAdminCreateValidate, handleValidationErrors, createSubAdminFn)
-app.get('/listOfUserAndSubAdmin', authenticateToken, userAndSubAdminList)
+app.get('/subAdminList', authenticateToken, subAdminList)
 app.get('/listOfSubAdminUsers', authenticateToken, usersCreatedBySubAdmin)
 app.post('/gamesCreatedByAdmin', authenticateToken, gamesCreatedByAdmin)
 app.put('/gamesUpdatedByAdmin', authenticateToken, gamesUpdatedByAdmin)

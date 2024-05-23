@@ -98,26 +98,46 @@ const createSubAdminFn = async (req, res) => {
 };
 
 //fetch list of all user and all sub admin
-const userAndSubAdminList = async (req, res) => {
+const subAdminList = async (req, res) => {
     try {
-        const fetchUserList = await user.find({ createdBy: { $eq: "self" } });
-        const subAdminList = await user.find();
-        const response = {};
-        if (fetchUserList.length > 0) {
-            response.users = fetchUserList;
-        } else {
-            response.users = Msg.userListNotFound;
+        let role = req.decoded.role;
+        const { adminId } = req.query;
+        if (role !== 0) {
+            return res.status(403).send({
+                statusCode: 403,
+                status: "Failure",
+                msg: Msg.adminCanAccess
+            });
         }
-        if (subAdminList.length > 0) {
-            response.subAdmins = subAdminList;
-        } else {
-            response.subAdmins = Msg.subAdminListNotFound;
+        if (!adminId) {
+            return res.status(500).send({
+                statusCode: 500,
+                status: "Failure",
+                msg: "Admin Id is required"
+            });
         }
-        return res.status(200).send({
-            status: true,
-            msg: Msg.dataFound,
-            data: response
-        });
+
+        const subAdminData = await user.find({ createdBy: "admin" });
+        let arrVal = [];
+        for (let details of subAdminData) {
+            arrVal.push({ name: details.name, 
+                          mobileNumber: details.mobileNumber, 
+                          isVerified: details.isVerified, 
+                          createdBy: details.createdBy, 
+                          loginStatus: details.loginStatus,
+                          role:details.role,
+                          isDeleted:details.isDeleted,
+                          createdAt:details.createdAt  },
+
+            )
+        }
+        if (subAdminData) {
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                list: arrVal
+            });
+        }
     } catch (error) {
         return res.json(500).send({
             statusCode: 500,
@@ -616,6 +636,42 @@ const getRules = async (req, res) => {
         });
     }
 };
+const checkToken = async (req, res) => {
+    try {
+        const { Token } = req.body;
+
+        // Validate userId
+        if (!Token) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "Token is required."
+            });
+        }
+
+        const check = jwt.verify(Token, process.env.JWT_SECRET_KEY);
+        if (check) {
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                msg: "Valid Token."
+            });
+        } else {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "Token is expired."
+            });
+        }
+
+    } catch (error) {
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: "Internal Server Error",
+        });
+    }
+};
 
 //Add Account Details
 const addAdminAccountDetail = async (req, res) => {
@@ -848,6 +904,4 @@ const getAdminAccountDetailsById = async (req, res) => {
         });
     }
 };
-
 module.exports = { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, addAdminAccountDetail }
-

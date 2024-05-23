@@ -28,7 +28,7 @@ app.get('/viewWallet',authenticateToken,viewWallet)
 app.post('/withdrawPayment',authenticateToken,withdrawPayment)
 app.post('/addCreditRequest',authenticateToken,addCreditRequest)
 app.get('/viewPaymentHistory',authenticateToken,viewPaymentHistory)
-app.get('/filterPaymentHistory',authenticateToken,filterPaymentHistory)
+app.post('/filterPaymentHistory',authenticateToken,filterPaymentHistory)
 app.get('/getRules', authenticateToken, getRules)
 
 

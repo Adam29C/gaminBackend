@@ -232,12 +232,14 @@ const login = async (req, res) => {
             return res.status(200).send({
                 status: false,
                 msg: Msg.phoneNotRegister,
+                
             });
         }
         if (!userExists.isVerified) {
             return res.status(400).send({
                 status: false,
                 msg: Msg.phoneNumberNotVerified,
+                isVerified:userExists.isVerified
             });
         }
         const checkPassword = await bcrypt.compare(password, userExists.password);

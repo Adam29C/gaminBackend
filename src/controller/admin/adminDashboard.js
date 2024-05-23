@@ -97,26 +97,26 @@ const createSubAdminFn = async (req, res) => {
 };
 
 //fetch list of all user and all sub admin
-const userAndSubAdminList = async (req, res) => {
+const subAdminList = async (req, res) => {
     try {
-        const fetchUserList = await user.find({ createdBy: { $eq: "self" } });
-        const subAdminList = await user.find();
-        const response = {};
-        if (fetchUserList.length > 0) {
-            response.users = fetchUserList;
-        } else {
-            response.users = Msg.userListNotFound;
-        }
-        if (subAdminList.length > 0) {
-            response.subAdmins = subAdminList;
-        } else {
-            response.subAdmins = Msg.subAdminListNotFound;
-        }
-        return res.status(200).send({
-            status: true,
-            msg: Msg.dataFound,
-            data: response
+        let role = req.decoded.role;
+       const {adminId}=req.query;
+       if (role !== 0) {
+        return res.status(403).send({
+            statusCode: 403,
+            status: "Failure",
+            msg: Msg.adminCanAccess
         });
+    }
+    if (!adminId) {
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: "Admin Id is required"
+        });
+    }
+    subAdminList=await user.find({createdBy:role});
+    console.log(subAdminList,"subAdminListsubAdminList")
     } catch (error) {
         return res.json(500).send({
             statusCode: 500,
@@ -657,5 +657,5 @@ const checkToken = async (req, res) => {
     }
 };
 
-module.exports = { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus,checkToken }
+module.exports = { createSubAdminFn, subAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus,checkToken }
 

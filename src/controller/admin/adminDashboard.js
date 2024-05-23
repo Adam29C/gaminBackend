@@ -12,7 +12,7 @@ const rule = require("../../model/rule")
 const createSubAdminFn = async (req, res) => {
     try {
         let Role = req.decoded.role;
-        let { name, mobileNumber, password, role, permission } = req.body;
+        let { name, mobileNumber, password, role, permission, createdBy } = req.body;
         if (Role === 0) {
             let isExists = await user.findOne({ mobileNumber: mobileNumber });
             if (isExists && isExists.role === 1) {
@@ -30,7 +30,8 @@ const createSubAdminFn = async (req, res) => {
                     mobileNumber: mobileNumber,
                     password: newPassword,
                     role: role,
-                    knowPassword: password
+                    knowPassword: password,
+                    createdBy: createdBy
                 };
                 let data = await user.insertMany(obj);
                 if (data) {
@@ -100,23 +101,43 @@ const createSubAdminFn = async (req, res) => {
 const subAdminList = async (req, res) => {
     try {
         let role = req.decoded.role;
-       const {adminId}=req.query;
-       if (role !== 0) {
-        return res.status(403).send({
-            statusCode: 403,
-            status: "Failure",
-            msg: Msg.adminCanAccess
-        });
-    }
-    if (!adminId) {
-        return res.status(500).send({
-            statusCode: 500,
-            status: "Failure",
-            msg: "Admin Id is required"
-        });
-    }
-    subAdminList=await user.find({createdBy:role});
-    console.log(subAdminList,"subAdminListsubAdminList")
+        const { adminId } = req.query;
+        if (role !== 0) {
+            return res.status(403).send({
+                statusCode: 403,
+                status: "Failure",
+                msg: Msg.adminCanAccess
+            });
+        }
+        if (!adminId) {
+            return res.status(500).send({
+                statusCode: 500,
+                status: "Failure",
+                msg: "Admin Id is required"
+            });
+        }
+
+        const subAdminData = await user.find({ createdBy: "admin" });
+        let arrVal = [];
+        for (let details of subAdminData) {
+            arrVal.push({ name: details.name, 
+                          mobileNumber: details.mobileNumber, 
+                          isVerified: details.isVerified, 
+                          createdBy: details.createdBy, 
+                          loginStatus: details.loginStatus,
+                          role:details.role,
+                          isDeleted:details.isDeleted,
+                          createdAt:details.createdAt  },
+
+            )
+        }
+        if (subAdminData) {
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                list: arrVal
+            });
+        }
     } catch (error) {
         return res.json(500).send({
             statusCode: 500,
@@ -657,5 +678,5 @@ const checkToken = async (req, res) => {
     }
 };
 
-module.exports = { createSubAdminFn, subAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus,checkToken }
+module.exports = { createSubAdminFn, subAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken }
 

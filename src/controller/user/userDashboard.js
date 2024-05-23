@@ -574,7 +574,6 @@ const filterPaymentHistory = async (req, res) => {
       statusCode: 500,
       status: "Failure",
       message: Msg.failure,
-      error: error.message
     });
   }
 };

@@ -626,8 +626,11 @@ const getRules = async (req, res) => {
 const addAdminAccountDetail = async (req, res) => {
     try {
         const { id, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName } = req.body;
-        const { imageUrl } = req.file?.location
-
+        let imageUrl = null;
+        
+        if(req.file){
+            imageUrl = req.file?.location
+        }
         if (!id) {
             return res.status(400).send({
                 statusCode: 400,
@@ -669,11 +672,13 @@ const addAdminAccountDetail = async (req, res) => {
                 });
             }
         }
+        
         let updateData;
-        console.log(imageUrl,"%^%^%^%^%^%^%^%^%^%^%^%^")
-        if (isBank) {
+        console.log(typeof(isBank))
+        if (isBank==="true") {
             updateData = { $push: { bank: { accountNumber, accountHolderName, ifscCode, bankName, isBank,bankImage:imageUrl } }, $set: { updatedAt: Date.now() } };
         } else {
+            console.log(imageUrl,"imageUrl")
             updateData = { $push: { upi: { upiId, upiName, isBank,barCodeImage:imageUrl } }, $set: { updatedAt: Date.now() } };
         }
         await adminAccountDetails.findOneAndUpdate(

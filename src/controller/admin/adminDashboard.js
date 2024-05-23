@@ -231,7 +231,6 @@ const gamesUpdatedByAdmin = async (req, res) => {
         }
         if (Role === 0) {
             let isExists = await game.findOne({ _id: gameId });
-            console.log(isExists, "isExists")
             if (isExists) {
                 await game.updateOne({ _id: gameId }, { $set: { gameName: gameName, isShow: isShow } })
                 return res.status(200).send({
@@ -492,7 +491,6 @@ const updateRules = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
         return res.status(500).send({
             statusCode: 500,
             status: "Failure",
@@ -543,7 +541,6 @@ const updateRulesStatus = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
         return res.status(500).send({
             statusCode: 500,
             status: "Failure",
@@ -574,7 +571,6 @@ const deleteRules = async (req, res) => {
         const ruleDelete = await rule.deleteOne({
             _id: ruleId
         });
-        console.log(ruleDelete, "ruleDeleteruleDelete")
         if (ruleDelete) {
             return res.status(200).send({
                 statusCode: 200,
@@ -584,7 +580,6 @@ const deleteRules = async (req, res) => {
         }
 
     } catch (error) {
-        console.error(error);
         return res.status(500).send({
             statusCode: 500,
             status: "Failure",
@@ -627,8 +622,8 @@ const addAdminAccountDetail = async (req, res) => {
     try {
         const { id, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName } = req.body;
         let imageUrl = null;
-        
-        if(req.file){
+
+        if (req.file) {
             imageUrl = req.file?.location
         }
         if (!id) {
@@ -661,7 +656,7 @@ const addAdminAccountDetail = async (req, res) => {
         }
         if (upiId) {
             const existingUpi = await adminAccountDetails.findOne({
-                userId: id,
+                adminId: id,
                 'upi.upiId': upiId
             });
             if (existingUpi) {
@@ -672,12 +667,12 @@ const addAdminAccountDetail = async (req, res) => {
                 });
             }
         }
-        
+
         let updateData;
-        if (isBank==="true") {
-            updateData = { $push: { bank: { accountNumber, accountHolderName, ifscCode, bankName, isBank,bankImage:imageUrl } }, $set: { updatedAt: Date.now() } };
+        if (isBank === "true") {
+            updateData = { $push: { bank: { accountNumber, accountHolderName, ifscCode, bankName, isBank, bankImage: imageUrl } }, $set: { updatedAt: Date.now() } };
         } else {
-            updateData = { $push: { upi: { upiId, upiName, isBank,barCodeImage:imageUrl } }, $set: { updatedAt: Date.now() } };
+            updateData = { $push: { upi: { upiId, upiName, isBank, barCodeImage: imageUrl } }, $set: { updatedAt: Date.now() } };
         }
         await adminAccountDetails.findOneAndUpdate(
             { adminId: id },
@@ -691,7 +686,6 @@ const addAdminAccountDetail = async (req, res) => {
             msg: "Account details saved."
         });
     } catch (error) {
-        console.error(error);
         return res.status(500).send({
             statusCode: 500,
             status: "Failure",

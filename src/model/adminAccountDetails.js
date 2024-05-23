@@ -15,6 +15,7 @@ const accountDetailsSchema = new Schema({
     upiName: { type: String, required: true },
     isBank: { type: String, require: true },
     barCodeImage:{ type: String }
+
   }],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },

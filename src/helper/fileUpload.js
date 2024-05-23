@@ -29,5 +29,5 @@ const getMulterStorage = (storagePath) => {
 
     return multerInstanceForUpload;
 };
+module.exports = getMulterStorage 
 
-module.exports = { getMulterStorage }

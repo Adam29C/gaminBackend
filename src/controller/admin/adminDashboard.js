@@ -674,11 +674,9 @@ const addAdminAccountDetail = async (req, res) => {
         }
         
         let updateData;
-        console.log(typeof(isBank))
         if (isBank==="true") {
             updateData = { $push: { bank: { accountNumber, accountHolderName, ifscCode, bankName, isBank,bankImage:imageUrl } }, $set: { updatedAt: Date.now() } };
         } else {
-            console.log(imageUrl,"imageUrl")
             updateData = { $push: { upi: { upiId, upiName, isBank,barCodeImage:imageUrl } }, $set: { updatedAt: Date.now() } };
         }
         await adminAccountDetails.findOneAndUpdate(

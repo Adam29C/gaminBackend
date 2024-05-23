@@ -7,7 +7,8 @@ const user = require('../../model/user');
 const game = require("../../model/game");
 const waled = require("../../model/waled");
 const PaymentHistory = require('../../model/paymentHistory');
-const rule = require("../../model/rule")
+const rule = require("../../model/rule");
+const adminAccountDetails = require('../../model/adminAccountDetails');
 // Function to handle creation of sub-admin
 const createSubAdminFn = async (req, res) => {
     try {
@@ -250,7 +251,6 @@ const gamesUpdatedByAdmin = async (req, res) => {
         }
         if (Role === 0) {
             let isExists = await game.findOne({ _id: gameId });
-            console.log(isExists, "isExists")
             if (isExists) {
                 await game.updateOne({ _id: gameId }, { $set: { gameName: gameName, isShow: isShow } })
                 return res.status(200).send({
@@ -511,7 +511,6 @@ const updateRules = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
         return res.status(500).send({
             statusCode: 500,
             status: "Failure",
@@ -562,7 +561,6 @@ const updateRulesStatus = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
         return res.status(500).send({
             statusCode: 500,
             status: "Failure",
@@ -593,7 +591,6 @@ const deleteRules = async (req, res) => {
         const ruleDelete = await rule.deleteOne({
             _id: ruleId
         });
-        console.log(ruleDelete, "ruleDeleteruleDelete")
         if (ruleDelete) {
             return res.status(200).send({
                 statusCode: 200,
@@ -603,7 +600,6 @@ const deleteRules = async (req, res) => {
         }
 
     } catch (error) {
-        console.error(error);
         return res.status(500).send({
             statusCode: 500,
             status: "Failure",
@@ -677,5 +673,235 @@ const checkToken = async (req, res) => {
     }
 };
 
-module.exports = { createSubAdminFn, subAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus,checkToken }
+//Add Account Details
+const addAdminAccountDetail = async (req, res) => {
+    try {
+        const { id, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName } = req.body;
+        let imageUrl = null;
 
+        if (req.file) {
+            imageUrl = req.file?.location
+        }
+        if (!id) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "ID field are required."
+            });
+        }
+        const adminDetails = await user.findOne({ _id: id });
+        if (!adminDetails) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "User does not exist."
+            });
+        }
+        if (accountNumber) {
+            const existingAccount = await adminAccountDetails.findOne({
+                adminId: id,
+                'bank.accountNumber': accountNumber
+            });
+            if (existingAccount) {
+                return res.status(400).send({
+                    statusCode: 400,
+                    status: "Failure",
+                    msg: "Account number already exists."
+                });
+            }
+        }
+        if (upiId) {
+            const existingUpi = await adminAccountDetails.findOne({
+                adminId: id,
+                'upi.upiId': upiId
+            });
+            if (existingUpi) {
+                return res.status(400).send({
+                    statusCode: 400,
+                    status: "Failure",
+                    msg: "UPI ID already exists."
+                });
+            }
+        }
+
+        let updateData;
+        if (isBank === "true") {
+            updateData = { $push: { bank: { accountNumber, accountHolderName, ifscCode, bankName, isBank, bankImage: imageUrl } }, $set: { updatedAt: Date.now() } };
+        } else {
+            updateData = { $push: { upi: { upiId, upiName, isBank, barCodeImage: imageUrl } }, $set: { updatedAt: Date.now() } };
+        }
+        await adminAccountDetails.findOneAndUpdate(
+            { adminId: id },
+            updateData,
+            { new: true, upsert: true }
+        );
+
+        return res.status(200).send({
+            statusCode: 200,
+            status: "Success",
+            msg: "Account details saved."
+        });
+    } catch (error) {
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: "Internal server error."
+        });
+    }
+};
+
+
+//get all account Details
+//Add Account Details
+const adminAccountInfo = async (req, res) => {
+    try {
+        const { userId } = req.query;
+
+        // Validate userId
+        if (!userId) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "User ID is required."
+            });
+        }
+
+        const findUser = await user.findOne({ _id: userId });
+        if (!findUser) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: Msg.userNotExists
+            });
+        }
+
+        const accountInfo = await AccountDetail.find({ userId: userId });
+        let obj = {
+            userId: accountInfo[0].userId,
+            bankList: accountInfo[0].bank,
+            upiList: accountInfo[0].upi
+        }
+
+        if (accountInfo) {
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                msg: Msg.userAccountDetail,
+                data: obj
+            });
+        } else {
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                msg: Msg.userAccountDetail,
+                data: []
+            });
+        }
+    } catch (error) {
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: Msg.failure,
+            error: error.message
+        });
+    }
+};
+
+//delete Admin Account Details
+const deleteAccountDetail = async (req, res) => {
+    try {
+        const { userId, isBank, id } = req.body;
+
+        // Check if the user exists
+        const findUser = await user.findOne({ _id: userId });
+        if (!findUser) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: Msg.userNotExists
+            });
+        }
+
+        let query;
+        if (isBank) {
+            query = { $pull: { 'bank': { _id: id } } }
+        } else {
+            query = { $pull: { 'upi': { _id: id } } }
+        }
+
+        const result = await AccountDetail.updateOne(
+            { userId: userId }, query
+        );
+
+        if (result.modifiedCount > 0) {
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                msg: "Account detail deleted successfully."
+            });
+        } else {
+            return res.status(404).send({
+                statusCode: 404,
+                status: "Failure",
+                msg: "Account detail not found or already deleted."
+            });
+        }
+
+    } catch (error) {
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: Msg.failure
+        });
+    }
+};
+
+//delete Admin Account Details
+const getAdminAccountDetailsById = async (req, res) => {
+    try {
+        const { userId, accoutnId } = req.body;
+
+        // Check if the user exists
+        const findUser = await user.findOne({ _id: userId });
+        if (!findUser) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: Msg.userNotExists
+            });
+        }
+
+        let query;
+        if (isBank) {
+            query = { $pull: { 'bank': { _id: id } } }
+        } else {
+            query = { $pull: { 'upi': { _id: id } } }
+        }
+
+        const result = await AccountDetail.updateOne(
+            { userId: userId }, query
+        );
+
+        if (result.modifiedCount > 0) {
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                msg: "Account detail deleted successfully."
+            });
+        } else {
+            return res.status(404).send({
+                statusCode: 404,
+                status: "Failure",
+                msg: "Account detail not found or already deleted."
+            });
+        }
+
+    } catch (error) {
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: Msg.failure
+        });
+    }
+};
+module.exports = { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, addAdminAccountDetail }

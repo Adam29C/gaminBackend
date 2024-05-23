@@ -3,7 +3,9 @@ var app = express()
 const controller = require('../controller/admin')
 const { subAdminCreateValidate, validateLogin, handleValidationErrors } = require('../helper/validation')
 const { authenticateToken } = require('../helper/middleware')
-const { createSubAdminFn, subAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, addAmount,paymentHistory, addRules,updateRules, deleteRules,getRules,updateRulesStatus } = require('../controller/admin/adminDashboard')
+const { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, addAdminAccountDetail } = require('../controller/admin/adminDashboard')
+const getMulterStorage  = require("../helper/fileUpload")
+const adminFinanceDetails = getMulterStorage("uploads/adminFinanceDetails");
 
 //==============================Admin Dashboard============================================================================
 app.post('/createSubAdmin', authenticateToken, subAdminCreateValidate, handleValidationErrors, createSubAdminFn)
@@ -19,4 +21,6 @@ app.patch('/updateRules', authenticateToken, updateRules)
 app.patch('/updateRulesStatus', authenticateToken, updateRulesStatus)
 app.delete('/deleteRules', authenticateToken, deleteRules)
 app.get('/getRules', authenticateToken, getRules)
+// adminFinanceDetails.single("image"),
+app.post('/addAdminAccountDetail', adminFinanceDetails.single("image"),addAdminAccountDetail)
 module.exports = app

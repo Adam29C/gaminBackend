@@ -620,6 +620,42 @@ const getRules = async (req, res) => {
         });
     }
 };
+const checkToken = async (req, res) => {
+    try {
+        const { Token } = req.body;
 
-module.exports = { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus }
+        // Validate userId
+        if (!Token) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "Token is required."
+            });
+        }
+
+        const check = jwt.verify(Token, process.env.JWT_SECRET_KEY);
+        if (check) {
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                msg: "Valid Token."
+            });
+        } else {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "Token is expired."
+            });
+        }
+
+    } catch (error) {
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: "Internal Server Error",
+        });
+    }
+};
+
+module.exports = { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus,checkToken }
 

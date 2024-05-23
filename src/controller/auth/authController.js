@@ -248,7 +248,8 @@ const login = async (req, res) => {
                 mobileNumber: userExists.mobileNumber,
                 id: userExists._id,
                 name: userExists.name,
-                role: userExists.role
+                role: userExists.role,
+                isVerified:userExists.isVerified
             }
             return res.status(200).send({
                 status: true,

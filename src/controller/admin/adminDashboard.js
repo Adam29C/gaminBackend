@@ -625,33 +625,27 @@ const getRules = async (req, res) => {
 //Add Account Details
 const addAdminAccountDetail = async (req, res) => {
     try {
-        //isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName
-        const { userId,  } = req.body;
-        console.log(req.body,"vvvvvvvvvvvvvvvvvvvvvvvvv")
-        // const { image } = req.files;
-        // console.log(req.files,"req.filesreq.files")
-        // // Validate userId, password, and isBank field
-        // if (!userId || !isBank) {
-        //     return res.status(400).send({
-        //         statusCode: 400,
-        //         status: "Failure",
-        //         msg: "User ID and isBank field are required."
-        //     });
-        // }
-        const findUser = await user.findOne({ _id: userId });
-        console.log(findUser,"findUser")
-        if (!findUser) {
+        const { id, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName } = req.body;
+        const { imageUrl } = req.file?.location
+
+        if (!id) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "ID field are required."
+            });
+        }
+        const adminDetails = await user.findOne({ _id: id });
+        if (!adminDetails) {
             return res.status(400).send({
                 statusCode: 400,
                 status: "Failure",
                 msg: "User does not exist."
             });
         }
-
-        // Check for existing accountNumber or upiId
         if (accountNumber) {
             const existingAccount = await adminAccountDetails.findOne({
-                userId: userId,
+                adminId: id,
                 'bank.accountNumber': accountNumber
             });
             if (existingAccount) {
@@ -662,10 +656,9 @@ const addAdminAccountDetail = async (req, res) => {
                 });
             }
         }
-
         if (upiId) {
             const existingUpi = await adminAccountDetails.findOne({
-                userId: userId,
+                userId: id,
                 'upi.upiId': upiId
             });
             if (existingUpi) {
@@ -676,20 +669,15 @@ const addAdminAccountDetail = async (req, res) => {
                 });
             }
         }
-
-        // Process image uploads
-        // Handle image here
-        
-        let updateData = {};
+        let updateData;
+        console.log(imageUrl,"%^%^%^%^%^%^%^%^%^%^%^%^")
         if (isBank) {
-            updateData = { $push: { bank: { accountNumber, accountHolderName, ifscCode, bankName, isBank } }, $set: { updatedAt: Date.now() } };
+            updateData = { $push: { bank: { accountNumber, accountHolderName, ifscCode, bankName, isBank,bankImage:imageUrl } }, $set: { updatedAt: Date.now() } };
         } else {
-            updateData = { $push: { upi: { upiId, upiName, isBank } }, $set: { updatedAt: Date.now() } };
+            updateData = { $push: { upi: { upiId, upiName, isBank,barCodeImage:imageUrl } }, $set: { updatedAt: Date.now() } };
         }
-
-        // Find the existing account details document or create a new one
         await adminAccountDetails.findOneAndUpdate(
-            { userId: userId },
+            { adminId: id },
             updateData,
             { new: true, upsert: true }
         );
@@ -714,153 +702,153 @@ const addAdminAccountDetail = async (req, res) => {
 //Add Account Details
 const adminAccountInfo = async (req, res) => {
     try {
-      const { userId } = req.query;
-  
-      // Validate userId
-      if (!userId) {
-        return res.status(400).send({
-          statusCode: 400,
-          status: "Failure",
-          msg: "User ID is required."
-        });
-      }
-  
-      const findUser = await user.findOne({ _id: userId });
-      if (!findUser) {
-        return res.status(400).send({
-          statusCode: 400,
-          status: "Failure",
-          msg: Msg.userNotExists
-        });
-      }
-  
-      const accountInfo = await AccountDetail.find({ userId: userId });
-      let obj = {
-        userId: accountInfo[0].userId,
-        bankList: accountInfo[0].bank,
-        upiList: accountInfo[0].upi
-      }
-  
-      if (accountInfo) {
-        return res.status(200).send({
-          statusCode: 200,
-          status: "Success",
-          msg: Msg.userAccountDetail,
-          data: obj
-        });
-      } else {
-        return res.status(200).send({
-          statusCode: 200,
-          status: "Success",
-          msg: Msg.userAccountDetail,
-          data: []
-        });
-      }
+        const { userId } = req.query;
+
+        // Validate userId
+        if (!userId) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "User ID is required."
+            });
+        }
+
+        const findUser = await user.findOne({ _id: userId });
+        if (!findUser) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: Msg.userNotExists
+            });
+        }
+
+        const accountInfo = await AccountDetail.find({ userId: userId });
+        let obj = {
+            userId: accountInfo[0].userId,
+            bankList: accountInfo[0].bank,
+            upiList: accountInfo[0].upi
+        }
+
+        if (accountInfo) {
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                msg: Msg.userAccountDetail,
+                data: obj
+            });
+        } else {
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                msg: Msg.userAccountDetail,
+                data: []
+            });
+        }
     } catch (error) {
-      return res.status(500).send({
-        statusCode: 500,
-        status: "Failure",
-        msg: Msg.failure,
-        error: error.message
-      });
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: Msg.failure,
+            error: error.message
+        });
     }
 };
 
 //delete Admin Account Details
 const deleteAccountDetail = async (req, res) => {
     try {
-      const { userId, isBank, id } = req.body;
-  
-      // Check if the user exists
-      const findUser = await user.findOne({ _id: userId });
-      if (!findUser) {
-        return res.status(400).send({
-          statusCode: 400,
-          status: "Failure",
-          msg: Msg.userNotExists
-        });
-      }
-  
-      let query;
-      if (isBank) {
-        query = { $pull: { 'bank': { _id: id } } }
-      } else {
-        query = { $pull: { 'upi': { _id: id } } }
-      }
-  
-      const result = await AccountDetail.updateOne(
-        { userId: userId }, query
-      );
-  
-      if (result.modifiedCount > 0) {
-        return res.status(200).send({
-          statusCode: 200,
-          status: "Success",
-          msg: "Account detail deleted successfully."
-        });
-      } else {
-        return res.status(404).send({
-          statusCode: 404,
-          status: "Failure",
-          msg: "Account detail not found or already deleted."
-        });
-      }
-  
+        const { userId, isBank, id } = req.body;
+
+        // Check if the user exists
+        const findUser = await user.findOne({ _id: userId });
+        if (!findUser) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: Msg.userNotExists
+            });
+        }
+
+        let query;
+        if (isBank) {
+            query = { $pull: { 'bank': { _id: id } } }
+        } else {
+            query = { $pull: { 'upi': { _id: id } } }
+        }
+
+        const result = await AccountDetail.updateOne(
+            { userId: userId }, query
+        );
+
+        if (result.modifiedCount > 0) {
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                msg: "Account detail deleted successfully."
+            });
+        } else {
+            return res.status(404).send({
+                statusCode: 404,
+                status: "Failure",
+                msg: "Account detail not found or already deleted."
+            });
+        }
+
     } catch (error) {
-      return res.status(500).send({
-        statusCode: 500,
-        status: "Failure",
-        msg: Msg.failure
-      });
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: Msg.failure
+        });
     }
 };
 
 //delete Admin Account Details
 const getAdminAccountDetailsById = async (req, res) => {
     try {
-      const {userId,accoutnId } = req.body;
-  
-      // Check if the user exists
-      const findUser = await user.findOne({ _id: userId });
-      if (!findUser) {
-        return res.status(400).send({
-          statusCode: 400,
-          status: "Failure",
-          msg: Msg.userNotExists
-        });
-      }
-  
-      let query;
-      if (isBank) {
-        query = { $pull: { 'bank': { _id: id } } }
-      } else {
-        query = { $pull: { 'upi': { _id: id } } }
-      }
-  
-      const result = await AccountDetail.updateOne(
-        { userId: userId }, query
-      );
-  
-      if (result.modifiedCount > 0) {
-        return res.status(200).send({
-          statusCode: 200,
-          status: "Success",
-          msg: "Account detail deleted successfully."
-        });
-      } else {
-        return res.status(404).send({
-          statusCode: 404,
-          status: "Failure",
-          msg: "Account detail not found or already deleted."
-        });
-      }
-  
+        const { userId, accoutnId } = req.body;
+
+        // Check if the user exists
+        const findUser = await user.findOne({ _id: userId });
+        if (!findUser) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: Msg.userNotExists
+            });
+        }
+
+        let query;
+        if (isBank) {
+            query = { $pull: { 'bank': { _id: id } } }
+        } else {
+            query = { $pull: { 'upi': { _id: id } } }
+        }
+
+        const result = await AccountDetail.updateOne(
+            { userId: userId }, query
+        );
+
+        if (result.modifiedCount > 0) {
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                msg: "Account detail deleted successfully."
+            });
+        } else {
+            return res.status(404).send({
+                statusCode: 404,
+                status: "Failure",
+                msg: "Account detail not found or already deleted."
+            });
+        }
+
     } catch (error) {
-      return res.status(500).send({
-        statusCode: 500,
-        status: "Failure",
-        msg: Msg.failure
-      });
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: Msg.failure
+        });
     }
 };
 

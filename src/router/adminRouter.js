@@ -7,7 +7,7 @@ const { createSubAdminFn, subAdminList, usersCreatedBySubAdmin, gamesCreatedByAd
 
 //==============================Admin Dashboard============================================================================
 app.post('/createSubAdmin', authenticateToken, subAdminCreateValidate, handleValidationErrors, createSubAdminFn)
-app.get('/subAdminList', authenticateToken, subAdminList)
+app.get('/subAdminList', authenticateToken, subAdminList);
 app.get('/listOfSubAdminUsers', authenticateToken, usersCreatedBySubAdmin)
 app.post('/gamesCreatedByAdmin', authenticateToken, gamesCreatedByAdmin)
 app.put('/gamesUpdatedByAdmin', authenticateToken, gamesUpdatedByAdmin)

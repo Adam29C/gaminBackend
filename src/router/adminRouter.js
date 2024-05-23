@@ -3,11 +3,11 @@ var app = express()
 const controller = require('../controller/admin')
 const { subAdminCreateValidate, validateLogin, handleValidationErrors } = require('../helper/validation')
 const { authenticateToken } = require('../helper/middleware')
-const { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, addAmount,paymentHistory, addRules,updateRules, deleteRules,getRules,updateRulesStatus } = require('../controller/admin/adminDashboard')
+const { createSubAdminFn, subAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, addAmount,paymentHistory, addRules,updateRules, deleteRules,getRules,updateRulesStatus } = require('../controller/admin/adminDashboard')
 
 //==============================Admin Dashboard============================================================================
 app.post('/createSubAdmin', authenticateToken, subAdminCreateValidate, handleValidationErrors, createSubAdminFn)
-app.get('/listOfUserAndSubAdmin', authenticateToken, userAndSubAdminList)
+app.get('/subAdminList', authenticateToken, subAdminList)
 app.get('/listOfSubAdminUsers', authenticateToken, usersCreatedBySubAdmin)
 app.post('/gamesCreatedByAdmin', authenticateToken, gamesCreatedByAdmin)
 app.put('/gamesUpdatedByAdmin', authenticateToken, gamesUpdatedByAdmin)

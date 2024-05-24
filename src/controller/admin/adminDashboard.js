@@ -731,7 +731,7 @@ const addAdminAccountDetail = async (req, res) => {
         }
 
         let updateData = {};
-        if (isBank) {
+        if (isBank=="true") {
             updateData = { $push: { bank: { accountNumber, accountHolderName, ifscCode, bankName, isBank,bankImage:imageUrl } }, $set: { updatedAt: Date.now() } };
         } else {
             updateData = { $push: { upi: { upiId, upiName, isBank, barCodeImage:imageUrl } }, $set: { updatedAt: Date.now() } };

@@ -30,7 +30,8 @@ const createSubAdminFn = async (req, res) => {
                     mobileNumber: mobileNumber,
                     password: newPassword,
                     role: role,
-                    knowPassword: password
+                    knowPassword: password,
+                    createdBy: "subAdmin"
                 };
                 let data = await user.insertMany(obj);
                 if (data) {
@@ -119,14 +120,16 @@ const subAdminList = async (req, res) => {
         const subAdminData = await user.find({ createdBy: "admin" });
         let arrVal = [];
         for (let details of subAdminData) {
-            arrVal.push({ name: details.name, 
-                          mobileNumber: details.mobileNumber, 
-                          isVerified: details.isVerified, 
-                          createdBy: details.createdBy, 
-                          loginStatus: details.loginStatus,
-                          role:details.role,
-                          isDeleted:details.isDeleted,
-                          createdAt:details.createdAt  },
+            arrVal.push({
+                name: details.name,
+                mobileNumber: details.mobileNumber,
+                isVerified: details.isVerified,
+                createdBy: details.createdBy,
+                loginStatus: details.loginStatus,
+                role: details.role,
+                isDeleted: details.isDeleted,
+                createdAt: details.createdAt
+            },
 
             )
         }
@@ -677,5 +680,5 @@ const checkToken = async (req, res) => {
     }
 };
 
-module.exports = { createSubAdminFn, subAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus,checkToken }
+module.exports = { createSubAdminFn, subAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken }
 

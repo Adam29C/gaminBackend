@@ -88,7 +88,8 @@ const messages = {
     ruleUpdateSuccessfully:"Rule updated successfully",
     statusUpdateSuccessfully:"Status Update Successfully",
     allRulesFound:"All Rules Show Successfully",
-    rulesDeleteSuccessfully:"Rules Delete Successfully"
+    rulesDeleteSuccessfully:"Rules Delete Successfully",
+    adminAccountsList:"Admin All Account Details."
 };
 
 // Export the messages

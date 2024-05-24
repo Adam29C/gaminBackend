@@ -3,7 +3,7 @@ var app = express()
 const controller = require('../controller/admin')
 const { subAdminCreateValidate, validateLogin, handleValidationErrors } = require('../helper/validation')
 const { authenticateToken } = require('../helper/middleware')
-const { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, addAdminAccountDetail, subAdminList } = require('../controller/admin/adminDashboard')
+const { createSubAdminFn, userAndSubAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, addAdminAccountDetail, subAdminList, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail } = require('../controller/admin/adminDashboard')
 const  getMulterStorage = require("../helper/fileUpload")
 
 const adminFinanceDetails = getMulterStorage("uploads/adminFinanceDetails");
@@ -22,4 +22,8 @@ app.patch('/updateRulesStatus', authenticateToken, updateRulesStatus)
 app.delete('/deleteRules', authenticateToken, deleteRules)
 app.get('/getRules', authenticateToken, getRules);
 app.post('/addAdminAccountDetail', authenticateToken,adminFinanceDetails.single("image"), addAdminAccountDetail)
+app.get('/adminAccountsList', authenticateToken, adminAccountsList);
+app.delete('/deleteAdminAccountDetail', authenticateToken, deleteAdminAccountDetail)
+app.put('/updateAdminAccountDetail', authenticateToken,adminFinanceDetails.single("image"), updateAdminAccountDetail)
+
 module.exports = app

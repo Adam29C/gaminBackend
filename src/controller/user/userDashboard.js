@@ -18,61 +18,6 @@ const wallet = require("../../model/waled");
 const user = require("../../model/user")
 const AccountDetail = require("../../model/accountDetails")
 
-// user Can deposit There Money With The Help Of Utr Number
-const depositFn = async (req, res) => {
-  try {
-    let userId = req.decoded.userId;
-    let { utrNumber, amount } = req.body;
-    if (!req.file) {
-      return res.status(200).send({
-        status: true,
-        msg: 'File is required'
-      });
-    }
-    let image = req.file;
-    let folderName = "fileUrl";
-    const currentDirectory = path.resolve();
-    const folderPath = path.join(currentDirectory, folderName);
-    if (!fs.existsSync(folderPath)) {
-      fs.mkdirSync(folderPath, { recursive: true });
-    }
-    const imageUrl = image.path;
-    const fileName = image.originalname + '-' + Date.now() + '.txt';
-    const filePath = path.join(folderPath, fileName);
-    fs.writeFile(filePath, imageUrl, async (err) => {
-      if (err) {
-        console.error('Error writing image URL to file:', err);
-      } else {
-        let obj = {
-          utrNumber: utrNumber,
-          amount: amount,
-          file: imageUrl,
-          userId: userId
-        };
-        let data = await deposit.insertMany(obj)
-        if (data) {
-          return res.status(200).send({
-            status: true,
-            msg: Msg.amountDepositSuccess,
-            data: data
-          });
-        } else {
-          return res.status(200).send({
-            status: false,
-            msg: Msg.amountNotDeposit
-          });
-        }
-      }
-    });
-  } catch (error) {
-    return res.json(500).send({
-      statusCode: 500,
-      status: false,
-      msg: Msg.failure
-    })
-  }
-};
-
 // user can create withdrawalCreatePassword
 const withdrawalCreatePassword = async (req, res) => {
   try {
@@ -695,4 +640,4 @@ const matchList = async (req, res) => {
     })
   }
 };
-module.exports = { depositFn, withdrawalCreatePassword, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail, addCreditRequest, filterPaymentHistory }
+module.exports = {withdrawalCreatePassword, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail, addCreditRequest, filterPaymentHistory }

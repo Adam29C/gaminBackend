@@ -10,14 +10,21 @@ const game = require("../../model/game");
 // user register by sub admin
 const userRegisterBySubAdmin = async (req, res) => {
     try {
-        let { name, mobileNumber, password } = req.body;
-        let userId = req.decoded.info.userId;
+        let Role = req.decoded.role;
+        let { role, name, mobileNumber, password } = req.body;
+        if (Role !== 1) {
+            return res.status(403).send({
+                statusCode: 403,
+                status: "Failure",
+                msg: "Only Sub Admin Can Access"
+            });
+        }
         let checkUser = await user.findOne({ mobileNumber: mobileNumber });
-        if (checkUser != null) {
-            return res.status(200).send({
-                status: true,
+        if (checkUser !== null) {
+            return res.status(400).send({
+                statusCode:400,
+                status: "Failure",
                 msg: Msg.phoneRegisterError,
-                data: checkUser
             });
         } else {
             let newPassword = await hashPassword(password);
@@ -26,22 +33,20 @@ const userRegisterBySubAdmin = async (req, res) => {
                 mobileNumber: mobileNumber,
                 password: newPassword,
                 code: 0,
-                createdBy: userId
+                role:0,
+                createdBy: "subAdmin"
             };
             let data = await user.create(obj);
             if (data) {
-                const filter = { mobileNumber: mobileNumber };
-                const update = { $set: { isVerified: true } };
-                let verified = await user.updateOne(filter, update);
-                if (verified) {
-                    return res.status(200).send({
-                        status: true,
-                        msg: Msg.userRegisterBySubAdmin
-                    });
-                }
-            } else {
                 return res.status(200).send({
-                    status: false,
+                    statusCode: 200,
+                    status: "Success",
+                    msg: Msg.userRegisterBySubAdmin
+                });
+            } else {
+                return res.status(400).send({
+                    statusCode: 400,
+                    status: "Failure",
                     msg: Msg.registerError
                 });
             }
@@ -50,7 +55,7 @@ const userRegisterBySubAdmin = async (req, res) => {
         return res.status(500).send({
             status: "failure",
             statusCode: 500,
-            msg: error.message
+            msg: Msg.failure
         });
     }
 };

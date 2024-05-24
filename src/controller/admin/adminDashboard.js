@@ -7,7 +7,8 @@ const user = require('../../model/user');
 const game = require("../../model/game");
 const waled = require("../../model/waled");
 const PaymentHistory = require('../../model/paymentHistory');
-const rule = require("../../model/rule")
+const rule = require("../../model/rule");
+const adminAccountDetails = require('../../model/adminAccountDetails');
 // Function to handle creation of sub-admin
 const createSubAdminFn = async (req, res) => {
     try {
@@ -30,8 +31,7 @@ const createSubAdminFn = async (req, res) => {
                     mobileNumber: mobileNumber,
                     password: newPassword,
                     role: role,
-                    knowPassword: password,
-                    createdBy: "subAdmin"
+                    knowPassword: password
                 };
                 let data = await user.insertMany(obj);
                 if (data) {
@@ -596,7 +596,7 @@ const deleteRules = async (req, res) => {
         const ruleDelete = await rule.deleteOne({
             _id: ruleId
         });
-        console.log(ruleDelete, "ruleDeleteruleDelete")
+        console.log(ruleDelete, "ruleDeleteRuleDelete")
         if (ruleDelete) {
             return res.status(200).send({
                 statusCode: 200,
@@ -646,7 +646,6 @@ const getRules = async (req, res) => {
 const checkToken = async (req, res) => {
     try {
         const { Token } = req.body;
-
         // Validate userId
         if (!Token) {
             return res.status(400).send({
@@ -680,5 +679,83 @@ const checkToken = async (req, res) => {
     }
 };
 
-module.exports = { createSubAdminFn, subAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken }
+const addAdminAccountDetail = async (req, res) => {
+    try {
+        const { id, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName, image } = req.body;
+        if (!id) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "User ID, Password, and isBank field are required."
+            });
+        }
+        const adminDetails = await user.findOne({ _id: id });
+        if (!adminDetails) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "User does not exist."
+            });
+        }
+        if (accountNumber) {
+            const existingAccount = await adminAccountDetails.findOne({
+                adminId: id,
+                'bank.accountNumber': accountNumber
+            });
+            if (existingAccount) {
+                return res.status(400).send({
+                    statusCode: 400,
+                    status: "Failure",
+                    msg: "Account number already exists."
+                });
+            }
+        }
+
+        if (upiId) {
+            const existingUpi = await adminAccountDetails.findOne({
+                adminId: id,
+                'upi.upiId': upiId
+            });
+            if (existingUpi) {
+                return res.status(400).send({
+                    statusCode: 400,
+                    status: "Failure",
+                    msg: "UPI ID already exists."
+                });
+            }
+        }
+        // Process image uploads
+        let imageUrl=null;
+        if(req.file){
+            imageUrl= req.file.location;
+        }
+
+        let updateData = {};
+        if (isBank) {
+            updateData = { $push: { bank: { accountNumber, accountHolderName, ifscCode, bankName, isBank,bankImage:imageUrl } }, $set: { updatedAt: Date.now() } };
+        } else {
+            updateData = { $push: { upi: { upiId, upiName, isBank, barCodeImage:imageUrl } }, $set: { updatedAt: Date.now() } };
+        }
+
+        // Find the existing account details document or create a new one
+        await adminAccountDetails.findOneAndUpdate(
+            { adminId: id },
+            updateData,
+            { new: true, upsert: true }
+        );
+
+        return res.status(200).send({
+            statusCode: 200,
+            status: "Success",
+            msg: Msg.accountDetailsSave
+        });
+    } catch (error) {
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: Msg.failure,
+        });
+    }
+};
+module.exports = { addAdminAccountDetail,createSubAdminFn, subAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken }
 

@@ -9,7 +9,8 @@ const waled = require("../../model/waled");
 const PaymentHistory = require('../../model/paymentHistory');
 const rule = require("../../model/rule");
 const adminAccountDetails = require('../../model/adminAccountDetails');
-const  mongoose  = require('mongoose');
+const mongoose = require('mongoose');
+const ObjectId = mongoose.Types.ObjectId;
 // Function to handle creation of sub-admin
 const createSubAdminFn = async (req, res) => {
     try {
@@ -32,7 +33,8 @@ const createSubAdminFn = async (req, res) => {
                     mobileNumber: mobileNumber,
                     password: newPassword,
                     role: role,
-                    knowPassword: password
+                    knowPassword: password,
+                    createdBy: "Admin"
                 };
                 let data = await user.insertMany(obj);
                 if (data) {
@@ -150,49 +152,6 @@ const subAdminList = async (req, res) => {
     }
 };
 
-//fetch list of all user which is created by sub admin
-const usersCreatedBySubAdmin = async (req, res) => {
-    try {
-        let { subAdminId } = req.body;
-        if (!subAdminId) {
-            return res.status(200).send({
-                status: true,
-                msg: Msg.idRequire
-            });
-        }
-        const isSubAdminExists = await user.findOne({ _id: subAdminId });
-        if (isSubAdminExists) {
-            const fetchUserList = await userListNotFoundUser.find({ createdBy: { $eq: subAdminId } });
-            if (fetchUserList && fetchUserList.length > 0) {
-                return res.status(200).send({
-                    status: true,
-                    msg: Msg.userListFoundSuccessfully,
-                    data: fetchUserList
-                });
-            } else {
-                return res.status(200).send({
-                    status: true,
-                    msg: Msg.userNotCreatedBySubAdmin,
-                    data: []
-                });
-            }
-        } else {
-            return res.status(200).send({
-                status: true,
-                msg: Msg.subAdminNotExists,
-                data: []
-            });
-        }
-
-    } catch (error) {
-        return res.json(500).send({
-            statusCode: 500,
-            status: false,
-            msg: Msg.failure
-        })
-    }
-};
-
 //Game Created By Admin
 const gamesCreatedByAdmin = async (req, res) => {
     try {
@@ -205,32 +164,42 @@ const gamesCreatedByAdmin = async (req, res) => {
                 msg: "Game name and isShow is required"
             });
         }
-        if (Role === 0) {
-            let obj = {
-                gameName: gameName,
-                isShow: isShow
-            };
-            let data = await game.create(obj);
-            if (data) {
-                return res.status(201).send({
-                    statusCode: 201,
-                    status: "Success",
-                    msg: Msg.gameCreatedSuccessfully
-                });
-            } else {
+        if (Role !== 0) {
+            {
                 return res.status(400).send({
                     statusCode: 400,
-                    status: "Success",
-                    msg: Msg.gameNotCreated
+                    status: "Failure",
+                    msg: Msg.adminCanAccess
                 });
             }
-        } else {
+        }
+        const check = await game.findOne({ gameName });
+        if (check) {
             return res.status(400).send({
                 statusCode: 400,
                 status: "Failure",
-                msg: Msg.adminCanAccess
+                msg: "Game Is Already Exist!"
             });
         }
+        let obj = {
+            gameName: gameName,
+            isShow: isShow
+        };
+        let data = await game.create(obj);
+        if (data) {
+            return res.status(201).send({
+                statusCode: 201,
+                status: "Success",
+                msg: Msg.gameCreatedSuccessfully
+            });
+        } else {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Success",
+                msg: Msg.gameNotCreated
+            });
+        }
+
     } catch (error) {
         return res.json(500).send({
             statusCode: 500,
@@ -252,30 +221,39 @@ const gamesUpdatedByAdmin = async (req, res) => {
                 msg: "Game name and isShow is required"
             });
         }
-        if (Role === 0) {
-            let isExists = await game.findOne({ _id: gameId });
-            console.log(isExists, "isExists")
-            if (isExists) {
-                await game.updateOne({ _id: gameId }, { $set: { gameName: gameName, isShow: isShow } })
-                return res.status(200).send({
-                    statusCode: 200,
-                    status: "Success",
-                    msg: Msg.gameEditedSuccessfully
-                });
-            } else {
-                return res.status(400).send({
-                    statusCode: 400,
-                    status: "Failure",
-                    msg: Msg.gameNotFound
-                });
-            }
-        } else {
+        if (Role !== 0) {
             return res.status(400).send({
                 statusCode: 400,
                 status: "Failure",
                 msg: Msg.adminCanAccess
             });
         }
+        const check = await game.findOne({ gameName });
+        if(check){
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "Game Name Is Already Exist Please Try Another Name!"
+            });            
+        } 
+
+        let isExists = await game.findOne({ _id: gameId });
+
+        if (isExists) {
+            await game.updateOne({ _id: gameId }, { $set: { gameName: gameName, isShow: isShow } })
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                msg: Msg.gameEditedSuccessfully
+            });
+        } else {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: Msg.gameNotFound
+            });
+        }
+
     } catch (error) {
         return res.json(500).send({
             statusCode: 500,
@@ -644,6 +622,7 @@ const getRules = async (req, res) => {
         });
     }
 };
+
 const checkToken = async (req, res) => {
     try {
         const { Token } = req.body;
@@ -682,7 +661,7 @@ const checkToken = async (req, res) => {
 
 const addAdminAccountDetail = async (req, res) => {
     try {
-        const { id, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName} = req.body;
+        const { id, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName } = req.body;
         if (!id) {
             return res.status(400).send({
                 statusCode: 400,
@@ -775,7 +754,7 @@ const adminAccountsList = async (req, res) => {
             adminId: adminAccount[0].adminId,
             bankList: adminAccount[0].bank,
             upiList: adminAccount[0].upi
-          }
+        }
         if (adminAccount) {
             return res.status(200).send({
                 statusCode: 200,
@@ -796,76 +775,76 @@ const adminAccountsList = async (req, res) => {
 
 const deleteAdminAccountDetail = async (req, res) => {
     try {
-      const { adminId, isBank, id } = req.body;
-     
-      if (!adminId) {
-        return res.status(400).send({
-            statusCode: 400,
-            status: "Failure",
-            msg: "Admin Id Is Required",
-        });
-    }
-      // Check if the user exists
-      const findUser = await user.findOne({ _id: adminId });
-      if (!findUser) {
-        return res.status(400).send({
-          statusCode: 400,
-          status: "Failure",
-          msg: Msg.userNotExists
-        });
-      }
-  
-      let query;
-      if (isBank) {
-        query = { $pull: { 'bank': { _id: id } } }
-      } else {
-        query = { $pull: { 'upi': { _id: id } } }
-      }
-  
-      const result = await adminAccountDetails.updateOne(
-        { adminId:adminId  }, query
-      );
-  
-      if (result.modifiedCount > 0) {
-        return res.status(200).send({
-          statusCode: 200,
-          status: "Success",
-          msg: "Account detail deleted successfully."
-        });
-      } else {
-        return res.status(404).send({
-          statusCode: 404,
-          status: "Failure",
-          msg: "Account detail not found or already deleted."
-        });
-      }
-  
+        const { adminId, isBank, id } = req.body;
+
+        if (!adminId) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "Admin Id Is Required",
+            });
+        }
+        // Check if the user exists
+        const findUser = await user.findOne({ _id: adminId });
+        if (!findUser) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: Msg.userNotExists
+            });
+        }
+
+        let query;
+        if (isBank) {
+            query = { $pull: { 'bank': { _id: id } } }
+        } else {
+            query = { $pull: { 'upi': { _id: id } } }
+        }
+
+        const result = await adminAccountDetails.updateOne(
+            { adminId: adminId }, query
+        );
+
+        if (result.modifiedCount > 0) {
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                msg: "Account detail deleted successfully."
+            });
+        } else {
+            return res.status(404).send({
+                statusCode: 404,
+                status: "Failure",
+                msg: "Account detail not found or already deleted."
+            });
+        }
+
     } catch (error) {
-      return res.status(500).send({
-        statusCode: 500,
-        status: "Failure",
-        msg: Msg.failure
-      });
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: Msg.failure
+        });
     }
 };
 
 const updateAdminAccountDetail = async (req, res) => {
     try {
-        const { id, accountId, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName } = req.body;
-        if (!id) {
+        const { adminId, id, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName } = req.body;
+        if (!adminId || !id) {
             return res.status(400).send({
                 statusCode: 400,
                 status: "Failure",
-                msg: "User ID is required."
+                msg: "Admin Id and account Id are required."
             });
         }
 
-        const adminDetails = await user.findOne({ _id: id });
+        const adminDetails = await user.findOne({ _id: adminId });
         if (!adminDetails) {
             return res.status(400).send({
                 statusCode: 400,
                 status: "Failure",
-                msg: "User does not exist."
+                msg: "Admin does not exist."
             });
         }
 
@@ -876,97 +855,81 @@ const updateAdminAccountDetail = async (req, res) => {
         }
 
         let updateData = {};
-        if (isBank === "true") {
-            if (!accountNumber) {
-                return res.status(400).send({
-                    statusCode: 400,
-                    status: "Failure",
-                    msg: "Account number is required for bank details."
-                });
-            }
+        const objectIdAccountId = new ObjectId(id);
 
+        if (isBank === "true") {
             const existingAccount = await adminAccountDetails.findOne({
-                adminId: id,
-                bank: {
-                    "$elemMatch": {
-                      "_id": accountId
-                    }
-                  }
+                adminId: adminId,
+                bank: { $elemMatch: { _id: objectIdAccountId } }
             });
-            console.log(existingAccount,"&&&&&&&&&&")
+
             if (!existingAccount) {
                 return res.status(400).send({
                     statusCode: 400,
                     status: "Failure",
-                    msg: "Account number does not exist."
+                    msg: Msg.bankAccountIdNotExist
                 });
             }
 
             updateData = {
                 $set: {
-                    'bank.$.accountHolderName': accountHolderName,
-                    'bank.$.ifscCode': ifscCode,
-                    'bank.$.bankName': bankName,
-                    'bank.$.bankImage': imageUrl,
+                    'bank.$[elem].accountNumber': accountNumber,
+                    'bank.$[elem].accountHolderName': accountHolderName,
+                    'bank.$[elem].ifscCode': ifscCode,
+                    'bank.$[elem].bankName': bankName,
+                    'bank.$[elem].bankImage': imageUrl,
                     updatedAt: Date.now()
                 }
             };
 
             await adminAccountDetails.updateOne(
-                { adminId: id, 'bank.accountNumber': accountNumber },
-                updateData
+                { adminId: adminId, 'bank._id': objectIdAccountId },
+                updateData,
+                { arrayFilters: [{ 'elem._id': objectIdAccountId }] }
             );
 
         } else {
-            if (!upiId) {
-                return res.status(400).send({
-                    statusCode: 400,
-                    status: "Failure",
-                    msg: "UPI ID is required for UPI details."
-                });
-            }
-            
             const existingUpi = await adminAccountDetails.findOne({
-                adminId: id,
-                'upi._id': accountId
+                adminId: adminId,
+                bank: { $elemMatch: { _id: objectIdAccountId } }
             });
             if (!existingUpi) {
                 return res.status(400).send({
                     statusCode: 400,
                     status: "Failure",
-                    msg: "UPI ID does not exist."
+                    msg: Msg.upiAccountIdNotExist
                 });
             }
 
             updateData = {
                 $set: {
-                    'upi.$.upiName': upiName,
-                    'upi.$.barCodeImage': imageUrl,
+                    'upi.$[elem].upiId': upiId,
+                    'upi.$[elem].upiName': upiName,
+                    'upi.$[elem].barCodeImage': imageUrl,
                     updatedAt: Date.now()
                 }
             };
 
             await adminAccountDetails.updateOne(
-                { adminId: id, 'upi.upiId': upiId },
-                updateData
+                { adminId: adminId, 'upi._id': objectIdAccountId },
+                updateData,
+                { arrayFilters: [{ 'elem._id': objectIdAccountId }] }
             );
         }
 
         return res.status(200).send({
             statusCode: 200,
             status: "Success",
-            msg: "Account details updated successfully."
+            msg: Msg.accountUpdate
         });
 
     } catch (error) {
-        console.error("Error in updateAdminAccountDetail:", error);
         return res.status(500).send({
             statusCode: 500,
             status: "Failure",
-            msg: "An error occurred while processing your request.",
+            msg: Msg.failure,
         });
     }
 };
 
-module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, usersCreatedBySubAdmin, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList,deleteAdminAccountDetail,updateAdminAccountDetail }
-
+module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail }

@@ -245,6 +245,7 @@ const login = async (req, res) => {
         const checkPassword = await bcrypt.compare(password, userExists.password);
         if (checkPassword) {
             const token = await tokenUpdate(userExists._id, userExists.role);
+            console.log(token,"token")
             await user.updateOne({ mobileNumber: userExists.mobileNumber }, { $set: { loginStatus: "logIn" } });             
             let obj = {
                 mobileNumber: userExists.mobileNumber,

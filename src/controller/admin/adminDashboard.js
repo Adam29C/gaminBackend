@@ -15,7 +15,7 @@ const ObjectId = mongoose.Types.ObjectId;
 const createSubAdminFn = async (req, res) => {
     try {
         let Role = req.decoded.role;
-        let { name, mobileNumber, password, role, permission } = req.body;
+        let { adminId,name, mobileNumber, password, role, permission } = req.body;
         if (Role === 0) {
             let isExists = await user.findOne({ mobileNumber: mobileNumber });
             if (isExists && isExists.role === 1) {
@@ -35,7 +35,7 @@ const createSubAdminFn = async (req, res) => {
                     password: newPassword,
                     role: role,
                     knowPassword: password,
-                    createdBy: "Admin"
+                    createdBy: adminId
                 };
                 let data = await user.insertMany(obj);
                 if (data) {
@@ -125,7 +125,7 @@ const subAdminList = async (req, res) => {
             });
         }
 
-        const subAdminData = await user.find({ createdBy: "admin" });
+        const subAdminData = await user.find({ createdBy: adminId });
         let arrVal = [];
         for (let details of subAdminData) {
             arrVal.push({
@@ -498,7 +498,6 @@ const updateRules = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
         return res.status(500).send({
             statusCode: 500,
             status: "Failure",
@@ -549,7 +548,6 @@ const updateRulesStatus = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
         return res.status(500).send({
             statusCode: 500,
             status: "Failure",
@@ -580,7 +578,6 @@ const deleteRules = async (req, res) => {
         const ruleDelete = await rule.deleteOne({
             _id: ruleId
         });
-        console.log(ruleDelete, "ruleDeleteRuleDelete")
         if (ruleDelete) {
             return res.status(200).send({
                 statusCode: 200,
@@ -590,7 +587,6 @@ const deleteRules = async (req, res) => {
         }
 
     } catch (error) {
-        console.error(error);
         return res.status(500).send({
             statusCode: 500,
             status: "Failure",

@@ -81,7 +81,7 @@ const subAdminUserList = async (req, res) => {
             });
         }
 
-        const subAdminUserData = await user.find({ createdBy: subAdminId });
+        const subAdminUserData = await user.find({ createdBy: subAdminId,isDeleted:false });
         let arrVal = [];
         for (let details of subAdminUserData) {
             arrVal.push({
@@ -344,7 +344,6 @@ const deleteSubAdminUser = async (req, res) => {
     try {
         const  role  = req.decoded.role;
         const { subAdminId, id } = req.body
-        console.log(role)
         if (role !== 1) {
             return res.status(403).send({
                 statusCode: 403,
@@ -366,7 +365,7 @@ const deleteSubAdminUser = async (req, res) => {
             return res.status(200).send({
                 statusCode: 200,
                 status: "Success",
-                msg: "Sub Admin Deleted Successfully"
+                msg: "User Deleted Successfully"
             });
         }
 

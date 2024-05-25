@@ -88,7 +88,11 @@ const messages = {
     ruleUpdateSuccessfully:"Rule updated successfully",
     statusUpdateSuccessfully:"Status Update Successfully",
     allRulesFound:"All Rules Show Successfully",
-    rulesDeleteSuccessfully:"Rules Delete Successfully"
+    rulesDeleteSuccessfully:"Rules Delete Successfully",
+    adminAccountsList:"Admin All Account Details.",
+    accountUpdate:"Account Update Successfully",
+    upiAccountIdNotExist:"UPI account ID does not exist.",
+    bankAccountIdNotExist:"Bank account ID does not exist."
 };
 
 // Export the messages

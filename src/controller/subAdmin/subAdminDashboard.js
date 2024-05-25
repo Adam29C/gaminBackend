@@ -11,6 +11,7 @@ const game = require("../../model/game");
 const userRegisterBySubAdmin = async (req, res) => {
     try {
         let Role = req.decoded.role;
+        console.log(Role,"ttt")
         let { role, name, mobileNumber, password } = req.body;
         if (Role !== 1) {
             return res.status(403).send({
@@ -33,7 +34,7 @@ const userRegisterBySubAdmin = async (req, res) => {
                 mobileNumber: mobileNumber,
                 password: newPassword,
                 code: 0,
-                role:0,
+                role:role,
                 createdBy: "subAdmin"
             };
             let data = await user.create(obj);
@@ -94,6 +95,43 @@ const gamesCreatedBySubAdmin = async (req, res) => {
             statusCode: 500,
             msg: error.message
         });
+    }
+};
+
+//Fetch  All Permissions Sub Admin
+const subAdminPermissions = async (req, res) => {
+    try {
+        let role = req.decoded.role;
+        const { subAdminId } = req.query;
+        if (role !== 1) {
+            return res.status(403).send({
+                statusCode: 403,
+                status: "Failure",
+                msg: Msg.adminCanAccess
+            });
+        }
+        if (!subAdminId) {
+            return res.status(500).send({
+                statusCode: 500,
+                status: "Failure",
+                msg: "Admin Id is required"
+            });
+        }
+        const data= await user.findOne({_id:subAdminId});
+        console.log(data,"subAdminPermissionsData")
+        if (data) {
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                data: data.permissions
+            });
+        }
+    } catch (error) {
+        return res.json(500).send({
+            statusCode: 500,
+            status: false,
+            msg: Msg.failure
+        })
     }
 };
 
@@ -249,4 +287,4 @@ const updateSubAdminProfileFn = async (req, res) => {
     }
 };
 
-module.exports = { userRegisterBySubAdmin, gamesCreatedBySubAdmin, gamesUpdatedSubAdmin, gameDeletedBySubAdmin, gamesList, getSubAdminProfileFn, updateSubAdminProfileFn }
+module.exports = { userRegisterBySubAdmin, gamesCreatedBySubAdmin, gamesUpdatedSubAdmin, gameDeletedBySubAdmin, gamesList, getSubAdminProfileFn, updateSubAdminProfileFn,subAdminPermissions }

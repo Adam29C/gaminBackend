@@ -118,7 +118,6 @@ const subAdminPermissions = async (req, res) => {
             });
         }
         const data= await user.findOne({_id:subAdminId});
-        console.log(data,"subAdminPermissionsData")
         if (data) {
             return res.status(200).send({
                 statusCode: 200,

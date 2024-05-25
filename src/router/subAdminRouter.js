@@ -3,7 +3,7 @@ var app = express()
 const controller = require('../controller/subAdmin')
 const { userSighUp, validateLogin, handleValidationErrors } = require('../helper/validation')
 const { authenticateToken } = require('../helper/middleware')
-const { userRegisterBySubAdmin, gamesCreatedBySubAdmin, gamesUpdatedSubAdmin, gameDeletedBySubAdmin, gamesList, updateSubAdminProfileFn, getSubAdminProfileFn, subAdminPermissions, subAdminUserList } = require('../controller/subAdmin/subAdminDashboard')
+const { userRegisterBySubAdmin, gamesCreatedBySubAdmin, gamesUpdatedSubAdmin, gameDeletedBySubAdmin, gamesList, updateSubAdminProfileFn, getSubAdminProfileFn, subAdminPermissions, subAdminUserList, deleteSubAdminUser } = require('../controller/subAdmin/subAdminDashboard')
 
 
 //==============================SubAdmin Dashboard Router============================================================================
@@ -16,6 +16,7 @@ app.delete('/gameDeletedBySubAdmin',authenticateToken,gameDeletedBySubAdmin)
 app.get('/gameList',authenticateToken,gamesList)
 app.get('/getSubAdminProfile',authenticateToken,getSubAdminProfileFn)
 app.put('/updateSubAdminProfile',authenticateToken,updateSubAdminProfileFn)
+app.delete('/deleteSubAdminUser', authenticateToken,deleteSubAdminUser)
 // app.get('/viewPaymentHistory',authenticateToken,viewPaymentHistory)
  
 module.exports = app

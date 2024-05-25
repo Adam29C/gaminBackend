@@ -125,7 +125,7 @@ const subAdminList = async (req, res) => {
             });
         }
 
-        const subAdminData = await user.find({ createdBy: adminId });
+        const subAdminData = await user.find({ createdBy: adminId, isDeleted:false});
         let arrVal = [];
         for (let details of subAdminData) {
             arrVal.push({
@@ -137,6 +137,7 @@ const subAdminList = async (req, res) => {
                 role: details.role,
                 isDeleted: details.isDeleted,
                 createdAt: details.createdAt,
+                subAdminId:details._id
             },
 
             )
@@ -176,9 +177,9 @@ const deleteSubAdmin = async (req, res) => {
                 msg: 'adminId and id  is required'
             });
         }
-        const deleteSubAdmin = await user.deleteOne({
-            _id: id
-        });
+        const deleteSubAdmin = await user.updateOne(
+            {_id: id},{$set:{isDeleted:true}}
+        );
         if (deleteSubAdmin) {
             return res.status(200).send({
                 statusCode: 200,

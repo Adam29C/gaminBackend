@@ -3,11 +3,12 @@ var app = express()
 const controller = require('../controller/subAdmin')
 const { userSighUp, validateLogin, handleValidationErrors } = require('../helper/validation')
 const { authenticateToken } = require('../helper/middleware')
-const { userRegisterBySubAdmin, gamesCreatedBySubAdmin, gamesUpdatedSubAdmin, gameDeletedBySubAdmin, gamesList, updateSubAdminProfileFn, getSubAdminProfileFn, subAdminPermissions } = require('../controller/subAdmin/subAdminDashboard')
+const { userRegisterBySubAdmin, gamesCreatedBySubAdmin, gamesUpdatedSubAdmin, gameDeletedBySubAdmin, gamesList, updateSubAdminProfileFn, getSubAdminProfileFn, subAdminPermissions, subAdminUserList } = require('../controller/subAdmin/subAdminDashboard')
 
 
 //==============================SubAdmin Dashboard Router============================================================================
 app.post('/userCreatedBySubAdmin', authenticateToken, userSighUp, handleValidationErrors, userRegisterBySubAdmin)
+app.get('/subAdminUserList',authenticateToken,subAdminUserList)
 app.post('/gamesCreatedBySubAdmin',authenticateToken,gamesCreatedBySubAdmin)
 app.get('/subAdminPermissions',authenticateToken,subAdminPermissions)
 app.put('/gamesUpdatedSubAdmin',authenticateToken,gamesUpdatedSubAdmin)

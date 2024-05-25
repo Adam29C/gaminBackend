@@ -11,8 +11,7 @@ const game = require("../../model/game");
 const userRegisterBySubAdmin = async (req, res) => {
     try {
         let Role = req.decoded.role;
-        console.log(Role,"ttt")
-        let { role, name, mobileNumber, password } = req.body;
+        let { subAdminId,role, name, mobileNumber, password } = req.body;
         if (Role !== 1) {
             return res.status(403).send({
                 statusCode: 403,
@@ -35,7 +34,8 @@ const userRegisterBySubAdmin = async (req, res) => {
                 password: newPassword,
                 code: 0,
                 role:role,
-                createdBy: "subAdmin"
+                createdBy: subAdminId,
+
             };
             let data = await user.create(obj);
             if (data) {
@@ -58,6 +58,58 @@ const userRegisterBySubAdmin = async (req, res) => {
             statusCode: 500,
             msg: Msg.failure
         });
+    }
+};
+
+//fetch list of all user and all sub admin
+const subAdminUserList = async (req, res) => {
+    try {
+        let role = req.decoded.role;
+        const { subAdminId } = req.query;
+        if (role !== 1) {
+            return res.status(403).send({
+                statusCode: 403,
+                status: "Failure",
+                msg: Msg.adminCanAccess
+            });
+        }
+        if (!subAdminId) {
+            return res.status(500).send({
+                statusCode: 500,
+                status: "Failure",
+                msg: "Admin Id is required"
+            });
+        }
+
+        const subAdminUserData = await user.find({ createdBy: subAdminId });
+        let arrVal = [];
+        for (let details of subAdminUserData) {
+            arrVal.push({
+                name: details.name,
+                mobileNumber: details.mobileNumber,
+                isVerified: details.isVerified,
+                createdBy: details.createdBy,
+                loginStatus: details.loginStatus,
+                role: details.role,
+                isDeleted: details.isDeleted,
+                createdAt: details.createdAt,    
+            },
+
+            )
+        }
+        if (subAdminUserData) {
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                list: arrVal
+            });
+        }
+    } catch (error) {
+        return res.json(500).send({
+            statusCode: 500,
+            status: false,
+            msg: Msg.failure
+        })
     }
 };
 
@@ -287,4 +339,4 @@ const updateSubAdminProfileFn = async (req, res) => {
     }
 };
 
-module.exports = { userRegisterBySubAdmin, gamesCreatedBySubAdmin, gamesUpdatedSubAdmin, gameDeletedBySubAdmin, gamesList, getSubAdminProfileFn, updateSubAdminProfileFn,subAdminPermissions }
+module.exports = { userRegisterBySubAdmin, gamesCreatedBySubAdmin, gamesUpdatedSubAdmin, gameDeletedBySubAdmin, gamesList, getSubAdminProfileFn, updateSubAdminProfileFn,subAdminPermissions,subAdminUserList }

@@ -15,12 +15,12 @@ const ObjectId = mongoose.Types.ObjectId;
 const createSubAdminFn = async (req, res) => {
     try {
         let Role = req.decoded.role;
-        let { adminId,name, mobileNumber, password, role, permission } = req.body;
+        let { adminId, name, mobileNumber, password, role, permission } = req.body;
         if (Role === 0) {
             let isExists = await user.findOne({ mobileNumber: mobileNumber });
             if (isExists && isExists.role === 1) {
                 return res.status(400).send({
-                    statusCode:400,
+                    statusCode: 400,
                     status: false,
                     msg: 'user already registered'
                 });
@@ -61,14 +61,14 @@ const createSubAdminFn = async (req, res) => {
                         const check = await user.updateOne(filter, update);
                         if (check) {
                             return res.status(201).send({
-                                statusCode:201,
+                                statusCode: 201,
                                 status: true,
                                 msg: 'user registered successfully',
                                 data: `this is your user name ${mobileNumber} and your password ${password}`
                             });
                         } else {
                             return res.status(400).send({
-                                statusCode:400,
+                                statusCode: 400,
                                 status: false,
                                 msg: 'user not registered',
                                 data: data[0]
@@ -83,7 +83,7 @@ const createSubAdminFn = async (req, res) => {
                     }
                 } else {
                     return res.status(400).send({
-                        statusCode:400,
+                        statusCode: 400,
                         status: false,
                         msg: 'user not created'
                     });
@@ -91,7 +91,7 @@ const createSubAdminFn = async (req, res) => {
             }
         } else {
             return res.status(400).send({
-                statusCode:400,
+                statusCode: 400,
                 status: false,
                 msg: Msg.adminCanAccess
             });
@@ -136,7 +136,7 @@ const subAdminList = async (req, res) => {
                 loginStatus: details.loginStatus,
                 role: details.role,
                 isDeleted: details.isDeleted,
-                createdAt: details.createdAt,    
+                createdAt: details.createdAt,
             },
 
             )
@@ -157,6 +157,44 @@ const subAdminList = async (req, res) => {
     }
 };
 
+const deleteSubAdmin = async (req, res) => {
+    try {
+        const { role } = req.decoded;
+        const { adminId, id } = req.body
+
+        if (role !== 0) {
+            return res.status(403).send({
+                statusCode: 403,
+                status: "Failure",
+                msg: Msg.adminCanAccess
+            });
+        }
+        if (!adminId || !id) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: 'adminId and id  is required'
+            });
+        }
+        const deleteSubAdmin = await user.deleteOne({
+            _id: id
+        });
+        if (deleteSubAdmin) {
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                msg: "Sub Admin Deleted Successfully"
+            });
+        }
+
+    } catch (error) {
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: Msg.failure
+        });
+    }
+};
 //Game Created By Admin
 const gamesCreatedByAdmin = async (req, res) => {
     try {
@@ -234,13 +272,13 @@ const gamesUpdatedByAdmin = async (req, res) => {
             });
         }
         const check = await game.findOne({ gameName });
-        if(check){
+        if (check) {
             return res.status(400).send({
                 statusCode: 400,
                 status: "Failure",
                 msg: "Game Name Is Already Exist Please Try Another Name!"
-            });            
-        } 
+            });
+        }
 
         let isExists = await game.findOne({ _id: gameId });
 
@@ -933,4 +971,4 @@ const updateAdminAccountDetail = async (req, res) => {
     }
 };
 
-module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail }
+module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin }

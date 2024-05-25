@@ -19,7 +19,8 @@ const createSubAdminFn = async (req, res) => {
         if (Role === 0) {
             let isExists = await user.findOne({ mobileNumber: mobileNumber });
             if (isExists && isExists.role === 1) {
-                return res.status(200).send({
+                return res.status(400).send({
+                    statusCode:400,
                     status: false,
                     msg: 'user already registered'
                 });
@@ -59,13 +60,15 @@ const createSubAdminFn = async (req, res) => {
                         };
                         const check = await user.updateOne(filter, update);
                         if (check) {
-                            return res.status(200).send({
+                            return res.status(201).send({
+                                statusCode:201,
                                 status: true,
                                 msg: 'user registered successfully',
                                 data: `this is your user name ${mobileNumber} and your password ${password}`
                             });
                         } else {
-                            return res.status(200).send({
+                            return res.status(400).send({
+                                statusCode:400,
                                 status: false,
                                 msg: 'user not registered',
                                 data: data[0]
@@ -79,14 +82,16 @@ const createSubAdminFn = async (req, res) => {
                         });
                     }
                 } else {
-                    return res.status(200).send({
+                    return res.status(400).send({
+                        statusCode:400,
                         status: false,
                         msg: 'user not created'
                     });
                 }
             }
         } else {
-            return res.status(200).send({
+            return res.status(400).send({
+                statusCode:400,
                 status: false,
                 msg: Msg.adminCanAccess
             });
@@ -131,7 +136,7 @@ const subAdminList = async (req, res) => {
                 loginStatus: details.loginStatus,
                 role: details.role,
                 isDeleted: details.isDeleted,
-                createdAt: details.createdAt
+                createdAt: details.createdAt,    
             },
 
             )

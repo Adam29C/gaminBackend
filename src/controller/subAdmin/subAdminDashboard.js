@@ -122,6 +122,7 @@ const subAdminPermissions = async (req, res) => {
             return res.status(200).send({
                 statusCode: 200,
                 status: "Success",
+                msg:"SubAdmin Permissions Show Successfully",
                 data: data.permissions
             });
         }

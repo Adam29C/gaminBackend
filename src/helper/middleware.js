@@ -58,16 +58,18 @@ exports.authenticateToken = async (req, res, next) => {
                     { _id: decoded.info.id },
                     { ipAddress: req.connection.remoteAddress }
                 );
-                let data = await TokenData.findOne({
-                    token: token,
-                    userId: decoded.info.id,
-                });
-                if (!data) {
-                    return res.status(400).send({
-                        statusCode: 400,
-                        status: Msg.failure,
-                        msg: "Token Not Found",
+                if (userDetails.role != 0) {
+                    let data = await TokenData.findOne({
+                        token: token,
+                        userId: decoded.info.id,
                     });
+                    if (!data) {
+                        return res.status(400).send({
+                            statusCode: 400,
+                            status: Msg.failure,
+                            msg: "Token Not Found",
+                        });
+                    }
                 }
                 req.decoded = decoded;
             } else {

@@ -275,7 +275,7 @@ const login = async (req, res) => {
     }
 };
 
-// Function to change sub-admin password
+// Function to change  password
 const changePassword = async (req, res) => {
     try {
         let { user_id, old_password, new_password } = req.body;
@@ -353,7 +353,7 @@ const forgetPasswordSendOtpFn = async (req, res) => {
     }
 };
 
-// Function to reset sub-admin password using OTP verification
+// Function to reset  password using OTP verification
 const forgetPasswordFn = async (req, res) => {
     try {
         let { mobileNumber, otp, password } = req.body;

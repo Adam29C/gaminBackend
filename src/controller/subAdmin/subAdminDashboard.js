@@ -7,6 +7,9 @@ const Msg = require('../../helper/messages');
 const bcrypt = require('bcryptjs');
 const game = require("../../model/game");
 
+
+//This is the crud operation for all three modules admin, subAdmin and user
+
 // user register by sub admin
 const userRegisterBySubAdmin = async (req, res) => {
     try {
@@ -340,6 +343,7 @@ const updateSubAdminProfileFn = async (req, res) => {
     }
 };
 
+// Delete sub Admin user 
 const deleteSubAdminUser = async (req, res) => {
     try {
         const  role  = req.decoded.role;
@@ -377,4 +381,5 @@ const deleteSubAdminUser = async (req, res) => {
         });
     }
 };
+
 module.exports = { userRegisterBySubAdmin, gamesCreatedBySubAdmin, gamesUpdatedSubAdmin, gameDeletedBySubAdmin, gamesList, getSubAdminProfileFn, updateSubAdminProfileFn,subAdminPermissions,subAdminUserList,deleteSubAdminUser }

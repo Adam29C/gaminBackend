@@ -125,7 +125,7 @@ const withdrawalPasswordSendOtp = async (req, res) => {
   }
 };
 
-// user can create withdrawalCreatePassword
+// Create withdrawalCreatePassword
 const withdrawalPasswordVerifyOtp = async (req, res) => {
   try {
     let { mobileNumber, otp, password } = req.body;

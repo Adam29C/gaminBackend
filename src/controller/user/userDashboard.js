@@ -686,7 +686,6 @@ const accountById = async (req, res) => {
 
     } else {
       const existingAccount = await adminAccountDetails.findOne({
-        adminId: userId,
         upi: { $elemMatch: { _id: objectIdAccountId } }
       });
 

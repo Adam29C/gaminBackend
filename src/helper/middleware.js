@@ -82,7 +82,7 @@ exports.authenticateToken = async (req, res, next) => {
                         msg: "Token Not Found",
                     });
                 }
-                req.roles = decoded.info.roles;
+                req.decoded = decoded;
             }
         } else {
             return res.status(400).send({

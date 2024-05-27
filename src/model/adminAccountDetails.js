@@ -8,13 +8,17 @@ const accountDetailsSchema = new Schema({
     ifscCode: { type: String, required: true },
     bankName: { type: String, required: true },
     isBank: { type: String, require: true },
-    bankImage :{type: String}
+    bankImage :{type: String},
+    minAmount:{ type: Number, require: true },
+    maxAmount:{ type: Number, require: true }
   }],   
   upi: [{
     upiId: { type: String, required: true },
     upiName: { type: String, required: true },
     isBank: { type: String, require: true },
-    barCodeImage:{ type: String }
+    barCodeImage:{ type: String },
+    minAmount:{ type: Number, require: true },
+    maxAmount:{ type: Number, require: true }
   }],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },

@@ -16,8 +16,11 @@ var fs = require('file-system');
 const paymentHistory = require("../../model/paymentHistory");
 const wallet = require("../../model/waled");
 const user = require("../../model/user")
-const AccountDetail = require("../../model/accountDetails")
-
+const AccountDetail = require("../../model/accountDetails");
+const adminAccountDetails = require("../../model/adminAccountDetails");
+const { UserDefinedMessageInstance } = require("twilio/lib/rest/api/v2010/account/call/userDefinedMessage");
+const mongoose = require('mongoose');
+const ObjectId = mongoose.Types.ObjectId;
 // user can create withdrawalCreatePassword
 const withdrawalCreatePassword = async (req, res) => {
   try {
@@ -483,7 +486,7 @@ const viewPaymentHistory = async (req, res) => {
     });
   }
 };
-  
+
 // User All Transaction History  based on credit or debit  
 const filterPaymentHistory = async (req, res) => {
   try {
@@ -640,4 +643,78 @@ const matchList = async (req, res) => {
     })
   }
 };
-module.exports = {withdrawalCreatePassword, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail, addCreditRequest, filterPaymentHistory }
+
+//admin Selected account id
+const accountById = async (req, res) => {
+  try {
+    const { userId, isBank, id } = req.body;
+
+    if (!userId || !id) {
+      return res.status(400).json({
+        statusCode: 400,
+        status: "Failure",
+        message: "Please provide valid data: userId and id are required"
+      });
+    }
+
+    const userInfo = await user.findOne({ _id: userId });
+    if (!userInfo) {
+      return res.status(404).json({
+        statusCode: 404,
+        status: "Failure",
+        message: "User does not exist"
+      });
+    }
+
+    const objectIdAccountId = new ObjectId(id);
+    let accountDetails = null;
+
+    if (isBank) {
+      const existingAccount = await adminAccountDetails.findOne({
+        bank: { $elemMatch: { _id: objectIdAccountId } }
+      });
+
+      if (!existingAccount) {
+        return res.status(400).json({
+          statusCode: 400,
+          status: "Failure",
+          message: "Bank account does not exist"
+        });
+      }
+
+      accountDetails = existingAccount.bank.find(account => account._id.equals(objectIdAccountId));
+
+    } else {
+      const existingAccount = await adminAccountDetails.findOne({
+        upi: { $elemMatch: { _id: objectIdAccountId } }
+      });
+
+      if (!existingAccount) {
+        return res.status(400).json({
+          statusCode: 400,
+          status: "Failure",
+          message: "UPI account does not exist"
+        });
+      }
+
+      accountDetails = existingAccount.upi.find(account => account._id.equals(objectIdAccountId));
+    }
+
+    return res.status(200).json({
+      statusCode: 200,
+      status: "Success",
+      message: "Account details retrieved successfully",
+      data: accountDetails
+    });
+
+  } catch (error) {
+    console.error("Error in accountById:", error);
+    return res.status(500).json({
+      statusCode: 500,
+      status: "Failure",
+      message: "An error occurred while processing your request"
+    });
+  }
+};
+
+module.exports = { withdrawalCreatePassword, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail, addCreditRequest, filterPaymentHistory, accountById }

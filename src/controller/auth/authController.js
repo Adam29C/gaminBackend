@@ -25,31 +25,64 @@ const generateAuthToken = async (req, res) => {
                 message: "Please provide valid data: userId or deviceId is required",
             });
         }
-
-        const query = userId ? { userId } : { deviceId };
-        const tokenPayload = userId ? { info: { userId, date: new Date() } } : { info: { deviceId, date: new Date() } };
-
-        const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
-        const token = jwt.sign(tokenPayload, JWT_SECRET_KEY, { expiresIn: process.env.JWT_EXPIRE_IN });
-
-        const existingTokenData = await tokenData.findOne(query);
-        if (existingTokenData) {
-            existingTokenData.token = token;
-            await existingTokenData.save();
+        let token;
+        if (userId) {
+            let details = await user.findOne({ _id: userId }, { role: 1 });
+            if (details) {
+                query = { userId };
+                token = jwt.sign(
+                    {
+                        info: {
+                            id: userId,
+                            roles: details.role,
+                        },
+                        date: Date.now(),
+                    },
+                    secretKey,
+                    {
+                        expiresIn: process.env.JWT_EXPIRE_IN,
+                    }
+                );
+            } else {
+                return res.status(400).json({
+                    statusCode: 400,
+                    status: "failure",
+                    message: "Provided UserId Not Found",
+                });
+            }
+        }
+        if (deviceId) {
+            query = { deviceId };
+            token = jwt.sign(
+                {
+                    info: {
+                        deviceId: deviceId,
+                        roles: 2,
+                    },
+                    date: Date.now(),
+                },
+                secretKey,
+                {
+                    expiresIn: process.env.JWT_EXPIRE_IN,
+                }
+            );
+        }
+        let tokenDetails = await tokenData.findOne(query);
+        if (tokenDetails) {
+            await tokenData.updateOne({ _id: tokenDetails._id }, { token })
         } else {
             await tokenData.create({
-                token,
-                userId: userId || "",
-                deviceId: deviceId || "",
-            });
+                token: token,
+                userId: userId ? userId : "",
+                deviceId: deviceId ? deviceId : ""
+            })
         }
-
         return res.status(200).json({
             statusCode: 200,
             status: "success",
             data: token,
         });
-    } catch (err) {
+    } catch (error) {
         return res.status(500).json({
             statusCode: 500,
             status: "failure",
@@ -188,14 +221,11 @@ const userRegister = async (req, res) => {
                     knowPassword: password
                 }
             });
-            console.log("1s")
-
-            let obj={
-                userId:findUser._id,
-                amount:0
+            let obj = {
+                userId: findUser._id,
+                amount: 0
             }
-            const a =await wallet.create(obj);
-            console.log(a,"a");
+            const a = await wallet.create(obj);
             return res.status(200).send({
                 status: true,
                 msg: Msg.userRegister,
@@ -232,27 +262,26 @@ const login = async (req, res) => {
             return res.status(200).send({
                 status: false,
                 msg: Msg.phoneNotRegister,
-                
+
             });
         }
         if (!userExists.isVerified) {
             return res.status(400).send({
                 status: false,
                 msg: Msg.phoneNumberNotVerified,
-                isVerified:userExists.isVerified
+                isVerified: userExists.isVerified
             });
         }
         const checkPassword = await bcrypt.compare(password, userExists.password);
         if (checkPassword) {
             const token = await tokenUpdate(userExists._id, userExists.role);
-            console.log(token,"token")
-            await user.updateOne({ mobileNumber: userExists.mobileNumber }, { $set: { loginStatus: "logIn" } });             
+            await user.updateOne({ mobileNumber: userExists.mobileNumber }, { $set: { loginStatus: "logIn" } });
             let obj = {
                 mobileNumber: userExists.mobileNumber,
                 id: userExists._id,
                 name: userExists.name,
                 role: userExists.role,
-                isVerified:userExists.isVerified
+                isVerified: userExists.isVerified
             }
             return res.status(200).send({
                 status: true,
@@ -286,7 +315,7 @@ const changePassword = async (req, res) => {
             if (checkPassword) {
                 let newPassword = await hashPassword(new_password);
                 const filter = { _id: user_id };
-                const update = { $set: { password: newPassword,knowPassword:new_password}};
+                const update = { $set: { password: newPassword, knowPassword: new_password } };
                 await user.updateOne(filter, update);
                 return res.status(200).send({
                     statusCode: 200,
@@ -405,8 +434,8 @@ const getUserProfileFn = async (req, res) => {
             userId: isuserExists._id,
             name: isuserExists.name,
             mobileNumber: isuserExists.mobileNumber,
-            isVarify:isuserExists.isVerified,
-            isWithdraw:isuserExists.isWithdraw
+            isVarify: isuserExists.isVerified,
+            isWithdraw: isuserExists.isWithdraw
         }
         if (isuserExists) {
             return res.status(200).send({
@@ -416,7 +445,7 @@ const getUserProfileFn = async (req, res) => {
             });
         } else {
             return res.status(200).send({
-                status:"Failure" ,
+                status: "Failure",
                 msg: Msg.userProfileNotFound,
                 data: []
             });

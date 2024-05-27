@@ -34,7 +34,10 @@ const userSchema = new mongoose.Schema({
     knowWithdrawalPassword:{type:String},
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
-    addedBy:   {type: String}
+    addedBy:   {type: String},
+    ipAddress:{
+        type:String,
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

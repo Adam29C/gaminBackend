@@ -662,7 +662,7 @@ const checkToken = async (req, res) => {
 
 const addAdminAccountDetail = async (req, res) => {
     try {
-        const { id, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName } = req.body;
+        const { id, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName,minAmount,maxAmount } = req.body;
         if (!id) {
             return res.status(400).send({
                 statusCode: 400,
@@ -713,9 +713,9 @@ const addAdminAccountDetail = async (req, res) => {
 
         let updateData = {};
         if (isBank == "true") {
-            updateData = { $push: { bank: { accountNumber, accountHolderName, ifscCode, bankName, isBank, bankImage: imageUrl } }, $set: { updatedAt: Date.now() } };
+            updateData = { $push: { bank: { accountNumber, accountHolderName, ifscCode, bankName, isBank, bankImage: imageUrl,maxAmount:maxAmount,minAmount:minAmount } }, $set: { updatedAt: Date.now() } };
         } else {
-            updateData = { $push: { upi: { upiId, upiName, isBank, barCodeImage: imageUrl } }, $set: { updatedAt: Date.now() } };
+            updateData = { $push: { upi: { upiId, upiName, isBank, barCodeImage: imageUrl,maxAmount:maxAmount,minAmount:minAmount } }, $set: { updatedAt: Date.now() } };
         }
 
         // Find the existing account details document or create a new one

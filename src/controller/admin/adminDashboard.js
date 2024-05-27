@@ -307,6 +307,57 @@ const gamesUpdatedByAdmin = async (req, res) => {
     }
 };
 
+//Update Game status
+const updateGameStatus = async (req, res) => {
+    try {
+        const { role } = req.decoded;
+        const { gameId, isShow } = req.body;
+
+        if (role !== 0) {
+            return res.status(403).send({
+                statusCode: 403,
+                status: "Failure",
+                msg: Msg.adminCanAccess
+            });
+        }
+
+        if (!gameId || typeof isShow !== 'boolean') {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: 'gameId and isShow are required and isShow must be a boolean'
+            });
+        }
+
+        const gameToUpdate = await game.findByIdAndUpdate(
+            gameId,
+            { $set: { isShow: isShow, updatedAt: new Date() } },
+            { new: true }
+        );
+
+        if (!gameToUpdate) {
+            return res.status(400).send({
+                statusCode: 404,
+                status: "Failure",
+                msg: "Game Not Updated "
+            });
+        }
+
+        return res.status(200).send({
+            statusCode: 200,
+            status: "Success",
+            msg: Msg.statusUpdateSuccessfully
+        });
+
+    } catch (error) {
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: Msg.failure
+        });
+    }
+};
+
 //Admin Can delete Games With The Help Of Game Id
 const gamesDeletedByAdmin = async (req, res) => {
     try {
@@ -972,4 +1023,4 @@ const updateAdminAccountDetail = async (req, res) => {
     }
 };
 
-module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin }
+module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin,updateGameStatus }

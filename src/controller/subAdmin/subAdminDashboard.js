@@ -81,7 +81,7 @@ const subAdminUserList = async (req, res) => {
             });
         }
 
-        const subAdminUserData = await user.find({ createdBy: subAdminId });
+        const subAdminUserData = await user.find({ createdBy: subAdminId,isDeleted:false });
         let arrVal = [];
         for (let details of subAdminUserData) {
             arrVal.push({
@@ -92,7 +92,8 @@ const subAdminUserList = async (req, res) => {
                 loginStatus: details.loginStatus,
                 role: details.role,
                 isDeleted: details.isDeleted,
-                createdAt: details.createdAt,    
+                createdAt: details.createdAt,
+                userId:details._id  
             },
 
             )
@@ -339,4 +340,41 @@ const updateSubAdminProfileFn = async (req, res) => {
     }
 };
 
-module.exports = { userRegisterBySubAdmin, gamesCreatedBySubAdmin, gamesUpdatedSubAdmin, gameDeletedBySubAdmin, gamesList, getSubAdminProfileFn, updateSubAdminProfileFn,subAdminPermissions,subAdminUserList }
+const deleteSubAdminUser = async (req, res) => {
+    try {
+        const  role  = req.decoded.role;
+        const { subAdminId, id } = req.body
+        if (role !== 1) {
+            return res.status(403).send({
+                statusCode: 403,
+                status: "Failure",
+                msg: Msg.adminCanAccess
+            });
+        }
+        if (!subAdminId || !id) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: 'subAdminId and id  is required'
+            });
+        }
+        const deleteSubAdminUserData = await user.updateOne(
+            {_id: id},{$set:{isDeleted:true}}
+        );
+        if (deleteSubAdminUserData) {
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                msg: "User Deleted Successfully"
+            });
+        }
+
+    } catch (error) {
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: Msg.failure
+        });
+    }
+};
+module.exports = { userRegisterBySubAdmin, gamesCreatedBySubAdmin, gamesUpdatedSubAdmin, gameDeletedBySubAdmin, gamesList, getSubAdminProfileFn, updateSubAdminProfileFn,subAdminPermissions,subAdminUserList,deleteSubAdminUser }

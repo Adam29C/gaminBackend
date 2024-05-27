@@ -79,7 +79,6 @@ module.exports.findOne = async (modelName,
   limit = 0,
   skip = 0,) => {
   try {
-    console.log("2")
     const groupModel = mongoose.model(modelName);
     return await groupModel
       .findOne(where, select)

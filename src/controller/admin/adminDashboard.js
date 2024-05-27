@@ -158,6 +158,7 @@ const subAdminList = async (req, res) => {
     }
 };
 
+//Delete sub admin 
 const deleteSubAdmin = async (req, res) => {
     try {
         const { role } = req.decoded;
@@ -196,6 +197,7 @@ const deleteSubAdmin = async (req, res) => {
         });
     }
 };
+
 //Game Created By Admin
 const gamesCreatedByAdmin = async (req, res) => {
     try {
@@ -546,6 +548,7 @@ const addRules = async (req, res) => {
     }
 };
 
+//Update rule 
 const updateRules = async (req, res) => {
     try {
         const { role } = req.decoded;
@@ -596,6 +599,7 @@ const updateRules = async (req, res) => {
     }
 };
 
+//Update Rule Status 
 const updateRulesStatus = async (req, res) => {
     try {
         const { role } = req.decoded;
@@ -646,6 +650,7 @@ const updateRulesStatus = async (req, res) => {
     }
 };
 
+//Delete Rules 
 const deleteRules = async (req, res) => {
     try {
         const { role } = req.decoded;
@@ -685,6 +690,7 @@ const deleteRules = async (req, res) => {
     }
 };
 
+//Get All Rules
 const getRules = async (req, res) => {
     try {
 
@@ -714,6 +720,7 @@ const getRules = async (req, res) => {
     }
 };
 
+//CHeck Token Function
 const checkToken = async (req, res) => {
     try {
         const { Token } = req.body;
@@ -750,6 +757,7 @@ const checkToken = async (req, res) => {
     }
 };
 
+//Admin Add Account Detail
 const addAdminAccountDetail = async (req, res) => {
     try {
         const { id, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName,minAmount,maxAmount } = req.body;
@@ -829,6 +837,7 @@ const addAdminAccountDetail = async (req, res) => {
     }
 };
 
+//Admin All Account List
 const adminAccountsList = async (req, res) => {
     try {
         const { adminId } = req.query;
@@ -864,6 +873,7 @@ const adminAccountsList = async (req, res) => {
     }
 };
 
+//Delete Admin Account Detail By Id
 const deleteAdminAccountDetail = async (req, res) => {
     try {
         const { adminId, isBank, id } = req.body;
@@ -919,6 +929,7 @@ const deleteAdminAccountDetail = async (req, res) => {
     }
 };
 
+//Update account Detail By Id
 const updateAdminAccountDetail = async (req, res) => {
     try {
         const { adminId, id, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName } = req.body;

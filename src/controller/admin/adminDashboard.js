@@ -579,7 +579,7 @@ const addRules = async (req, res) => {
                 msg: 'UserId and message are required'
             });
         }
-        const check = await game.findOne({ title });
+        const check = await rule.findOne({ title });
         if (check) {
             return res.status(400).send({
                 statusCode: 400,

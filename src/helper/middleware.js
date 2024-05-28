@@ -80,8 +80,8 @@ exports.authenticateToken = async (req, res, next) => {
                 if (!data) {
                     return res.status(400).send({
                         statusCode: 400,
-                        status: Msg.failure,
-                        msg: "Token Not Found",
+                        status:"Failure",
+                        msg:  Msg.failure,
                     });
                 }
                 req.decoded = decoded;
@@ -97,8 +97,8 @@ exports.authenticateToken = async (req, res, next) => {
     } catch (error) {
         return res.status(500).send({
             statusCode: 500,
-            status: Msg.failure,
-            msg: "Token Expire"
+            status: "",
+            msg: ""
         });
     }
 }

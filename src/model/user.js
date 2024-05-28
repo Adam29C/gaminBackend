@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
     isVerified: { type: Boolean, default: false },
     createdBy: { type: String, default: "self" },
     loginStatus: {type: String, default: "logOut"},
+    isActive:{type:Boolean, default:true},
     role: { type: Number }, // Role will be defined for each user(admin-0,subAdmin-1,user-2)
     // Additional fields specific to admin
     userName: { type: String },

@@ -365,7 +365,8 @@ const gamesUpdatedByAdmin = async (req, res) => {
 //Update Game status
 const updateGameStatus = async (req, res) => {
     try {
-        const { role } = req.decoded.info.roles;
+        const  role  = req.decoded.info.roles;
+        console
         const { gameId, isShow } = req.body;
 
         if (role !== 0) {

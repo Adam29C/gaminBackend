@@ -8,13 +8,18 @@ const tokenUpdate = async (userId, role) => {
     let JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
     if (userId) {
-        let userDetails = await User.findOne({ _id: userId }); 
+        let userDetails = await User.findOne({ _id: userId },{role:1}); 
 
         if (!userDetails) {
             throw new Error("User details not found");
         }
-
-        const payload = { userId: userDetails._id, role: role };
+        const payload = {
+            info: {
+                id: userId,
+                roles: userDetails.role,
+            },
+            date: Date.now(),
+        },
         token = jwt.sign(payload, JWT_SECRET_KEY, { expiresIn: process.env.JWT_EXPIRE_IN });
 
         await tokenData.updateOne(

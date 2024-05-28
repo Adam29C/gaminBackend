@@ -584,7 +584,7 @@ const addRules = async (req, res) => {
             return res.status(400).send({
                 statusCode: 400,
                 status: "Failure",
-                msg: "This Rules Is Already Exist!"
+                msg: "This Rule Title Is Already Exist!"
             });
         }
         const newRule = new rule({
@@ -628,6 +628,15 @@ const updateRules = async (req, res) => {
                 statusCode: 400,
                 status: "Failure",
                 msg: 'ruleId and status are required and status must be a boolean'
+            });
+        }
+
+        const check = await rule.findOne({ title });
+        if (check) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "This Rule Title Is Already Exist!"
             });
         }
 

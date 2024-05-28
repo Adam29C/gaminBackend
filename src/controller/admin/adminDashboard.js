@@ -1002,7 +1002,7 @@ const deleteAdminAccountDetail = async (req, res) => {
 //Update account Detail By Id
 const updateAdminAccountDetail = async (req, res) => {
     try {
-        const { adminId, id, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName } = req.body;
+        const { adminId, id, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName,minAmount,maxAmount } = req.body;
         if (!adminId || !id) {
             return res.status(400).send({
                 statusCode: 400,
@@ -1050,6 +1050,8 @@ const updateAdminAccountDetail = async (req, res) => {
                     'bank.$[elem].ifscCode': ifscCode,
                     'bank.$[elem].bankName': bankName,
                     'bank.$[elem].bankImage': imageUrl,
+                    'bank.$[elem].minAmount': minAmount,
+                    'bank.$[elem].maxAmount': maxAmount,
                     updatedAt: Date.now()
                 }
             };
@@ -1078,6 +1080,8 @@ const updateAdminAccountDetail = async (req, res) => {
                     'upi.$[elem].upiId': upiId,
                     'upi.$[elem].upiName': upiName,
                     'upi.$[elem].barCodeImage': imageUrl,
+                    'upi.$[elem].minAmount': minAmount,
+                    'upi.$[elem].maxAmount': maxAmount,
                     updatedAt: Date.now()
                 }
             };

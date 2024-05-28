@@ -104,7 +104,7 @@ const withdrawalPasswordSendOtp = async (req, res) => {
       });
     }
 
-    const randomNumber = await generateRandomNumber(10000, 20000);
+    const randomNumber = await generateRandomNumber(1000, 2000);
     await user.updateOne(
       { mobileNumber: mobileNumber },
       { $set: { otp: randomNumber } }
@@ -517,7 +517,6 @@ const filterPaymentHistory = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error in filterPaymentHistory:", error);
     return res.status(500).json({
       statusCode: 500,
       status: "Failure",

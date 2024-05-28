@@ -106,7 +106,7 @@ const resendOtpFn = async (req, res) => {
         }
         let userExists = await user.findOne({ mobileNumber: mobileNumber });
         if (!userExists) {
-            const randomNumber = await generateRandomNumber(10000, 20000);
+            const randomNumber = await generateRandomNumber(1000, 2000);
             let newUser = {
                 mobileNumber: mobileNumber,
                 otp: randomNumber,
@@ -124,7 +124,7 @@ const resendOtpFn = async (req, res) => {
                     msg: Msg.mobileAlreadyInUse,
                 });
             } else {
-                const randomNumber = await generateRandomNumber(10000, 20000);
+                const randomNumber = await generateRandomNumber(1000, 2000);
                 await user.updateOne(
                     { mobileNumber: mobileNumber },
                     { $set: { otp: randomNumber } }
@@ -351,7 +351,7 @@ const forgetPasswordSendOtpFn = async (req, res) => {
         let { mobileNumber } = req.body;
         let isPhoneNumberExists = await user.findOne({ mobileNumber: mobileNumber });
         if (isPhoneNumberExists) {
-            const randomNumber = await generateRandomNumber(10000, 20000);
+            const randomNumber = await generateRandomNumber(1000, 2000);
             const filter = { mobileNumber: mobileNumber };
             const update = { $set: { otp: randomNumber }, };
             const check = await user.updateOne(filter, update);

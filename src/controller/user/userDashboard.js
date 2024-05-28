@@ -645,39 +645,51 @@ const matchList = async (req, res) => {
 
 const adminAccountsList = async (req, res) => {
   try {
-      const { userId } = req.query;
-      if (!userId) {
-          return res.status(400).send({
-              statusCode: 400,
-              status: "Failure",
-              msg: "userId Is Required",
-          });
-      }
+    const { userId } = req.query;
 
-      const accountDetail = await adminAccountDetails.find({ role:0 });
-      console.log(accountDetail[0],"accountDetail")
-      let obj = {
-          adminId: AccountDetail[0].adminId,
-          bankList: AccountDetail[0].bank,
-          upiList: AccountDetail[0].upi
-      }
-      if (accountDetail) {
-          return res.status(200).send({
-              statusCode: 200,
-              status: "Success",
-              msg: Msg.adminAccountsList,
-              data: obj
-          });
-      }
+    if (!userId) {
+      return res.status(400).send({
+        statusCode: 400,
+        status: "Failure",
+        msg: "userId is required",
+      });
+    }
+
+    const accountDetails = await adminAccountDetails.find({ role: 0 });
+
+    if (!accountDetails || accountDetails.length === 0) {
+      return res.status(404).send({
+        statusCode: 404,
+        status: "Failure",
+        msg: "No account details found for the given userId",
+      });
+    }
+
+    const accountDetail = accountDetails[0];
+
+    const obj = {
+      adminId: accountDetail.adminId,
+      bankList: accountDetail.bank,
+      upiList: accountDetail.upi
+    };
+
+    return res.status(200).send({
+      statusCode: 200,
+      status: "Success",
+      msg: "Admin accounts list retrieved successfully",
+      data: obj
+    });
 
   } catch (error) {
-      return res.status(500).send({
-          statusCode: 500,
-          status: "Failure",
-          msg: Msg.failure,
-      });
+    console.error("Error in adminAccountsList:", error);
+    return res.status(500).send({
+      statusCode: 500,
+      status: "Failure",
+      msg: "An error occurred while processing your request",
+    });
   }
 };
+
 
 const accountById=async(req,res)=>{
   try{

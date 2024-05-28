@@ -643,6 +643,7 @@ const matchList = async (req, res) => {
   }
 };
 
+//Get All Account List
 const adminAccountsList = async (req, res) => {
   try {
     const { userId } = req.query;
@@ -690,48 +691,77 @@ const adminAccountsList = async (req, res) => {
   }
 };
 
-
-const accountById=async(req,res)=>{
-  try{
-     const{userId, isBank, id}= req.body;
-    if(!userId || !id || !isBank){
+const accountById = async (req, res) => {
+  try {
+    const { userId, isBank, id } = req.body;
+    if (!userId || !id) {
       return res.status(400).json({
         statusCode: 400,
         status: "Failure",
         message: "Please provide valid data: userId and id are required"
       });
     }
-    let userDetails=await user.findOne({_id:userId});
-    if(!userDetails){
+
+    const userDetails = await user.findOne({ _id: userId });
+    if (!userDetails) {
       return res.status(400).json({
         statusCode: 400,
         status: "Failure",
-        message: Msg.dataFound
+        message: "User does not exist"
       });
     }
+
+    const objectIdAccountId = new ObjectId(id); // Ensure id is an ObjectId
     let query;
-    if(isBank){
-      query={
-        bank:{$elemMatch:{_id:id}}
-      }
-    }else{
-      query={
-        upi:{$elemMatch:{_id:id}}
-      }
+    if (isBank) {
+      query = {
+        'bank._id': objectIdAccountId
+      };
+    } else {
+      query = {
+        'upi._id': objectIdAccountId
+      };
     }
-    let paymentDetails = await adminAccountDetails.findOne(query);
+
+    const accountDetails = await adminAccountDetails.findOne(query);
+    if (!accountDetails) {
+      return res.status(404).json({
+        statusCode: 404,
+        status: "Failure",
+        message: "Account details not found"
+      });
+    }
+
+    let specificAccountDetails = null;
+    if (isBank) {
+      specificAccountDetails = accountDetails.bank.find(account => account._id.equals(objectIdAccountId));
+    } else {
+      specificAccountDetails = accountDetails.upi.find(account => account._id.equals(objectIdAccountId));
+    }
+
+    if (!specificAccountDetails) {
+      return res.status(404).json({
+        statusCode: 404,
+        status: "Failure",
+        message: "Account details not found"
+      });
+    }
+
     return res.status(200).json({
       statusCode: 200,
       status: "Success",
       message: "Account details retrieved successfully",
-      data: paymentDetails
+      data: specificAccountDetails
     });
-  }catch(error){
+
+  } catch (error) {
+    console.error("Error in accountById:", error);
     return res.status(500).json({
       statusCode: 500,
       status: "Failure",
       message: "An error occurred while processing your request"
     });
   }
-}
+};
+
 module.exports = { withdrawalCreatePassword, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail, addCreditRequest, filterPaymentHistory, accountById,adminAccountsList }

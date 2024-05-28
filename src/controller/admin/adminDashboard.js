@@ -108,7 +108,7 @@ const createSubAdminFn = async (req, res) => {
 //fetch list of all user and all sub admin
 const subAdminList = async (req, res) => {
     try {
-        let role = req.decoded.role;
+        let role = req.decoded.info.roles;
         const { adminId } = req.query;
         if (role !== 0) {
             return res.status(403).send({
@@ -161,7 +161,7 @@ const subAdminList = async (req, res) => {
 //Delete sub admin 
 const deleteSubAdmin = async (req, res) => {
     try {
-        const { role } = req.decoded;
+        const role = req.decoded.info.roles;
         const { adminId, id } = req.body
 
         if (role !== 0) {
@@ -201,7 +201,7 @@ const deleteSubAdmin = async (req, res) => {
 //Game Created By Admin
 const gamesCreatedByAdmin = async (req, res) => {
     try {
-        let Role = req.decoded.role;
+        let Role = req.decoded.info.roles;
         let { gameName, isShow } = req.body;
         if (!gameName || !isShow) {
             return res.status(400).send({
@@ -258,7 +258,7 @@ const gamesCreatedByAdmin = async (req, res) => {
 //Admin Can Update Game With The Help Of Game Id
 const gamesUpdatedByAdmin = async (req, res) => {
     try {
-        let Role = req.decoded.role;
+        let Role = req.decoded.info.roles;
         let { gameId, gameName, isShow } = req.body;
         if (!gameName || typeof isShow === 'undefined') {
             return res.status(400).send({
@@ -312,7 +312,7 @@ const gamesUpdatedByAdmin = async (req, res) => {
 //Update Game status
 const updateGameStatus = async (req, res) => {
     try {
-        const { role } = req.decoded;
+        const { role } = req.decoded.info.roles;
         const { gameId, isShow } = req.body;
 
         if (role !== 0) {
@@ -363,7 +363,7 @@ const updateGameStatus = async (req, res) => {
 //Admin Can delete Games With The Help Of Game Id
 const gamesDeletedByAdmin = async (req, res) => {
     try {
-        let Role = req.decoded.role;
+        let Role = req.decoded.info.roles;
         let { gameId } = req.query;
         if (!gameId) {
             return res.status(400).send({
@@ -434,7 +434,7 @@ const gamesList = async (req, res) => {
 //Add Amount To Waled
 const addAmount = async (req, res) => {
     try {
-        let Role = req.decoded.role;
+        let Role =req.decoded.info.roles;
         const { userId, amount, description } = req.body;
         if (Role === 0) {
             let amountSave = await new waled({ userId, amount, description }).save();
@@ -473,7 +473,7 @@ const addAmount = async (req, res) => {
 //Add Amount To Waled
 const paymentHistory = async (req, res) => {
     try {
-        let Role = req.decoded.role;
+        let Role = req.decoded.info.roles;
         if (Role === 0) {
             let findPaymentHistory = await PaymentHistory.find();
             if (findPaymentHistory) {
@@ -507,7 +507,7 @@ const paymentHistory = async (req, res) => {
 //Add Game Rules
 const addRules = async (req, res) => {
     try {
-        const { role } = req.decoded;
+        const  role  = req.decoded.info.roles;
         const { userId, title, description } = req.body;
 
         if (role !== 0) {
@@ -551,7 +551,7 @@ const addRules = async (req, res) => {
 //Update rule 
 const updateRules = async (req, res) => {
     try {
-        const { role } = req.decoded;
+        const  role  = req.decoded.info.roles;
         const { ruleId, status, title, description } = req.body;
 
         if (role !== 0) {
@@ -602,7 +602,7 @@ const updateRules = async (req, res) => {
 //Update Rule Status 
 const updateRulesStatus = async (req, res) => {
     try {
-        const { role } = req.decoded;
+        const role = req.decoded.info.roles;
         const { ruleId, status } = req.body;
 
         if (role !== 0) {
@@ -653,7 +653,7 @@ const updateRulesStatus = async (req, res) => {
 //Delete Rules 
 const deleteRules = async (req, res) => {
     try {
-        const { role } = req.decoded;
+        const  role  = req.decoded.info.roles;
         const { ruleId } = req.query;
 
         if (role !== 0) {

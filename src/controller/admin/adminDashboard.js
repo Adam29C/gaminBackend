@@ -579,7 +579,14 @@ const addRules = async (req, res) => {
                 msg: 'UserId and message are required'
             });
         }
-
+        const check = await rule.findOne({ title });
+        if (check) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "This Rule Title Is Already Exist!"
+            });
+        }
         const newRule = new rule({
             userId,
             description,
@@ -621,6 +628,15 @@ const updateRules = async (req, res) => {
                 statusCode: 400,
                 status: "Failure",
                 msg: 'ruleId and status are required and status must be a boolean'
+            });
+        }
+
+        const check = await rule.findOne({ title });
+        if (check) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "This Rule Title Is Already Exist!"
             });
         }
 
@@ -986,7 +1002,7 @@ const deleteAdminAccountDetail = async (req, res) => {
 //Update account Detail By Id
 const updateAdminAccountDetail = async (req, res) => {
     try {
-        const { adminId, id, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName } = req.body;
+        const { adminId, id, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName,minAmount,maxAmount } = req.body;
         if (!adminId || !id) {
             return res.status(400).send({
                 statusCode: 400,
@@ -1034,6 +1050,8 @@ const updateAdminAccountDetail = async (req, res) => {
                     'bank.$[elem].ifscCode': ifscCode,
                     'bank.$[elem].bankName': bankName,
                     'bank.$[elem].bankImage': imageUrl,
+                    'bank.$[elem].minAmount': minAmount,
+                    'bank.$[elem].maxAmount': maxAmount,
                     updatedAt: Date.now()
                 }
             };
@@ -1047,7 +1065,7 @@ const updateAdminAccountDetail = async (req, res) => {
         } else {
             const existingUpi = await adminAccountDetails.findOne({
                 adminId: adminId,
-                bank: { $elemMatch: { _id: objectIdAccountId } }
+                upi: { $elemMatch: { _id: objectIdAccountId } }
             });
             if (!existingUpi) {
                 return res.status(400).send({
@@ -1062,6 +1080,8 @@ const updateAdminAccountDetail = async (req, res) => {
                     'upi.$[elem].upiId': upiId,
                     'upi.$[elem].upiName': upiName,
                     'upi.$[elem].barCodeImage': imageUrl,
+                    'upi.$[elem].minAmount': minAmount,
+                    'upi.$[elem].maxAmount': maxAmount,
                     updatedAt: Date.now()
                 }
             };
@@ -1088,4 +1108,67 @@ const updateAdminAccountDetail = async (req, res) => {
     }
 };
 
-module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin,updateGameStatus,userList }
+//Dashbord count api user and sub admin
+const countDashboard = async (req, res) => {
+    try {
+        const role = req.decoded.info.roles;
+        const { adminId } = req.query;
+
+        if (role !== 0) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "failure",
+                msg: "Admin can access only."
+            });
+        }
+
+        const adminDetails = await user.findOne({ _id: adminId });
+
+        if (!adminDetails) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "Admin does not exist."
+            });
+        }
+
+        const counts = await user.aggregate([
+            {
+                $match: {
+                    createdBy: "self"
+                }
+            },
+            {
+                $group: {
+                    _id: "$isVerified",
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const verifiedCount = counts.find(c => c._id === true)?.count || 0;
+        const notVerifiedCount = counts.find(c => c._id === false)?.count || 0;
+        const totalCount=verifiedCount+notVerifiedCount
+
+        return res.status(200).send({
+            statusCode: 200,
+            status: "Success",
+            msg: "Counts fetched successfully",
+            data: {
+                totalCount,
+                verifiedCount,
+                notVerifiedCount
+            }
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: "Internal Server Error"
+        });
+    }
+}
+
+module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin,updateGameStatus,userList,countDashboard }

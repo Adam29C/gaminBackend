@@ -117,6 +117,68 @@ const subAdminUserList = async (req, res) => {
     }
 };
 
+const countDashboardUser = async (req, res) => {
+    try {
+        const role = req.decoded.info.roles;
+        const { subAdminId } = req.query;
+
+        if (role !== 0) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "failure",
+                msg: "subAdmin can access only."
+            });
+        }
+
+        const adminDetails = await user.findOne({ _id: subAdminId });
+
+        if (!adminDetails) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "Sub Admin does not exist."
+            });
+        }
+
+        const counts = await user.aggregate([
+            {
+                $match: {
+                    createdBy: subAdminId
+                }
+            },
+            {
+                $group: {
+                    _id: "$isVerified",
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const verifiedCount = counts.find(c => c._id === true)?.count || 0;
+        const notVerifiedCount = counts.find(c => c._id === false)?.count || 0;
+        const totalCount=verifiedCount+notVerifiedCount
+
+        return res.status(200).send({
+            statusCode: 200,
+            status: "Success",
+            msg: "Counts fetched successfully",
+            data: {
+                totalCount,
+                verifiedCount,
+                notVerifiedCount
+            }
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: "Internal Server Error"
+        });
+    }
+}
+
 // games Created By subAdmin
 const gamesCreatedBySubAdmin = async (req, res) => {
     try {
@@ -382,4 +444,4 @@ const deleteSubAdminUser = async (req, res) => {
     }
 };
 
-module.exports = { userRegisterBySubAdmin, gamesCreatedBySubAdmin, gamesUpdatedSubAdmin, gameDeletedBySubAdmin, gamesList, getSubAdminProfileFn, updateSubAdminProfileFn,subAdminPermissions,subAdminUserList,deleteSubAdminUser }
+module.exports = { userRegisterBySubAdmin, gamesCreatedBySubAdmin, gamesUpdatedSubAdmin, gameDeletedBySubAdmin, gamesList, getSubAdminProfileFn, updateSubAdminProfileFn,subAdminPermissions,subAdminUserList,deleteSubAdminUser,countDashboardUser }

@@ -13,7 +13,7 @@ const game = require("../../model/game");
 // user register by sub admin
 const userRegisterBySubAdmin = async (req, res) => {
     try {
-        let Role = req.decoded.role;
+        let Role = req.decoded.info.roles;
         let { subAdminId,role, name, mobileNumber, password } = req.body;
         if (Role !== 1) {
             return res.status(403).send({
@@ -67,7 +67,7 @@ const userRegisterBySubAdmin = async (req, res) => {
 //fetch list of all user and all sub admin
 const subAdminUserList = async (req, res) => {
     try {
-        let role = req.decoded.role;
+        let role = req.decoded.info.roles;
         const { subAdminId } = req.query;
         if (role !== 1) {
             return res.status(403).send({
@@ -183,7 +183,7 @@ const countDashboardUser = async (req, res) => {
 const gamesCreatedBySubAdmin = async (req, res) => {
     try {
         let { gameName } = req.body;
-        let { id } = req.decoded;
+        let  id  = req.decoded.info.roles;
         let checkUser = await subAdmin.findOne({ _id: id });
         if (checkUser.permissions.creategame) {
             let obj = {
@@ -219,7 +219,7 @@ const gamesCreatedBySubAdmin = async (req, res) => {
 //Fetch  All Permissions Sub Admin
 const subAdminPermissions = async (req, res) => {
     try {
-        let role = req.decoded.role;
+        let role = req.decoded.info.roles;
         const { subAdminId } = req.query;
         if (role !== 1) {
             return res.status(403).send({
@@ -408,7 +408,7 @@ const updateSubAdminProfileFn = async (req, res) => {
 // Delete sub Admin user 
 const deleteSubAdminUser = async (req, res) => {
     try {
-        const  role  = req.decoded.role;
+        const  role  = req.decoded.info.roles;
         const { subAdminId, id } = req.body
         if (role !== 1) {
             return res.status(403).send({

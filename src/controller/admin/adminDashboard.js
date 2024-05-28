@@ -14,7 +14,7 @@ const ObjectId = mongoose.Types.ObjectId;
 // Function to handle creation of sub-admin
 const createSubAdminFn = async (req, res) => {
     try {
-        let Role = req.decoded.role;
+        let Role = req.decoded.info.roles;
         let { adminId, name, mobileNumber, password, role, permission } = req.body;
         if (Role === 0) {
             let isExists = await user.findOne({ mobileNumber: mobileNumber });

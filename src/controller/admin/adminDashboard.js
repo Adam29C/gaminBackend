@@ -1063,7 +1063,7 @@ const updateAdminAccountDetail = async (req, res) => {
         } else {
             const existingUpi = await adminAccountDetails.findOne({
                 adminId: adminId,
-                bank: { $elemMatch: { _id: objectIdAccountId } }
+                upi: { $elemMatch: { _id: objectIdAccountId } }
             });
             if (!existingUpi) {
                 return res.status(400).send({
@@ -1104,4 +1104,67 @@ const updateAdminAccountDetail = async (req, res) => {
     }
 };
 
-module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin,updateGameStatus,userList }
+//Dashbord count api user and sub admin
+const countDashboard = async (req, res) => {
+    try {
+        const role = req.decoded.info.roles;
+        const { adminId } = req.query;
+
+        if (role !== 0) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "failure",
+                msg: "Admin can access only."
+            });
+        }
+
+        const adminDetails = await user.findOne({ _id: adminId });
+
+        if (!adminDetails) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "Admin does not exist."
+            });
+        }
+
+        const counts = await user.aggregate([
+            {
+                $match: {
+                    createdBy: "self"
+                }
+            },
+            {
+                $group: {
+                    _id: "$isVerified",
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const verifiedCount = counts.find(c => c._id === true)?.count || 0;
+        const notVerifiedCount = counts.find(c => c._id === false)?.count || 0;
+        const totalCount=verifiedCount+notVerifiedCount
+
+        return res.status(200).send({
+            statusCode: 200,
+            status: "Success",
+            msg: "Counts fetched successfully",
+            data: {
+                totalCount,
+                verifiedCount,
+                notVerifiedCount
+            }
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: "Internal Server Error"
+        });
+    }
+}
+
+module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin,updateGameStatus,userList,countDashboard }

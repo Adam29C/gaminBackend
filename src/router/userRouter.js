@@ -3,7 +3,7 @@ const app = express()
 const controller = require('../controller/user')
 const {validateLogin,userSighUp, handleValidationErrors } = require('../helper/validation')
 const { authenticateToken } = require('../helper/middleware')
-const{withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp,withdrawalPasswordVerifyOtp,addAccountDetail, userAccountDetail, deleteAccountDetail,addCreditRequest,filterPaymentHistory,accountById}=require("../controller/user/userDashboard")
+const{withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp,withdrawalPasswordVerifyOtp,addAccountDetail, userAccountDetail, deleteAccountDetail,addCreditRequest,filterPaymentHistory,accountById, adminAccountsList}=require("../controller/user/userDashboard")
 const {getRules } = require('../controller/admin/adminDashboard')
 
 //==============================User Dashboard Router============================================================================
@@ -25,7 +25,7 @@ app.post('/filterPaymentHistory',authenticateToken,filterPaymentHistory)
 app.get('/getRules', authenticateToken, getRules)
 
 //game By id 
-
+app.get('/adminAccountsList',authenticateToken,adminAccountsList)
 app.get('/accountById',authenticateToken,accountById)
 
 module.exports=app

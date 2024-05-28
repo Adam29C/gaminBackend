@@ -20,6 +20,7 @@ const accountDetailsSchema = new Schema({
     minAmount:{ type: Number, require: true },
     maxAmount:{ type: Number, require: true }
   }],
+  role:{type:Number,default:0},
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

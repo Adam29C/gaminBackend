@@ -643,77 +643,83 @@ const matchList = async (req, res) => {
   }
 };
 
-//admin Selected account id
-const accountById = async (req, res) => {
+const adminAccountsList = async (req, res) => {
   try {
-    const { userId, isBank, id } = req.body;
+      const { userId } = req.query;
+      if (!userId) {
+          return res.status(400).send({
+              statusCode: 400,
+              status: "Failure",
+              msg: "userId Is Required",
+          });
+      }
 
-    if (!userId || !id) {
+      const accountDetail = await adminAccountDetails.find({ role:0 });
+      console.log(accountDetail[0],"accountDetail")
+      let obj = {
+          adminId: AccountDetail[0].adminId,
+          bankList: AccountDetail[0].bank,
+          upiList: AccountDetail[0].upi
+      }
+      if (accountDetail) {
+          return res.status(200).send({
+              statusCode: 200,
+              status: "Success",
+              msg: Msg.adminAccountsList,
+              data: obj
+          });
+      }
+
+  } catch (error) {
+      return res.status(500).send({
+          statusCode: 500,
+          status: "Failure",
+          msg: Msg.failure,
+      });
+  }
+};
+
+const accountById=async(req,res)=>{
+  try{
+     const{userId, isBank, id}= req.body;
+    if(!userId || !id || !isBank){
       return res.status(400).json({
         statusCode: 400,
         status: "Failure",
         message: "Please provide valid data: userId and id are required"
       });
     }
-
-    const userInfo = await user.findOne({ _id: userId });
-    if (!userInfo) {
-      return res.status(404).json({
-        statusCode: 404,
+    let userDetails=await user.findOne({_id:userId});
+    if(!userDetails){
+      return res.status(400).json({
+        statusCode: 400,
         status: "Failure",
-        message: "User does not exist"
+        message: Msg.dataFound
       });
     }
-
-    const objectIdAccountId = new ObjectId(id);
-    let accountDetails = null;
-
-    if (isBank) {
-      const existingAccount = await adminAccountDetails.findOne({
-        bank: { $elemMatch: { _id: objectIdAccountId } }
-      });
-
-      if (!existingAccount) {
-        return res.status(400).json({
-          statusCode: 400,
-          status: "Failure",
-          message: "Bank account does not exist"
-        });
+    let query;
+    if(isBank){
+      query={
+        bank:{$elemMatch:{_id:id}}
       }
-
-      accountDetails = existingAccount.bank.find(account => account._id.equals(objectIdAccountId));
-
-    } else {
-      const existingAccount = await adminAccountDetails.findOne({
-        upi: { $elemMatch: { _id: objectIdAccountId } }
-      });
-
-      if (!existingAccount) {
-        return res.status(400).json({
-          statusCode: 400,
-          status: "Failure",
-          message: "UPI account does not exist"
-        });
+    }else{
+      query={
+        upi:{$elemMatch:{_id:id}}
       }
-
-      accountDetails = existingAccount.upi.find(account => account._id.equals(objectIdAccountId));
     }
-
+    let paymentDetails = await adminAccountDetails.findOne(query);
     return res.status(200).json({
       statusCode: 200,
       status: "Success",
       message: "Account details retrieved successfully",
-      data: accountDetails
+      data: paymentDetails
     });
-
-  } catch (error) {
-    console.error("Error in accountById:", error);
+  }catch(error){
     return res.status(500).json({
       statusCode: 500,
       status: "Failure",
       message: "An error occurred while processing your request"
     });
   }
-};
-
-module.exports = { withdrawalCreatePassword, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail, addCreditRequest, filterPaymentHistory, accountById }
+}
+module.exports = { withdrawalCreatePassword, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail, addCreditRequest, filterPaymentHistory, accountById,adminAccountsList }

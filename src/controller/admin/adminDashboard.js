@@ -579,7 +579,14 @@ const addRules = async (req, res) => {
                 msg: 'UserId and message are required'
             });
         }
-
+        const check = await game.findOne({ title });
+        if (check) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "This Rules Is Already Exist!"
+            });
+        }
         const newRule = new rule({
             userId,
             description,

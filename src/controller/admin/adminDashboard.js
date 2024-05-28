@@ -105,7 +105,7 @@ const createSubAdminFn = async (req, res) => {
     }
 };
 
-//fetch list of all user and all sub admin
+//fetch list of all sub admin
 const subAdminList = async (req, res) => {
     try {
         let role = req.decoded.info.roles;
@@ -158,6 +158,59 @@ const subAdminList = async (req, res) => {
     }
 };
 
+//fetch list of all sub admin
+const userList = async (req, res) => {
+    try {
+        let role = req.decoded.info.roles;
+        const { adminId } = req.query;
+        if (role !== 0) {
+            return res.status(403).send({
+                statusCode: 403,
+                status: "Failure",
+                msg: Msg.adminCanAccess
+            });
+        }
+        if (!adminId) {
+            return res.status(500).send({
+                statusCode: 500,
+                status: "Failure",
+                msg: "Admin Id is required"
+            });
+        }
+
+        const subAdminData = await user.find({ createdBy: "self", isDeleted:false,});
+        let arrVal = [];
+        for (let details of subAdminData) {
+            arrVal.push({
+                name: details.name,
+                mobileNumber: details.mobileNumber,
+                isVerified: details.isVerified,
+                createdBy: details.createdBy,
+                loginStatus: details.loginStatus,
+                role: details.role,
+                isDeleted: details.isDeleted,
+                createdAt: details.createdAt,
+                userId:details._id
+            },
+
+            )
+        }
+        if (subAdminData) {
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                msg:"User List Show Successfully",
+                data: arrVal
+            });
+        }
+    } catch (error) {
+        return res.json(500).send({
+            statusCode: 500,
+            status: false,
+            msg: Msg.failure
+        })
+    }
+};
 //Delete sub admin 
 const deleteSubAdmin = async (req, res) => {
     try {
@@ -1034,4 +1087,4 @@ const updateAdminAccountDetail = async (req, res) => {
     }
 };
 
-module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin,updateGameStatus }
+module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin,updateGameStatus,userList }

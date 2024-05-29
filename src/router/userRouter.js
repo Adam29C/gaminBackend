@@ -26,6 +26,6 @@ app.get('/getRules', authenticateToken, getRules)
 
 //game By id 
 app.get('/adminAccountsList',authenticateToken,adminAccountsList)
-app.get('/accountById',authenticateToken,accountById)
+app.post('/accountById',authenticateToken,accountById)
 
 module.exports=app

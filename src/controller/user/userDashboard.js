@@ -505,12 +505,14 @@ const filterPaymentHistory = async (req, res) => {
 
     if (findInfo.length > 0) { // Check if any records are found
       return res.status(200).json({
+        statusCode:200,
         status: "Success",
         message: Msg.userTransactionHistory,
         paymentInfo: findInfo
       });
     } else {
-      return res.status(400).json({
+      return res.status(200).json({
+        statusCode:200,
         status: "Failure",
         message: Msg.noTransactionFound,
         paymentInfo: []
@@ -521,7 +523,6 @@ const filterPaymentHistory = async (req, res) => {
       statusCode: 500,
       status: "Failure",
       message: Msg.failure,
-      error: error.message
     });
   }
 };

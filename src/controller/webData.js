@@ -2,6 +2,7 @@ const { logger } = require("../helper/log");
 
 const webData = async (req, res) => {
     try {
+        logger.info("Me yaha par hu")
         logger.info(`req mke data send kra hai: ${JSON.stringify(req.body)}:data yaha khatam hua hai`);
         return res.status(200).send({
             statusCode: 200,

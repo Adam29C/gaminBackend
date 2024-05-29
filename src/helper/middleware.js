@@ -37,7 +37,8 @@ exports.authenticateToken = async (req, res, next) => {
             req.headers.authorization.startsWith("Bearer")
         ) {
             let token = req.headers.authorization.split(" ")[1];
-            const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+            const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY); 
+          
             if (!decoded) {
                 return res.status(400).send({
                     statusCode: 400,
@@ -97,8 +98,8 @@ exports.authenticateToken = async (req, res, next) => {
     } catch (error) {
         return res.status(500).send({
             statusCode: 500,
-            status: "",
-            msg: ""
+            status: "Failure",
+            msg:error.message
         });
     }
 }

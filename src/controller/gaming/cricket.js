@@ -36,7 +36,7 @@ const getSeriesList = async (req, res) => {
     }
 }
 
-const getMatchsList = async (req, res) => {
+const getMatchList = async (req, res) => {
     try {
         const {seriesId}=req.params;
         if(!seriesId){
@@ -91,6 +91,6 @@ const matchDetails =async(req,res)=>{
 module.exports={
     getAllMatchesList,
     getSeriesList,
-    getMatchsList,
+    getMatchList,
     matchDetails,
 }

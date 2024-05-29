@@ -20,6 +20,7 @@ const AccountDetail = require("../../model/accountDetails");
 const adminAccountDetails = require("../../model/adminAccountDetails");
 const { UserDefinedMessageInstance } = require("twilio/lib/rest/api/v2010/account/call/userDefinedMessage");
 const mongoose = require('mongoose');
+const paymentRequest = require("../../model/paymentRequest");
 const ObjectId = mongoose.Types.ObjectId;
 // user can create withdrawalCreatePassword
 const withdrawalCreatePassword = async (req, res) => {
@@ -530,12 +531,12 @@ const filterPaymentHistory = async (req, res) => {
 //add credit request
 const addCreditRequest = async (req, res) => {
   try {
-    const { userId, amount } = req.body;
-    if (!userId || !amount) {
+    const { userId, amount, utr } = req.body;
+    if (!userId || !amount || !utr) {
       return res.status(400).json({
         statusCode: 400,
         status: "failure",
-        message: "Please provide valid data: userId and amount are required"
+        message: "Please provide valid data: userId and amount,utr are required"
       });
     }
 
@@ -557,6 +558,19 @@ const addCreditRequest = async (req, res) => {
 
         await paymentHistory.create(paymentObj);
 
+        let image =null;
+        if(req.file){
+          image=req.file.location
+        }
+        const paymentReqObj = {
+          userId: userId,
+          amount: amount,
+          utr:utr,
+          imageUrl:image,
+          paymentStatus: "credit",
+        };
+        await paymentRequest.create(paymentReqObj);
+        
         return res.status(200).json({
           statusCode: 200,
           status: "Success",

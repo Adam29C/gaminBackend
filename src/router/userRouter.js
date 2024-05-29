@@ -24,7 +24,7 @@ app.get('/seriesList',authenticateToken,seriesList)
 app.get('/matchList',authenticateToken,matchList)
 app.get('/viewWallet',authenticateToken,viewWallet)
 app.post('/withdrawPayment',authenticateToken,withdrawPayment)
-app.post('/addCreditRequest',paymentRequestImage.single("image"),addCreditRequest);
+app.post('/addCreditRequest',authenticateToken,paymentRequestImage.single("image"),addCreditRequest);
 app.get('/viewPaymentHistory',authenticateToken,viewPaymentHistory)
 app.post('/filterPaymentHistory',authenticateToken,filterPaymentHistory)
 app.get('/getRules', authenticateToken, getRules)

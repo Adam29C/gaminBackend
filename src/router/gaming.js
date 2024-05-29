@@ -7,5 +7,5 @@ app.get('/getAllMatchesList', authenticateToken, getAllMatchesList);
 app.get("/getSeriesList", authenticateToken, getSeriesList);
 app.get("/getMatchList/:seriesId", authenticateToken, getMatchList);
 app.get("/matchDetails/:matchId", authenticateToken, matchDetails);
-app.get("/getMatchScore", authenticateToken, getMatchScore);
+app.get("/getMatchScore/:matchId", authenticateToken, getMatchScore);
 module.exports = app

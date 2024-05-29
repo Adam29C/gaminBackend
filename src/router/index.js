@@ -6,6 +6,6 @@ router.use('/adminRouter', require('./adminRouter'))
 router.use('/subAdminRouter', require('./subAdminRouter'))
 router.use('/authRouter', require('./authRouter'));
 router.use("/common",require('./common'))
-router.use('/sports',gaming)
+router.use('/sports',gaming);
 
 module.exports = router

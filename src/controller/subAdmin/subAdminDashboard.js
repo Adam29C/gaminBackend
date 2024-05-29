@@ -122,7 +122,7 @@ const countDashboardUser = async (req, res) => {
         const role = req.decoded.info.roles;
         const { subAdminId } = req.query;
 
-        if (role !== 0) {
+        if (role !== 1) {
             return res.status(400).send({
                 statusCode: 400,
                 status: "failure",

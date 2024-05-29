@@ -1169,6 +1169,61 @@ const countDashboard = async (req, res) => {
             msg: "Internal Server Error"
         });
     }
-}
+};
+
+//Deactivate User count api user and sub admin
+const deactivateUser = async (req, res) => {
+    try {
+        const role = req.decoded.info.roles;
+        const { adminId, id} = req.body;
+        
+        if(!adminId ||!id){
+            return res.status(400).send({
+                statusCode: 400,
+                status: "failure",
+                msg: "adminId and id is required."
+            });
+        }
+
+        if (role !== 0) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "failure",
+                msg: "Admin can access only."
+            });
+        }
+
+        const adminDetails = await user.findOne({ _id: adminId });
+
+        if (!adminDetails) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "Admin does not exist."
+            });
+        }
+
+        const updateUserState = await user.updateOne({},{$set:{isActive:false}}) 
+
+        return res.status(200).send({
+            statusCode: 200,
+            status: "Success",
+            msg: "Counts fetched successfully",
+            data: {
+                totalCount,
+                verifiedCount,
+                notVerifiedCount
+            }
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: "Internal Server Error"
+        });
+    }
+};
 
 module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin,updateGameStatus,userList,countDashboard }

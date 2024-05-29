@@ -46,7 +46,7 @@ const getMatchsList = async (req, res) => {
                 message: "series id required"
             });
         }
-        const response = await axios.get(`https://rest.entitysport.com/exchange/competitions/${seriesId}/matches?token=a847b9eda5b69a7cae7d1edb0ee2cd30&type=mixed`);
+        const response = await axios.get(`https://rest.entitysport.com/exchange/competitions/${seriesId}/matches?token=${match_token}&type=mixed`);
         const allMatchesList = response.data;
         return res.status(200).send({
             statusCode: 200,
@@ -54,6 +54,7 @@ const getMatchsList = async (req, res) => {
             data: allMatchesList
         });
     } catch (error) {
+        console.log(error)
         return res.status(500).send({
             statusCode: 500,
             status: "failure",
@@ -72,7 +73,7 @@ const matchDetails =async(req,res)=>{
                 message: "Match id required"
             });
         }
-        const response = await axios.get(`https://rest.entitysport.com/exchange/matches/${matchId}/odds?token=a847b9eda5b69a7cae7d1edb0ee2cd30`);
+        const response = await axios.get(`https://rest.entitysport.com/exchange/matches/${matchId}/odds?token=${match_token}`);
         const allMatchesList = response.data;
         return res.status(200).send({
             statusCode: 200,

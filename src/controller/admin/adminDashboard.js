@@ -137,8 +137,9 @@ const subAdminList = async (req, res) => {
                 role: details.role,
                 isDeleted: details.isDeleted,
                 createdAt: details.createdAt,
-                subAdminId: details._id
-            },
+                subAdminId: details._id,
+                isActive:details.isActive
+            }
 
             )
         }

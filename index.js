@@ -19,7 +19,7 @@ app.use('/api/v1', route);
 
 //---------seeders start----------------//
 
-//require('./src/seeders/adminSeeders');
+// require('./src/seeders/adminSeeders');
 
 // Start the server
 let port = process.env.PORT; 

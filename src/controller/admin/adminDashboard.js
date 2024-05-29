@@ -190,7 +190,8 @@ const userList = async (req, res) => {
                 role: details.role,
                 isDeleted: details.isDeleted,
                 createdAt: details.createdAt,
-                userId: details._id
+                userId: details._id,
+                isActive:details.isActive,
             },
 
             )

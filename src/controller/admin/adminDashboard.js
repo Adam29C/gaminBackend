@@ -191,7 +191,7 @@ const userList = async (req, res) => {
                 isDeleted: details.isDeleted,
                 createdAt: details.createdAt,
                 userId: details._id,
-                isActive:details.isActive
+                isActive:details.isActive,
             },
 
             )

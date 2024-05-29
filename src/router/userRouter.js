@@ -5,6 +5,11 @@ const {validateLogin,userSighUp, handleValidationErrors } = require('../helper/v
 const { authenticateToken } = require('../helper/middleware')
 const{withdrawalCreatePassword, withdraw, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp,withdrawalPasswordVerifyOtp,addAccountDetail, userAccountDetail, deleteAccountDetail,addCreditRequest,filterPaymentHistory,accountById, adminAccountsList}=require("../controller/user/userDashboard")
 const {getRules } = require('../controller/admin/adminDashboard')
+const  getMulterStorage = require("../helper/fileUpload")
+
+const paymentRequestImage = getMulterStorage("uploads/paymentRequest");
+
+
 
 //==============================User Dashboard Router============================================================================
 app.post('/addAccountDetail', authenticateToken,addAccountDetail)
@@ -19,7 +24,7 @@ app.get('/seriesList',authenticateToken,seriesList)
 app.get('/matchList',authenticateToken,matchList)
 app.get('/viewWallet',authenticateToken,viewWallet)
 app.post('/withdrawPayment',authenticateToken,withdrawPayment)
-app.post('/addCreditRequest',authenticateToken,addCreditRequest)
+app.post('/addCreditRequest',paymentRequestImage.single("image"),addCreditRequest);
 app.get('/viewPaymentHistory',authenticateToken,viewPaymentHistory)
 app.post('/filterPaymentHistory',authenticateToken,filterPaymentHistory)
 app.get('/getRules', authenticateToken, getRules)

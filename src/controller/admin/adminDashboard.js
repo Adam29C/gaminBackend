@@ -125,7 +125,7 @@ const subAdminList = async (req, res) => {
             });
         }
 
-        const subAdminData = await user.find({ createdBy: adminId, isDeleted:false});
+        const subAdminData = await user.find({ createdBy: adminId, isDeleted: false });
         let arrVal = [];
         for (let details of subAdminData) {
             arrVal.push({
@@ -137,7 +137,7 @@ const subAdminList = async (req, res) => {
                 role: details.role,
                 isDeleted: details.isDeleted,
                 createdAt: details.createdAt,
-                subAdminId:details._id
+                subAdminId: details._id
             },
 
             )
@@ -178,7 +178,7 @@ const userList = async (req, res) => {
             });
         }
 
-        const subAdminData = await user.find({ createdBy: "self", isDeleted:false,});
+        const subAdminData = await user.find({ createdBy: "self", isDeleted: false, });
         let arrVal = [];
         for (let details of subAdminData) {
             arrVal.push({
@@ -190,7 +190,7 @@ const userList = async (req, res) => {
                 role: details.role,
                 isDeleted: details.isDeleted,
                 createdAt: details.createdAt,
-                userId:details._id
+                userId: details._id
             },
 
             )
@@ -199,7 +199,7 @@ const userList = async (req, res) => {
             return res.status(200).send({
                 statusCode: 200,
                 status: "Success",
-                msg:"User List Show Successfully",
+                msg: "User List Show Successfully",
                 data: arrVal
             });
         }
@@ -232,7 +232,7 @@ const deleteSubAdmin = async (req, res) => {
             });
         }
         const deleteSubAdmin = await user.updateOne(
-            {_id: id},{$set:{isDeleted:true}}
+            { _id: id }, { $set: { isDeleted: true } }
         );
         if (deleteSubAdmin) {
             return res.status(200).send({
@@ -365,7 +365,7 @@ const gamesUpdatedByAdmin = async (req, res) => {
 //Update Game status
 const updateGameStatus = async (req, res) => {
     try {
-        const  role  = req.decoded.info.roles;
+        const role = req.decoded.info.roles;
         console
         const { gameId, isShow } = req.body;
 
@@ -488,7 +488,7 @@ const gamesList = async (req, res) => {
 //Add Amount To Waled
 const addAmount = async (req, res) => {
     try {
-        let Role =req.decoded.info.roles;
+        let Role = req.decoded.info.roles;
         const { userId, amount, description } = req.body;
         if (Role === 0) {
             let amountSave = await new waled({ userId, amount, description }).save();
@@ -561,7 +561,7 @@ const paymentHistory = async (req, res) => {
 //Add Game Rules
 const addRules = async (req, res) => {
     try {
-        const  role  = req.decoded.info.roles;
+        const role = req.decoded.info.roles;
         const { userId, title, description } = req.body;
 
         if (role !== 0) {
@@ -612,7 +612,7 @@ const addRules = async (req, res) => {
 //Update rule 
 const updateRules = async (req, res) => {
     try {
-        const  role  = req.decoded.info.roles;
+        const role = req.decoded.info.roles;
         const { ruleId, status, title, description } = req.body;
 
         if (role !== 0) {
@@ -723,7 +723,7 @@ const updateRulesStatus = async (req, res) => {
 //Delete Rules 
 const deleteRules = async (req, res) => {
     try {
-        const  role  = req.decoded.info.roles;
+        const role = req.decoded.info.roles;
         const { ruleId } = req.query;
 
         if (role !== 0) {
@@ -830,7 +830,7 @@ const checkToken = async (req, res) => {
 //Admin Add Account Detail
 const addAdminAccountDetail = async (req, res) => {
     try {
-        const { id, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName,minAmount,maxAmount } = req.body;
+        const { id, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName, minAmount, maxAmount } = req.body;
         if (!id) {
             return res.status(400).send({
                 statusCode: 400,
@@ -881,9 +881,9 @@ const addAdminAccountDetail = async (req, res) => {
 
         let updateData = {};
         if (isBank == "true") {
-            updateData = { $push: { bank: { accountNumber, accountHolderName, ifscCode, bankName, isBank, bankImage: imageUrl,maxAmount:maxAmount,minAmount:minAmount } }, $set: { updatedAt: Date.now() } };
+            updateData = { $push: { bank: { accountNumber, accountHolderName, ifscCode, bankName, isBank, bankImage: imageUrl, maxAmount: maxAmount, minAmount: minAmount } }, $set: { updatedAt: Date.now() } };
         } else {
-            updateData = { $push: { upi: { upiId, upiName, isBank, barCodeImage: imageUrl,maxAmount:maxAmount,minAmount:minAmount } }, $set: { updatedAt: Date.now() } };
+            updateData = { $push: { upi: { upiId, upiName, isBank, barCodeImage: imageUrl, maxAmount: maxAmount, minAmount: minAmount } }, $set: { updatedAt: Date.now() } };
         }
 
         // Find the existing account details document or create a new one
@@ -1002,7 +1002,7 @@ const deleteAdminAccountDetail = async (req, res) => {
 //Update account Detail By Id
 const updateAdminAccountDetail = async (req, res) => {
     try {
-        const { adminId, id, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName,minAmount,maxAmount } = req.body;
+        const { adminId, id, isBank, accountNumber, accountHolderName, ifscCode, bankName, upiId, upiName, minAmount, maxAmount } = req.body;
         if (!adminId || !id) {
             return res.status(400).send({
                 statusCode: 400,
@@ -1148,7 +1148,7 @@ const countDashboard = async (req, res) => {
 
         const verifiedCount = counts.find(c => c._id === true)?.count || 0;
         const notVerifiedCount = counts.find(c => c._id === false)?.count || 0;
-        const totalCount=verifiedCount+notVerifiedCount
+        const totalCount = verifiedCount + notVerifiedCount
 
         return res.status(200).send({
             statusCode: 200,
@@ -1175,9 +1175,9 @@ const countDashboard = async (req, res) => {
 const deactivateUser = async (req, res) => {
     try {
         const role = req.decoded.info.roles;
-        const { adminId, id} = req.body;
-        
-        if(!adminId ||!id){
+        const { adminId, id,isActive } = req.body;
+
+        if (!adminId || !id) {
             return res.status(400).send({
                 statusCode: 400,
                 status: "failure",
@@ -1203,18 +1203,16 @@ const deactivateUser = async (req, res) => {
             });
         }
 
-        const updateUserState = await user.updateOne({},{$set:{isActive:false}}) 
+        const updateUserState = await user.updateOne({ _id: id }, { $set: { isActive: isActive } })
 
-        return res.status(200).send({
-            statusCode: 200,
-            status: "Success",
-            msg: "Counts fetched successfully",
-            data: {
-                totalCount,
-                verifiedCount,
-                notVerifiedCount
-            }
-        });
+        if (updateUserState) {
+            return res.status(200).send({
+                statusCode: 200,
+                status: "Success",
+                msg: "User status change successfully",
+            });
+        }
+
 
     } catch (error) {
         console.error(error);
@@ -1226,4 +1224,4 @@ const deactivateUser = async (req, res) => {
     }
 };
 
-module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin,updateGameStatus,userList,countDashboard }
+module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin, updateGameStatus, userList, countDashboard,deactivateUser }

@@ -545,7 +545,8 @@ const addCreditRequest = async (req, res) => {
       const walletInfo = await wallet.findOne({ userId: userId });
 
       if (walletInfo) {
-        const updateAmt = walletInfo.amount + amount;
+        let totalAmount = Number(amount);
+        const updateAmt = walletInfo.amount + totalAmount;
         const updateCreditBuffer = walletInfo.creditBuffer + amount;
 
         await wallet.updateOne({ userId }, { $set: { amount: updateAmt, creditBuffer: updateCreditBuffer } });

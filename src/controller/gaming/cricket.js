@@ -3,7 +3,7 @@ const messages = require("../../helper/messages");
 let match_token = process.env.MATCH_TOKEN
 const getAllMatchesList = async (req, res) => {
     try {
-        const response = await axios.get(`https://rest.entitysport.com/exchange/matches?token=${match_token}&status=3`);
+        const response = await axios.get(` https://rest.entitysport.com/exchange/matches?token=${match_token}&type=mixed&per_page=20`);
         const allMatchesList = response.data;
         return res.status(200).send({
             statusCode: 200,

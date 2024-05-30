@@ -10,6 +10,7 @@ const PaymentHistory = require('../../model/paymentHistory');
 const rule = require("../../model/rule");
 const adminAccountDetails = require('../../model/adminAccountDetails');
 const mongoose = require('mongoose');
+const paymentRequest = require('../../model/paymentRequest');
 const ObjectId = mongoose.Types.ObjectId;
 // Function to handle creation of sub-admin
 const createSubAdminFn = async (req, res) => {
@@ -138,7 +139,7 @@ const subAdminList = async (req, res) => {
                 isDeleted: details.isDeleted,
                 createdAt: details.createdAt,
                 subAdminId: details._id,
-                isActive:details.isActive
+                isActive: details.isActive
             }
 
             )
@@ -192,7 +193,7 @@ const userList = async (req, res) => {
                 isDeleted: details.isDeleted,
                 createdAt: details.createdAt,
                 userId: details._id,
-                isActive:details.isActive,
+                isActive: details.isActive,
             },
 
             )
@@ -529,32 +530,82 @@ const addAmount = async (req, res) => {
 //Add Amount To Waled
 const paymentHistory = async (req, res) => {
     try {
-        let Role = req.decoded.info.roles;
-        if (Role === 0) {
-            let findPaymentHistory = await PaymentHistory.find();
-            if (findPaymentHistory) {
-                return res.status(200).send({
-                    status: true,
-                    msg: Msg.paymentHistory,
-                    data: findPaymentHistory
-                });
-            } else {
-                return res.status(200).send({
-                    status: false,
-                    msg: Msg.paymentHistory,
-                    data: []
-                });
-            }
-        } else {
-            return res.status(200).send({
-                status: false,
+        const { paymentStatus, adminId } = req.body;
+        const Role = req.decoded.info.roles;
+        if (!paymentStatus || !adminId) {
+            return res.status(400).send({
+                statusCode: 400,
+                msg: "Failure",
+                data: "Payment Status And AdminId is required"
+            });
+        }
+
+        if (Role !== 0) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "failure",
                 msg: Msg.adminCanAccess
+            });
+        }
+        let findPaymentHistory = await paymentRequest.find(paymentStatus == "all" ? {} : { paymentStatus });
+
+        if (findPaymentHistory) {
+            return res.status(200).send({
+                status: "Success",
+                msg: Msg.paymentHistory,
+                data: findPaymentHistory
             });
         }
     } catch (error) {
         return res.json(500).send({
             statusCode: 500,
-            status: false,
+            status: "Failure",
+            msg: Msg.failure
+        })
+    }
+};
+
+//Admin update Payment Request Status
+const updatePaymentRequestStatus = async (req, res) => {
+    try {
+        const { adminId, id, paymentStatus, description } = req.body;
+        const Role = req.decoded.info.roles;
+        if (!paymentStatus || !adminId || !paymentStatus) {
+            return res.status(400).send({
+                statusCode: 400,
+                msg: "Failure",
+                data: "Request Id, AdminId, paymentStatus is required"
+            });
+        }
+
+        if (Role !== 0) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "failure",
+                msg: Msg.adminCanAccess
+            });
+        }
+
+        let findPaymentHistory = await paymentRequest.findOne({ _id: id })
+        if (!findPaymentHistory) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Success",
+                msg: "payment History Not Found"
+            });
+        }
+        let updateStatus = await paymentRequest.findOneAndUpdate({ _id: id }, { $set: { paymentStatus: paymentStatus, description: description } });
+        if (updateStatus) {
+            return res.json(200).send({
+                statusCode: 200,
+                status: "Success",
+                msg: "Payment Status Update Successfully"
+            })
+        }
+    } catch (error) {
+        return res.json(500).send({
+            statusCode: 500,
+            status: "Failure",
             msg: Msg.failure
         })
     }
@@ -1177,7 +1228,7 @@ const countDashboard = async (req, res) => {
 const deactivateUser = async (req, res) => {
     try {
         const role = req.decoded.info.roles;
-        const { adminId, id,isActive } = req.body;
+        const { adminId, id, isActive } = req.body;
 
         if (!adminId || !id) {
             return res.status(400).send({
@@ -1226,4 +1277,4 @@ const deactivateUser = async (req, res) => {
     }
 };
 
-module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin, updateGameStatus, userList, countDashboard,deactivateUser }
+module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin, updateGameStatus, userList, countDashboard, deactivateUser,updatePaymentRequestStatus }

@@ -15,7 +15,8 @@ const paymentRequestSchema = new Schema({
     paymentStatus: {
         type: String,
         enum: ['debit', 'credit']
-    }
+    },
+    paymentHistoryId:{type:String}
 
 }, {
     timestamps: true

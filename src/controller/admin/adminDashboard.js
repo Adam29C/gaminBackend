@@ -568,48 +568,66 @@ const paymentHistory = async (req, res) => {
 //Admin update Payment Request Status
 const updatePaymentRequestStatus = async (req, res) => {
     try {
-        const { adminId, id, paymentStatus, description } = req.body;
+        const { adminId, paymentHistoryId, status, description } = req.body;
         const Role = req.decoded.info.roles;
-        if (!paymentStatus || !adminId || !paymentStatus) {
+
+        // Check for required fields
+        if (!paymentHistoryId || !adminId || !status) {
             return res.status(400).send({
                 statusCode: 400,
                 msg: "Failure",
-                data: "Request Id, AdminId, paymentStatus is required"
+                data: "Request Id, AdminId, and status are required"
             });
         }
 
+        // Check for admin role
         if (Role !== 0) {
-            return res.status(400).send({
-                statusCode: 400,
+            return res.status(403).send({
+                statusCode: 403,
                 status: "failure",
-                msg: Msg.adminCanAccess
+                msg: "Admin access required"
             });
         }
 
-        let findPaymentHistory = await paymentRequest.findOne({ _id: id })
+        // Find the payment history
+        let findPaymentHistory = await paymentRequest.findOne({ paymentHistoryId: paymentHistoryId });
         if (!findPaymentHistory) {
-            return res.status(400).send({
-                statusCode: 400,
-                status: "Success",
-                msg: "payment History Not Found"
+            return res.status(404).send({
+                statusCode: 404,
+                status: "Failure",
+                msg: "Payment history not found"
             });
         }
-        let updateStatus = await paymentRequest.findOneAndUpdate({ _id: id }, { $set: { paymentStatus: paymentStatus, description: description } });
-        if (updateStatus) {
-            return res.json(200).send({
-                statusCode: 200,
-                status: "Success",
-                msg: "Payment Status Update Successfully"
-            })
+
+        // Update the payment status
+        let updateStatus = await paymentRequest.updateOne({ paymentHistoryId: paymentHistoryId }, { $set: { status: status, description: description } });
+        // Update the payment status
+        await PaymentHistory.updateOne({ _id: paymentHistoryId }, { $set: { status: status, description: description } });
+        // Check if the update was successful
+        if (updateStatus.modifiedCount === 0) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "Payment status not updated"
+            });
         }
+
+        // Successful response
+        return res.status(200).send({
+            statusCode: 200,
+            status: "Success",
+            msg: "Payment status updated successfully"
+        });
+
     } catch (error) {
-        return res.json(500).send({
+        return res.status(500).send({
             statusCode: 500,
             status: "Failure",
-            msg: Msg.failure
-        })
+            msg: "Internal Server Error"
+        });
     }
 };
+
 
 //Add Game Rules
 const addRules = async (req, res) => {
@@ -1277,4 +1295,4 @@ const deactivateUser = async (req, res) => {
     }
 };
 
-module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin, updateGameStatus, userList, countDashboard, deactivateUser,updatePaymentRequestStatus }
+module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin, updateGameStatus, userList, countDashboard, deactivateUser, updatePaymentRequestStatus }

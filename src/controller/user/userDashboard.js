@@ -506,14 +506,14 @@ const filterPaymentHistory = async (req, res) => {
 
     if (findInfo.length > 0) { // Check if any records are found
       return res.status(200).json({
-        statusCode:200,
+        statusCode: 200,
         status: "Success",
         message: Msg.userTransactionHistory,
         paymentInfo: findInfo
       });
     } else {
       return res.status(200).json({
-        statusCode:200,
+        statusCode: 200,
         status: "Failure",
         message: Msg.noTransactionFound,
         paymentInfo: []
@@ -531,7 +531,7 @@ const filterPaymentHistory = async (req, res) => {
 //add credit request
 const addCreditRequest = async (req, res) => {
   try {
-    const { userId, amount, utr } = req.body;
+    const { userId, amount, utr, isBank, } = req.body;
     if (!userId || !amount || !utr) {
       return res.status(400).json({
         statusCode: 400,
@@ -555,23 +555,25 @@ const addCreditRequest = async (req, res) => {
           userId: userId,
           amount: finalAmount,
           paymentStatus: "credit",
+          utr: utr,
+          isBank: isBank,
         };
 
-        await paymentHistory.create(paymentObj);
+        const paymentHistoryId = await paymentHistory.create(paymentObj);
 
-        let image =null;
-        if(req.file){
-          image=req.file.location
+        let image = null;
+        if (req.file) {
+          image = req.file.location
         }
         const paymentReqObj = {
           userId: userId,
           amount: finalAmount,
-          utr:utr,
-          imageUrl:image,
+          utr: utr,
+          imageUrl: image,
           paymentStatus: "credit",
+          paymentHistoryId: paymentHistoryId._id
         };
         await paymentRequest.create(paymentReqObj);
-        
         return res.status(200).json({
           statusCode: 200,
           status: "Success",
@@ -780,4 +782,4 @@ const accountById = async (req, res) => {
   }
 };
 
-module.exports = { withdrawalCreatePassword, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail, addCreditRequest, filterPaymentHistory, accountById,adminAccountsList }
+module.exports = { withdrawalCreatePassword, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail, addCreditRequest, filterPaymentHistory, accountById, adminAccountsList }

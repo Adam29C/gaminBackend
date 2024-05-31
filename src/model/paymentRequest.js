@@ -8,14 +8,15 @@ const paymentRequestSchema = new Schema({
     description: { type: String },
     status: {
         type: String,
-        enum: ['accept', 'pending', 'decline'],
+        enum: ['approve', 'pending', 'decline'],
         default: 'pending'
     },
     imageUrl: { type: String },
     paymentStatus: {
         type: String,
         enum: ['debit', 'credit']
-    }
+    },
+    paymentHistoryId:{type:String}
 
 }, {
     timestamps: true

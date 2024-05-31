@@ -296,6 +296,7 @@ const login = async (req, res) => {
             });
         }
     } catch (error) {
+        console.log(error,"error")
         return res.status(500).send({
             statusCode: 500,
             status: false,

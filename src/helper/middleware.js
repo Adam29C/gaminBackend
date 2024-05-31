@@ -65,10 +65,10 @@ exports.authenticateToken = async (req, res, next) => {
                         userId: decoded.info.id,
                     });
                     if (!data) {
-                        return res.status(400).send({
-                            statusCode: 400,
+                        return res.status(401).send({
+                            statusCode: 401,
                             status: Msg.failure,
-                            msg: "Token Not Found",
+                            msg: "Token Not Found In Db",
                         });
                     }
                 }
@@ -79,10 +79,10 @@ exports.authenticateToken = async (req, res, next) => {
                     deviceId: decoded.info.deviceId,
                 });
                 if (!data) {
-                    return res.status(400).send({
-                        statusCode: 400,
+                    return res.status(401).send({
+                        statusCode: 401,
                         status:"Failure",
-                        msg:  Msg.failure,
+                        msg:  "Token Not Found In Db",
                     });
                 }
                 req.decoded = decoded;

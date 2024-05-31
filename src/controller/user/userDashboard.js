@@ -380,6 +380,7 @@ const deleteAccountDetail = async (req, res) => {
 const withdrawPayment = async (req, res) => {
   try {
     const { userId, amount, isBank, accountId } = req.body;
+    console.log(req.body,"req.body")
 
     // Validate input
     if (!userId || !amount || typeof isBank === 'undefined' || !accountId) {
@@ -411,13 +412,26 @@ const withdrawPayment = async (req, res) => {
     const updateAmt = walletInfo.amount - amount;
     const updateDebitBuffer = walletInfo.debitBuffer + amount;
     await wallet.updateOne({ userId }, { $set: { amount: updateAmt, debitBuffer: updateDebitBuffer } });
-
-    await new paymentHistory({
+    const randomUtr = await generateRandomNumber(10000000, 20000000);
+    console.log(randomUtr,"randomUtr")
+    const paymentHistoryId=await new paymentHistory({
       userId: userId,
       accountId: accountId,
       isBank: isBank,
       amount: amount,
+      utr:randomUtr,
       paymentStatus: "debit",
+
+    }).save();
+    console.log(paymentHistoryId,"paymentHistoryIdpaymentHistoryId")
+
+    await new paymentRequest({
+      userId: userId,
+      isBank: isBank,
+      amount: amount,
+      paymentStatus: "debit",
+      utr:randomUtr,
+      paymentHistoryId:paymentHistoryId._id
     }).save();
 
     return res.status(200).json({

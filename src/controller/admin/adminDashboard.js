@@ -599,10 +599,16 @@ const updatePaymentRequestStatus = async (req, res) => {
             });
         }
 
+        // Define the update object
+        let updateData = { status: status };
+        if (description !== undefined) {
+            updateData.description = description;
+        }
+
         // Update the payment status
-        let updateStatus = await paymentRequest.updateOne({ paymentHistoryId: paymentHistoryId }, { $set: { status: status, description: description } });
-        // Update the payment status
-        await PaymentHistory.updateOne({ _id: paymentHistoryId }, { $set: { status: status, description: description } });
+        let updateStatus = await paymentRequest.updateOne({ paymentHistoryId: paymentHistoryId }, { $set: updateData });
+        await PaymentHistory.updateOne({ _id: paymentHistoryId }, { $set: updateData });
+
         // Check if the update was successful
         if (updateStatus.modifiedCount === 0) {
             return res.status(400).send({

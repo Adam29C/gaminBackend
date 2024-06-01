@@ -206,6 +206,15 @@ const addAccountDetail = async (req, res) => {
     }
 
     const oldPassword = findUser.withdrawalPassword;
+
+    if(oldPassword===undefined){
+      return res.status(400).send({
+        statusCode: 400,
+        status: "Failure",
+        msg: "Pleaes Create The User withdrawal Password"
+      });
+    }
+
     const checkPassword = await bcrypt.compare(password, oldPassword);
     if (!checkPassword) {
       return res.status(400).send({

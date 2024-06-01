@@ -549,15 +549,40 @@ const paymentHistory = async (req, res) => {
         }
         let findPaymentHistory = await paymentRequest.find(paymentStatus == "all" ? {} : { paymentStatus });
 
-        if (findPaymentHistory) {
-            return res.status(200).send({
-                status: "Success",
-                msg: Msg.paymentHistory,
-                data: findPaymentHistory
+        if (!findPaymentHistory) {
+            return res.status(404).send({
+                status: "Failure",
+                msg: "No payment history found",
+                data: []
             });
         }
+
+        // Fetch user details for each payment history item
+        const userIds = findPaymentHistory.map(payment => payment.userId);
+        const users = await user.find({ _id: { $in: userIds } }).select('name mobileNumber');
+        const userMap = users.reduce((map, user) => {
+            map[user._id] = user;
+            return map;
+        }, {});
+
+        // Merge user details with payment history
+        const paymentHistoryWithUserDetails = findPaymentHistory.map(payment => {
+            const user = userMap[payment.userId];
+            return {
+                ...payment._doc,
+                userName: user ? user.name : null,
+                mobileNumber: user ? user.mobileNumber : null
+            };
+        });
+
+        return res.status(200).send({
+            status: "Success",
+            msg: Msg.paymentHistory,
+            data: findPaymentHistory
+        });
+
     } catch (error) {
-        return res.json(500).send({
+        return res.status(500).send({
             statusCode: 500,
             status: "Failure",
             msg: Msg.failure

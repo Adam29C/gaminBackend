@@ -578,7 +578,7 @@ const paymentHistory = async (req, res) => {
         return res.status(200).send({
             status: "Success",
             msg: Msg.paymentHistory,
-            data: findPaymentHistory
+            data: paymentHistoryWithUserDetails
         });
 
     } catch (error) {

@@ -222,7 +222,7 @@ const userList = async (req, res) => {
         msg: Msg.failure
       });
     }
-  };s
+  };
   
 
 //Delete sub admin 

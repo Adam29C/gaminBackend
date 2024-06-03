@@ -422,7 +422,7 @@ const withdrawPayment = async (req, res) => {
     const updateDebitBuffer = walletInfo.debitBuffer + amount;
     await wallet.updateOne({ userId }, { $set: { amount: updateAmt, debitBuffer: updateDebitBuffer } });
     const randomUtrNumber = await generateRandomNumber(100000000,80000000);
-    let a=await new paymentHistory({
+    await new paymentHistory({
       userId: userId,
       accountId: accountId,
       isBank: isBank,

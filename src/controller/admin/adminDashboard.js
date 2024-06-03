@@ -369,7 +369,6 @@ const gamesUpdatedByAdmin = async (req, res) => {
 const updateGameStatus = async (req, res) => {
     try {
         const role = req.decoded.info.roles;
-        console
         const { gameId, isShow } = req.body;
 
         if (role !== 0) {
@@ -601,10 +600,9 @@ const updatePaymentRequestStatus = async (req, res) => {
             return res.status(400).send({
                 statusCode: 400,
                 msg: "Failure",
-                data: "Request Id, AdminId, and status are required"
+                data: "PaymentHistoryId, AdminId, and status are required"
             });
         }
-
         // Check for admin role
         if (Role !== 0) {
             return res.status(403).send({
@@ -614,8 +612,9 @@ const updatePaymentRequestStatus = async (req, res) => {
             });
         }
 
+        
         // Find the payment history
-        let findPaymentHistory = await paymentRequest.findOne({ paymentHistoryId: paymentHistoryId });
+        const findPaymentHistory = await paymentRequest.findOne({ paymentHistoryId: paymentHistoryId });
         if (!findPaymentHistory) {
             return res.status(404).send({
                 statusCode: 404,
@@ -624,15 +623,39 @@ const updatePaymentRequestStatus = async (req, res) => {
             });
         }
 
+        // Check payment history status
+        if(findPaymentHistory.status=="approve" ||findPaymentHistory.status=="decline"){
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "Payment Is Already Approve Or Decline"
+            });
+        }
+
         // Define the update object
-        let updateData = { status: status };
+        const updateData = { status: status };
         if (description !== undefined) {
             updateData.description = description;
         }
 
         // Update the payment status
-        let updateStatus = await paymentRequest.updateOne({ paymentHistoryId: paymentHistoryId }, { $set: updateData });
+        const updateStatus = await paymentRequest.updateOne({ paymentHistoryId: paymentHistoryId }, { $set: updateData });
         await PaymentHistory.updateOne({ _id: paymentHistoryId }, { $set: updateData });
+
+        // Retrieve the updated payment request
+        const check = await paymentRequest.findOne({ paymentHistoryId: paymentHistoryId });
+        if (check.status === "approve") {
+            const wallet = await waled.findOne({ userId: check.userId });
+            let finalAmount = wallet.amount + check.amount;
+
+            if (check.paymentStatus === "debit") {
+                let finalDebitBuffer = wallet.debitBuffer - check.amount;
+                await waled.updateOne({ userId: check.userId }, { amount: finalAmount, debitBuffer: finalDebitBuffer });
+            } else if (check.paymentStatus === "credit") {
+                let finalCreditBuffer = wallet.creditBuffer - check.amount;
+                await waled.updateOne({ userId: check.userId }, { amount: finalAmount, creditBuffer: finalCreditBuffer });
+            }
+        }
 
         // Check if the update was successful
         if (updateStatus.modifiedCount === 0) {
@@ -1264,7 +1287,6 @@ const countDashboard = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
         return res.status(500).send({
             statusCode: 500,
             status: "Failure",
@@ -1317,7 +1339,6 @@ const deactivateUser = async (req, res) => {
 
 
     } catch (error) {
-        console.error(error);
         return res.status(500).send({
             statusCode: 500,
             status: "Failure",

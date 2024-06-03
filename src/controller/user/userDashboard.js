@@ -418,9 +418,8 @@ const withdrawPayment = async (req, res) => {
       });
     }
 
-    const updateAmt = walletInfo.amount - amount;
     const updateDebitBuffer = walletInfo.debitBuffer + amount;
-    await wallet.updateOne({ userId }, { $set: { amount: updateAmt, debitBuffer: updateDebitBuffer } });
+    await wallet.updateOne({ userId }, { $set: { debitBuffer: updateDebitBuffer } });
     const randomUtrNumber = await generateRandomNumber(100000000,80000000);
 
     let paymentHistoryId=await new paymentHistory({
@@ -591,10 +590,9 @@ const addCreditRequest = async (req, res) => {
 
       if (walletInfo) {
         let finalAmount = Number(amount);
-        const updateAmt = walletInfo.amount + finalAmount;
         const updateCreditBuffer = walletInfo.creditBuffer + finalAmount;
 
-        await wallet.updateOne({ userId }, { $set: { amount: updateAmt, creditBuffer: updateCreditBuffer } });
+        await wallet.updateOne({ userId }, { $set: { creditBuffer: updateCreditBuffer } });
 
         const paymentObj = {
           userId: userId,

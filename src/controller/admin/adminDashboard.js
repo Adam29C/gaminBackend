@@ -163,57 +163,68 @@ const subAdminList = async (req, res) => {
 //fetch list of all sub admin
 const userList = async (req, res) => {
     try {
-        let role = req.decoded.info.roles;
-        const { adminId } = req.query;
-        if (role !== 0) {
-            return res.status(403).send({
-                statusCode: 403,
-                status: "Failure",
-                msg: Msg.adminCanAccess
-            });
-        }
-        if (!adminId) {
-            return res.status(500).send({
-                statusCode: 500,
-                status: "Failure",
-                msg: "Admin Id is required"
-            });
-        }
-
-        const subAdminData = await user.find({ createdBy: "self", isDeleted: false, });
-        let arrVal = [];
-        for (let details of subAdminData) {
-            arrVal.push({
-                name: details.name,
-                mobileNumber: details.mobileNumber,
-                isVerified: details.isVerified,
-                createdBy: details.createdBy,
-                loginStatus: details.loginStatus,
-                role: details.role,
-                isDeleted: details.isDeleted,
-                createdAt: details.createdAt,
-                userId: details._id,
-                isActive: details.isActive,
-            },
-
-            )
-        }
-        if (subAdminData) {
-            return res.status(200).send({
-                statusCode: 200,
-                status: "Success",
-                msg: "User List Show Successfully",
-                data: arrVal
-            });
-        }
+      let role = req.decoded.info.roles;
+      const { adminId, sortField, sortOrder } = req.query;
+  
+      if (role !== 0) {
+        return res.status(403).send({
+          statusCode: 403,
+          status: "Failure",
+          msg: Msg.adminCanAccess
+        });
+      }
+  
+      if (!adminId) {
+        return res.status(500).send({
+          statusCode: 500,
+          status: "Failure",
+          msg: "Admin Id is required"
+        });
+      }
+  
+      const subAdminData = await user.find({ createdBy: "self", isDeleted: false, isSignUp: true });
+  
+      let arrVal = subAdminData.map(details => ({
+        name: details.name,
+        mobileNumber: details.mobileNumber,
+        isVerified: details.isVerified,
+        createdBy: details.createdBy,
+        loginStatus: details.loginStatus,
+        role: details.role,
+        isDeleted: details.isDeleted,
+        createdAt: details.createdAt,
+        userId: details._id,
+        isActive: details.isActive,
+      }));
+  
+      // Set default sorting parameters if not provided
+      let sortFieldFinal = sortField || 'createdAt';
+      let sortOrderFinal = sortOrder === 'asc' ? 1 : -1; // Ascending: 1, Descending: -1
+  
+      // Sort the array
+      arrVal.sort((a, b) => {
+        if (a[sortFieldFinal] < b[sortFieldFinal]) return -1 * sortOrderFinal;
+        if (a[sortFieldFinal] > b[sortFieldFinal]) return 1 * sortOrderFinal;
+        return 0;
+      });
+  
+      return res.status(200).send({
+        statusCode: 200,
+        status: "Success",
+        msg: "User List Show Successfully",
+        data: arrVal
+      });
+  
     } catch (error) {
-        return res.json(500).send({
-            statusCode: 500,
-            status: false,
-            msg: Msg.failure
-        })
+      return res.status(500).send({
+        statusCode: 500,
+        status: false,
+        msg: Msg.failure
+      });
     }
-};
+  };s
+  
+
 //Delete sub admin 
 const deleteSubAdmin = async (req, res) => {
     try {

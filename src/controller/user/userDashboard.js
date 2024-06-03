@@ -508,10 +508,9 @@ const viewPaymentHistory = async (req, res) => {
 };
 
 // User All Transaction History  based on credit or debit  
-
 const filterPaymentHistory = async (req, res) => {
   try {
-    let { userId, paymentstatus, date } = req.body;
+    let { userId, paymentstatus, date, sortField, sortOrder } = req.body;
 
     // Validate userId and paymentStatus
     if (!userId || !paymentstatus) {
@@ -545,8 +544,20 @@ const filterPaymentHistory = async (req, res) => {
       };
     }
 
-    // Find payment history with the constructed query
-    let findInfo = await paymentHistory.find(query);
+    // Set default sorting parameters if not provided
+    if (!sortField) {
+      sortField = 'updatedAt';
+    }
+    if (!sortOrder) {
+      sortOrder = 'desc';
+    }
+
+    // Construct sort object
+    let sort = {};
+    sort[sortField] = sortOrder === 'asc' ? 1 : -1;
+
+    // Find payment history with the constructed query and sort order
+    let findInfo = await paymentRequest.find(query).sort(sort);
 
     if (findInfo.length > 0) { // Check if any records are found
       return res.status(200).json({
@@ -564,6 +575,7 @@ const filterPaymentHistory = async (req, res) => {
       });
     }
   } catch (error) {
+    console.error(error); // Log error for debugging
     return res.status(500).json({
       statusCode: 500,
       status: "Failure",

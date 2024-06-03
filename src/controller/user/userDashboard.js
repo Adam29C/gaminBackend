@@ -208,7 +208,7 @@ const addAccountDetail = async (req, res) => {
 
     const oldPassword = findUser.withdrawalPassword;
 
-    if(oldPassword===undefined){
+    if (oldPassword === undefined) {
       return res.status(400).send({
         statusCode: 400,
         status: "Failure",
@@ -421,13 +421,14 @@ const withdrawPayment = async (req, res) => {
     const updateAmt = walletInfo.amount - amount;
     const updateDebitBuffer = walletInfo.debitBuffer + amount;
     await wallet.updateOne({ userId }, { $set: { amount: updateAmt, debitBuffer: updateDebitBuffer } });
-
-    await new paymentHistory({
+    const randomUtrNumber = await generateRandomNumber(100000000,80000000);
+    let a=await new paymentHistory({
       userId: userId,
       accountId: accountId,
       isBank: isBank,
       amount: amount,
       paymentStatus: "debit",
+      utr:randomUtrNumber
     }).save();
 
     return res.status(200).json({
@@ -472,8 +473,8 @@ const viewWallet = async (req, res) => {
 };
 
 //User All Transaction History  
-const  viewPaymentHistory = async (req, res) => {
-  try { 
+const viewPaymentHistory = async (req, res) => {
+  try {
     let { userId } = req.query;
     let findInfo = await paymentHistory.findOne({ userId: userId });
     if (findInfo) {

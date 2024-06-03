@@ -646,14 +646,15 @@ const updatePaymentRequestStatus = async (req, res) => {
         const check = await paymentRequest.findOne({ paymentHistoryId: paymentHistoryId });
         if (check.status === "approve") {
             const wallet = await waled.findOne({ userId: check.userId });
-            let finalAmount = wallet.amount + check.amount;
 
             if (check.paymentStatus === "debit") {
+                let finaldebitAmount = wallet.amount - check.amount;
                 let finalDebitBuffer = wallet.debitBuffer - check.amount;
-                await waled.updateOne({ userId: check.userId }, { amount: finalAmount, debitBuffer: finalDebitBuffer });
+                await waled.updateOne({ userId: check.userId }, { amount: finaldebitAmount, debitBuffer: finalDebitBuffer });
             } else if (check.paymentStatus === "credit") {
+                let finalCreditAmount = wallet.amount + check.amount;
                 let finalCreditBuffer = wallet.creditBuffer - check.amount;
-                await waled.updateOne({ userId: check.userId }, { amount: finalAmount, creditBuffer: finalCreditBuffer });
+                await waled.updateOne({ userId: check.userId }, { amount: finalCreditAmount, creditBuffer: finalCreditBuffer });
             }
         }
 

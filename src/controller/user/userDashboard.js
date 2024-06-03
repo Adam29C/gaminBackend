@@ -22,6 +22,7 @@ const { UserDefinedMessageInstance } = require("twilio/lib/rest/api/v2010/accoun
 const mongoose = require('mongoose');
 const paymentRequest = require("../../model/paymentRequest");
 const ObjectId = mongoose.Types.ObjectId;
+const moment = require('moment');
 // user can create withdrawalCreatePassword
 const withdrawalCreatePassword = async (req, res) => {
   try {
@@ -471,8 +472,8 @@ const viewWallet = async (req, res) => {
 };
 
 //User All Transaction History  
-const viewPaymentHistory = async (req, res) => {
-  try {
+const  viewPaymentHistory = async (req, res) => {
+  try { 
     let { userId } = req.query;
     let findInfo = await paymentHistory.findOne({ userId: userId });
     if (findInfo) {
@@ -498,9 +499,10 @@ const viewPaymentHistory = async (req, res) => {
 };
 
 // User All Transaction History  based on credit or debit  
+
 const filterPaymentHistory = async (req, res) => {
   try {
-    let { userId, paymentstatus } = req.body;
+    let { userId, paymentstatus, date } = req.body;
 
     // Validate userId and paymentStatus
     if (!userId || !paymentstatus) {
@@ -510,8 +512,32 @@ const filterPaymentHistory = async (req, res) => {
       });
     }
 
-    // Find payment history with userId and paymentStatus
-    let findInfo = await paymentHistory.find({ userId: userId, paymentStatus: paymentstatus });
+    // Validate and parse date if provided
+    let dateObj;
+    if (date) {
+      dateObj = moment(date, "DD/MM/YYYY").startOf('day'); // Parse and set to start of the day
+      if (!dateObj.isValid()) {
+        return res.status(400).json({
+          status: "Failure",
+          message: "Invalid date format."
+        });
+      }
+    }
+
+    // Build query object
+    let query = { userId: userId };
+    if (paymentstatus !== "all") {
+      query.paymentStatus = paymentstatus;
+    }
+    if (dateObj) {
+      query.updatedAt = {
+        $gte: dateObj.toDate(),
+        $lt: dateObj.add(1, 'days').toDate() // Get all records within that day
+      };
+    }
+
+    // Find payment history with the constructed query
+    let findInfo = await paymentHistory.find(query);
 
     if (findInfo.length > 0) { // Check if any records are found
       return res.status(200).json({

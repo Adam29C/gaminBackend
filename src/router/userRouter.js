@@ -24,7 +24,7 @@ app.get('/viewWallet',authenticateToken,viewWallet)
 app.post('/withdrawPayment',authenticateToken,withdrawPayment)
 app.post('/addCreditRequest',authenticateToken,paymentRequestImage.single("image"),addCreditRequest);
 app.get('/viewPaymentHistory',authenticateToken,viewPaymentHistory)
-app.post('/filterPaymentHistory',filterPaymentHistory)
+app.post('/filterPaymentHistory',authenticateToken,filterPaymentHistory)
 app.get('/getRules', authenticateToken, getRules)
 
 //game By id 

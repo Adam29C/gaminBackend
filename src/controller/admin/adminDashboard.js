@@ -1377,7 +1377,11 @@ const transectionAndBankingList = async (req, res) => {
         const adminAccountInfo = await adminAccountDetails.find({ adminId: adminId });
 
         // Fetch the user transaction list
-        let userTransectionList = await paymentRequest.find({ status: "approve" });
+        let userTransectionList = await paymentRequest.find({ status: "approve" },{_id:1,userId:1});
+        for(info of userTransectionList){
+            console.log(info,"vvv")
+        }
+        console.log(userTransectionList,"userTransectionList")
 
         // Sorting logic
         if (sortBy) {

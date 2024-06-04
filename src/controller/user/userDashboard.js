@@ -587,12 +587,12 @@ const filterPaymentHistory = async (req, res) => {
 //add credit request
 const addCreditRequest = async (req, res) => {
   try {
-    const { userId, amount, utr, isBank, } = req.body;
-    if (!userId || !amount || !utr) {
+    const { userId, amount, utr, isBank,depositId } = req.body;
+    if (!userId || !amount || !utr||!depositId) {
       return res.status(400).json({
         statusCode: 400,
         status: "failure",
-        message: "Please provide valid data: userId and amount,utr are required"
+        message: "Please provide valid data: userId and amount,utr, depositId are required"
       });
     }
 
@@ -612,6 +612,7 @@ const addCreditRequest = async (req, res) => {
           paymentStatus: "credit",
           utr: utr,
           isBank: isBank,
+          depositId:depositId
         };
 
         const paymentHistoryId = await paymentHistory.create(paymentObj);
@@ -626,7 +627,8 @@ const addCreditRequest = async (req, res) => {
           utr: utr,
           imageUrl: image,
           paymentStatus: "credit",
-          paymentHistoryId: paymentHistoryId._id
+          paymentHistoryId: paymentHistoryId._id,
+          depositId:depositId
         };
         await paymentRequest.create(paymentReqObj);
         return res.status(200).json({

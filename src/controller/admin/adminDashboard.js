@@ -12,6 +12,7 @@ const adminAccountDetails = require('../../model/adminAccountDetails');
 const mongoose = require('mongoose');
 const paymentRequest = require('../../model/paymentRequest');
 const ObjectId = mongoose.Types.ObjectId;
+const moment =require("moment");
 // Function to handle creation of sub-admin
 const createSubAdminFn = async (req, res) => {
     try {
@@ -1359,4 +1360,53 @@ const deactivateUser = async (req, res) => {
     }
 };
 
-module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin, updateGameStatus, userList, countDashboard, deactivateUser, updatePaymentRequestStatus }
+const transectionAndBankingList = async (req, res) => {
+    try {
+        const { adminId, sortBy, sortOrder } = req.body;
+        
+        // Required field check
+        if (!adminId) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                message: "Required field AdminId"
+            });
+        };
+
+        // Fetch the admin account info
+        const adminAccountInfo = await adminAccountDetails.find({ adminId: adminId });
+
+        // Fetch the user transaction list
+        let userTransectionList = await paymentRequest.find({ status: "approve" });
+
+        // Sorting logic
+        if (sortBy) {
+            const order = sortOrder && sortOrder.toLowerCase() === 'desc' ? -1 : 1;
+            userTransectionList = userTransectionList.sort((a, b) => {
+                if (a[sortBy] < b[sortBy]) return -1 * order;
+                if (a[sortBy] > b[sortBy]) return 1 * order;
+                return 0;
+            });
+        }
+
+        const data = { adminAccountInfo, userTransectionList };
+
+        return res.status(200).send({
+            statusCode: 200,
+            status: "Success",
+            message: "Admin Account Info And User Transaction History shown successfully",
+            data: data
+        });
+
+    } catch (error) {
+        return res.status(400).send({
+            statusCode: 400,
+            status: "Failure",
+            message: Msg.failure
+        });
+    }
+};
+
+
+
+module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin, updateGameStatus, userList, countDashboard, deactivateUser, updatePaymentRequestStatus,transectionAndBankingList }

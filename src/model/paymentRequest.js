@@ -5,6 +5,7 @@ const paymentRequestSchema = new Schema({
     userId: { type: String, required: true },
     amount: { type: Number },
     utr: { type: String },
+    depositId:{type:String},
     description: { type: String },
     status: {
         type: String,

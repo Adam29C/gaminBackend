@@ -12,6 +12,7 @@ const paymentHistorySchema = new Schema({
   },
   isBank:{type: Boolean, required: false},
   utr :{type:String},
+  depositId:{type:String},
   paymentStatus: { 
     type: String, 
     enum: ['debit', 'credit'] 

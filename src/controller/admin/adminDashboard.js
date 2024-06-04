@@ -12,7 +12,7 @@ const adminAccountDetails = require('../../model/adminAccountDetails');
 const mongoose = require('mongoose');
 const paymentRequest = require('../../model/paymentRequest');
 const ObjectId = mongoose.Types.ObjectId;
-const moment =require("moment");
+const moment = require("moment");
 // Function to handle creation of sub-admin
 const createSubAdminFn = async (req, res) => {
     try {
@@ -164,67 +164,67 @@ const subAdminList = async (req, res) => {
 //fetch list of all sub admin
 const userList = async (req, res) => {
     try {
-      let role = req.decoded.info.roles;
-      const { adminId, sortField, sortOrder } = req.query;
-  
-      if (role !== 0) {
-        return res.status(403).send({
-          statusCode: 403,
-          status: "Failure",
-          msg: Msg.adminCanAccess
+        let role = req.decoded.info.roles;
+        const { adminId, sortField, sortOrder } = req.query;
+
+        if (role !== 0) {
+            return res.status(403).send({
+                statusCode: 403,
+                status: "Failure",
+                msg: Msg.adminCanAccess
+            });
+        }
+
+        if (!adminId) {
+            return res.status(500).send({
+                statusCode: 500,
+                status: "Failure",
+                msg: "Admin Id is required"
+            });
+        }
+
+        const subAdminData = await user.find({ createdBy: "self", isDeleted: false, isSignUp: true });
+
+        let arrVal = subAdminData.map(details => ({
+            name: details.name,
+            mobileNumber: details.mobileNumber,
+            isVerified: details.isVerified,
+            createdBy: details.createdBy,
+            loginStatus: details.loginStatus,
+            role: details.role,
+            isDeleted: details.isDeleted,
+            createdAt: details.createdAt,
+            userId: details._id,
+            isActive: details.isActive,
+        }));
+
+        // Set default sorting parameters if not provided
+        let sortFieldFinal = sortField || 'createdAt';
+        let sortOrderFinal = sortOrder === 'asc' ? 1 : -1; // Ascending: 1, Descending: -1
+
+        // Sort the array
+        arrVal.sort((a, b) => {
+            if (a[sortFieldFinal] < b[sortFieldFinal]) return -1 * sortOrderFinal;
+            if (a[sortFieldFinal] > b[sortFieldFinal]) return 1 * sortOrderFinal;
+            return 0;
         });
-      }
-  
-      if (!adminId) {
-        return res.status(500).send({
-          statusCode: 500,
-          status: "Failure",
-          msg: "Admin Id is required"
+
+        return res.status(200).send({
+            statusCode: 200,
+            status: "Success",
+            msg: "User List Show Successfully",
+            data: arrVal
         });
-      }
-  
-      const subAdminData = await user.find({ createdBy: "self", isDeleted: false, isSignUp: true });
-  
-      let arrVal = subAdminData.map(details => ({
-        name: details.name,
-        mobileNumber: details.mobileNumber,
-        isVerified: details.isVerified,
-        createdBy: details.createdBy,
-        loginStatus: details.loginStatus,
-        role: details.role,
-        isDeleted: details.isDeleted,
-        createdAt: details.createdAt,
-        userId: details._id,
-        isActive: details.isActive,
-      }));
-  
-      // Set default sorting parameters if not provided
-      let sortFieldFinal = sortField || 'createdAt';
-      let sortOrderFinal = sortOrder === 'asc' ? 1 : -1; // Ascending: 1, Descending: -1
-  
-      // Sort the array
-      arrVal.sort((a, b) => {
-        if (a[sortFieldFinal] < b[sortFieldFinal]) return -1 * sortOrderFinal;
-        if (a[sortFieldFinal] > b[sortFieldFinal]) return 1 * sortOrderFinal;
-        return 0;
-      });
-  
-      return res.status(200).send({
-        statusCode: 200,
-        status: "Success",
-        msg: "User List Show Successfully",
-        data: arrVal
-      });
-  
+
     } catch (error) {
-      return res.status(500).send({
-        statusCode: 500,
-        status: false,
-        msg: Msg.failure
-      });
+        return res.status(500).send({
+            statusCode: 500,
+            status: false,
+            msg: Msg.failure
+        });
     }
-  };
-  
+};
+
 
 //Delete sub admin 
 const deleteSubAdmin = async (req, res) => {
@@ -624,7 +624,7 @@ const updatePaymentRequestStatus = async (req, res) => {
             });
         }
 
-        
+
         // Find the payment history
         const findPaymentHistory = await paymentRequest.findOne({ paymentHistoryId: paymentHistoryId });
         if (!findPaymentHistory) {
@@ -636,7 +636,7 @@ const updatePaymentRequestStatus = async (req, res) => {
         }
 
         // Check payment history status
-        if(findPaymentHistory.status=="approve" ||findPaymentHistory.status=="decline"){
+        if (findPaymentHistory.status == "approve" || findPaymentHistory.status == "decline") {
             return res.status(400).send({
                 statusCode: 400,
                 status: "Failure",
@@ -1363,7 +1363,7 @@ const deactivateUser = async (req, res) => {
 const transectionAndBankingList = async (req, res) => {
     try {
         const { adminId, sortBy, sortOrder } = req.body;
-        
+
         // Required field check
         if (!adminId) {
             return res.status(400).send({
@@ -1375,14 +1375,14 @@ const transectionAndBankingList = async (req, res) => {
 
         // Fetch the admin account info
         const adminAccountInfo = await adminAccountDetails.find({ adminId: adminId });
-        
+
         // Fetch the user transaction list
-        let userTransectionInfo=[];
-        let userTransectionList = await paymentRequest.find({ status: "approve" },{_id:1,userId:1});
-      
-        for(info of userTransectionList){
-            let a= await user.findOne({_id:info.userId})
-            userTransectionInfo.push({_id:info._id,userId:info.userId,name:a.name,mobile:a.mobileNumber})
+        let userTransectionInfo = [];
+        let userTransectionList = await paymentRequest.find({ status: "approve" }, { _id: 1, userId: 1 });
+
+        for (info of userTransectionList) {
+            let a = await user.findOne({ _id: info.userId })
+            userTransectionInfo.push({ _id: info._id, userId: info.userId, name: a.name, mobile: a.mobileNumber })
 
         }
         // Sorting logic
@@ -1413,6 +1413,88 @@ const transectionAndBankingList = async (req, res) => {
     }
 };
 
+const transectionDetailsBankingById = async (req, res) => {
+    try {
+        const { adminId, bankUpiId, userId, date, sortBy } = req.body;
+        let role = req.decoded.info.roles;
+
+        // Required field check
+        if (!adminId || !bankUpiId) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                message: "Required fields: adminId, bankUpiId"
+            });
+        };
+
+        if (role !== 0) {
+            return res.status(403).send({
+                statusCode: 403,
+                status: "Failure",
+                msg: Msg.adminCanAccess
+            });
+        }
+
+        // Initialize query object
+        let query = { depositId: bankUpiId, status: "approve" };
+
+        // Add userId filter if provided
+        if (userId) {
+            query.userId = userId;
+        }
+
+        // Add date filter if provided
+        if (date) {
+            const dateObj = moment(date, "DD/MM/YYYY").startOf('day'); // Parse and set to start of the day
+            if (!dateObj.isValid()) {
+                return res.status(400).json({
+                    status: "Failure",
+                    message: "Invalid date format."
+                });
+            }
+            query.updatedAt = {
+                $gte: dateObj.toDate(),
+                $lt: moment(dateObj).endOf('day').toDate() // Get all records within that day
+            };
+        }
+
+        // Fetch the user transaction list
+        let bankTransectionInfo = [];
+        let userTransectionList = await paymentRequest.find(query, { _id: 1, userId: 1 });
+
+        for (let info of userTransectionList) {
+            let a = await user.findOne({ _id: info.userId });
+            bankTransectionInfo.push({ _id: info._id, userId: info.userId, name: a.name, mobile: a.mobileNumber });
+        }
+
+        // Sorting logic
+        if (sortBy) {
+            const order = sortOrder && sortOrder.toLowerCase() === 'desc' ? -1 : 1;
+            bankTransectionInfo = bankTransectionInfo.sort((a, b) => {
+                if (a[sortBy] < b[sortBy]) return -1 * order;
+                if (a[sortBy] > b[sortBy]) return 1 * order;
+                return 0;
+            });
+        }
+
+        const data = { bankTransectionInfo };
+
+        return res.status(200).send({
+            statusCode: 200,
+            status: "Success",
+            message: "Account Transaction History Shown Successfully",
+            data: data
+        });
+
+    } catch (error) {
+        return res.status(400).send({
+            statusCode: 400,
+            status: "Failure",
+            message: Msg.failure
+        });
+    }
+};
 
 
-module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin, updateGameStatus, userList, countDashboard, deactivateUser, updatePaymentRequestStatus,transectionAndBankingList }
+
+module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin, updateGameStatus, userList, countDashboard, deactivateUser, updatePaymentRequestStatus, transectionAndBankingList, transectionDetailsBankingById }

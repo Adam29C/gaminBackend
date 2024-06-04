@@ -3,7 +3,7 @@ var app = express()
 const controller = require('../controller/admin')
 const { subAdminCreateValidate, validateLogin, handleValidationErrors } = require('../helper/validation')
 const { authenticateToken } = require('../helper/middleware')
-const { createSubAdminFn,gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, addAdminAccountDetail, subAdminList, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin, updateGameStatus, userList, countDashboard, deactivateUser, updatePaymentRequestStatus, transectionAndBankingList } = require('../controller/admin/adminDashboard')
+const { createSubAdminFn,gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, addAdminAccountDetail, subAdminList, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin, updateGameStatus, userList, countDashboard, deactivateUser, updatePaymentRequestStatus, transectionAndBankingList, transectionDetailsBankingById } = require('../controller/admin/adminDashboard')
 const  getMulterStorage = require("../helper/fileUpload")
 
 const adminFinanceDetails = getMulterStorage("uploads/adminFinanceDetails");
@@ -31,6 +31,6 @@ app.get('/countDashboard', authenticateToken, countDashboard);
 app.patch('/deactivateUser',authenticateToken,deactivateUser)
 app.put('/updatePaymentRequestStatus',authenticateToken,updatePaymentRequestStatus)
 app.post("/transectionAndBankingList",authenticateToken,transectionAndBankingList)
-
+app.post("/transectionDetailsBankingById",authenticateToken,transectionDetailsBankingById)
  
 module.exports = app

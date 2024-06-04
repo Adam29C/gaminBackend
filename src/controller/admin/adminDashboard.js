@@ -1375,10 +1375,16 @@ const transectionAndBankingList = async (req, res) => {
 
         // Fetch the admin account info
         const adminAccountInfo = await adminAccountDetails.find({ adminId: adminId });
-
+        
         // Fetch the user transaction list
-        let userTransectionList = await paymentRequest.find({ status: "approve" });
+        let userTransectionInfo=[];
+        let userTransectionList = await paymentRequest.find({ status: "approve" },{_id:1,userId:1});
+      
+        for(info of userTransectionList){
+            let a= await user.findOne({_id:info.userId})
+            userTransectionInfo.push({_id:info._id,userId:info.userId,name:a.name,mobile:a.mobileNumber})
 
+        }
         // Sorting logic
         if (sortBy) {
             const order = sortOrder && sortOrder.toLowerCase() === 'desc' ? -1 : 1;
@@ -1389,7 +1395,7 @@ const transectionAndBankingList = async (req, res) => {
             });
         }
 
-        const data = { adminAccountInfo, userTransectionList };
+        const data = { adminAccountInfo, userTransectionInfo };
 
         return res.status(200).send({
             statusCode: 200,

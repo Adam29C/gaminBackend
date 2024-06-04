@@ -1460,12 +1460,34 @@ const transectionDetailsBankingById = async (req, res) => {
 
         // Fetch the user transaction list
         let bankTransectionInfo = [];
-        let userTransectionList = await paymentRequest.find(query, { _id: 1, userId: 1 });
-
+        let userTransectionList = await paymentRequest.find(query, { _id: 1, userId: 1 ,utr : 1,amount:1,status:1,createdAt:1});
+        
         for (let info of userTransectionList) {
             let a = await user.findOne({ _id: info.userId });
-            bankTransectionInfo.push({ _id: info._id, userId: info.userId, name: a.name, mobile: a.mobileNumber });
+            bankTransectionInfo.push({ _id: info._id, userId: info.userId,amount:info.amount,utr:info.utr, status:info.status,createdAt:info.createdAt, name: a.name, mobile: a.mobileNumber});
         }
+
+        // Fetching bank or UPI name based on bankUpiId
+        let bankUpiName = "";
+        const bankInfo = await adminAccountDetails.findOne({ "bank.accountNumber": bankUpiId });
+        const upiInfo = await adminAccountDetails.findOne({ "upi.upiId": bankUpiId });
+
+        if (bankInfo) {
+            const bank = bankInfo.bank.find(bank => bank.accountNumber === bankUpiId);
+            if (bank) {
+                bankUpiName = bank.accountHolderName;
+            }
+        } else if (upiInfo) {
+            const upi = upiInfo.upi.find(upi => upi.upiId === bankUpiId);
+            if (upi) {
+                bankUpiName = upi.upiName;
+            }
+        }
+
+        // Add bankUpiName to each object in bankTransectionInfo
+        bankTransectionInfo = bankTransectionInfo.map(transaction => {
+            return { ...transaction, bankUpiName };
+        });
 
         // Sorting logic
         if (sortBy) {
@@ -1477,13 +1499,11 @@ const transectionDetailsBankingById = async (req, res) => {
             });
         }
 
-        const data = { bankTransectionInfo };
-
         return res.status(200).send({
             statusCode: 200,
             status: "Success",
             message: "Account Transaction History Shown Successfully",
-            data: data
+            data: { bankTransectionInfo }
         });
 
     } catch (error) {
@@ -1494,7 +1514,5 @@ const transectionDetailsBankingById = async (req, res) => {
         });
     }
 };
-
-
 
 module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin, updateGameStatus, userList, countDashboard, deactivateUser, updatePaymentRequestStatus, transectionAndBankingList, transectionDetailsBankingById }

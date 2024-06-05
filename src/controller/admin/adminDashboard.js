@@ -1469,6 +1469,7 @@ const transectionAndBankingList = async (req, res) => {
             bank: admin.bank.map(bank => ({
                 accountNumber: bank.accountNumber,
                 accountHolderName: bank.accountHolderName,
+                bankName:bank.bankName,
                 _id: bank._id
             })),
             upi: admin.upi.map(upi => ({

@@ -558,7 +558,84 @@ const paymentHistory = async (req, res) => {
                 msg: Msg.adminCanAccess
             });
         }
-        let findPaymentHistory = await paymentRequest.find(paymentStatus == "all" ? {} : { paymentStatus });
+        let findPaymentHistory;
+        if(paymentStatus == "all"){
+            findPaymentHistory=await paymentRequest.find({status:'pending'})
+        }else{
+            findPaymentHistory=await paymentRequest.find({paymentStatus:paymentStatus,status:'pending'})
+        }
+
+        if (!findPaymentHistory) {
+            return res.status(404).send({
+                status: "Failure",
+                msg: "No payment history found",
+                data: []
+            });
+        }
+
+        // Fetch user details for each payment history item
+        const userIds = findPaymentHistory.map(payment => payment.userId);
+        const users = await user.find({ _id: { $in: userIds } }).select('name mobileNumber');
+        const userMap = users.reduce((map, user) => {
+            map[user._id] = user;
+            return map;
+        }, {});
+
+        // Merge user details with payment history
+        const paymentHistoryWithUserDetails = findPaymentHistory.map(payment => {
+            const user = userMap[payment.userId];
+            return {
+                ...payment._doc,
+                userName: user ? user.name : null,
+                mobileNumber: user ? user.mobileNumber : null
+            };
+        });
+
+        return res.status(200).send({
+            status: "Success",
+            msg: Msg.paymentHistory,
+            data: paymentHistoryWithUserDetails
+        });
+
+    } catch (error) {
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: Msg.failure
+        })
+    }
+};
+
+//Add Amount To Waled
+const approveRejectpaymentHistory = async (req, res) => {
+    try {
+        const { paymentStatus, adminId } = req.body;
+        const Role = req.decoded.info.roles;
+        if (!paymentStatus || !adminId) {
+            return res.status(400).send({
+                statusCode: 400,
+                msg: "Failure",
+                data: "Payment Status And AdminId is required"
+            });
+        }
+
+        if (Role !== 0) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "failure",
+                msg: Msg.adminCanAccess
+            });
+        }
+        let findPaymentHistory;
+        if(paymentStatus == "all"){
+            findPaymentHistory = await paymentRequest.find({ $or: [{ status: 'approve' }, { status: 'decline' }] });
+
+        }else{
+            findPaymentHistory = await paymentRequest.find({
+                paymentStatus: paymentStatus,
+                $or: [{ status: 'approve' }, { status: 'decline' }]
+            });
+        }
 
         if (!findPaymentHistory) {
             return res.status(404).send({
@@ -1533,4 +1610,4 @@ const transectionDetailsBankingById = async (req, res) => {
     }
 };
 
-module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin, updateGameStatus, userList, countDashboard, deactivateUser, updatePaymentRequestStatus, transectionAndBankingList, transectionDetailsBankingById }
+module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin, updateGameStatus, userList, countDashboard, deactivateUser, updatePaymentRequestStatus, transectionAndBankingList, transectionDetailsBankingById,approveRejectpaymentHistory }

@@ -628,12 +628,12 @@ const approveRejectpaymentHistory = async (req, res) => {
         }
         let findPaymentHistory;
         if(paymentStatus == "all"){
-            findPaymentHistory = await paymentRequest.find({ $or: [{ status: 'accept' }, { status: 'decline' }] });
+            findPaymentHistory = await paymentRequest.find({ $or: [{ status: 'approve' }, { status: 'decline' }] });
 
         }else{
             findPaymentHistory = await paymentRequest.find({
                 paymentStatus: paymentStatus,
-                $or: [{ status: 'accept' }, { status: 'decline' }]
+                $or: [{ status: 'approve' }, { status: 'decline' }]
             });
         }
 

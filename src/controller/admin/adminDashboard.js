@@ -1378,11 +1378,11 @@ const transectionAndBankingList = async (req, res) => {
 
         // Fetch the user transaction list
         let userTransectionInfo = [];
-        let userTransectionList = await paymentRequest.find({ status: "approve" }, { _id: 1, userId: 1 });
+        let userTransectionList = await paymentRequest.find({ status: "approve" },{ _id: 1, userId: 1,amount:1,utr:1,status:1,createdAt:1,imageUrl:1 } );
 
         for (info of userTransectionList) {
             let a = await user.findOne({ _id: info.userId })
-            userTransectionInfo.push({ _id: info._id, userId: info.userId, name: a.name, mobile: a.mobileNumber })
+            userTransectionInfo.push({ _id: info._id, userId: info.userId,name: a.name, mobile: a.mobileNumber,amount:info.amount,utr:info.utr,status:info.status,image:info.imageUrl,createdAt:info.createdAt})
 
         }
 

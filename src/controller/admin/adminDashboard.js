@@ -1538,6 +1538,7 @@ const transectionDetailsBankingById = async (req, res) => {
             const dateObj = moment(date, "DD/MM/YYYY").startOf('day');
             if (!dateObj.isValid()) {
                 return res.status(400).json({
+                    statusCode:400,
                     status: "Failure",
                     message: "Invalid date format."
                 });
@@ -1598,7 +1599,7 @@ const transectionDetailsBankingById = async (req, res) => {
         return res.status(400).send({
             statusCode: 400,
             status: "Failure",
-            message: "Failed to fetch transaction details."
+            message: Msg.failure
         });
     }
 };

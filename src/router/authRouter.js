@@ -7,14 +7,14 @@ const { userRegister, otpVerifyFn, login, changePassword, forgetPasswordSendOtpF
 const uploads = require('../helper/fileUpload').upload
 
 //==============================Authentication router============================================================================
-app.post('/generateAuthToken',generateAuthToken)
-app.post('/resendOtp',authenticateToken, resendOtpFn)
-app.post('/otpVerify',authenticateToken, otpVerifyFn)
-app.post('/sighUp',authenticateToken,userSighUp, handleValidationErrors,userRegister)
-app.post('/login', authenticateToken,validateLogin, handleValidationErrors, login)
-app.post('/changePassword', validateLogin,authenticateToken, changePassword)
-app.post('/forgetPasswordSendOtp', forgetPasswordSendOtpFn)
-app.post('/forgetPasswordFn',validateLogin,handleValidationErrors, forgetPasswordFn)
-app.get('/getUserProfile', authenticateToken, getUserProfileFn)
+app.post('/generateAuthToken',generateAuthToken);
+app.post('/resendOtp',authenticateToken, resendOtpFn);
+app.post('/otpVerify',authenticateToken, otpVerifyFn);
+app.post('/sighUp',authenticateToken,userSighUp, handleValidationErrors,userRegister);
+app.post('/login', authenticateToken,validateLogin, handleValidationErrors, login);
+app.post('/changePassword', validateLogin,authenticateToken, changePassword);
+app.post('/forgetPasswordSendOtp', forgetPasswordSendOtpFn);
+app.post('/forgetPasswordFn',validateLogin,handleValidationErrors, forgetPasswordFn);
+app.get('/getUserProfile', authenticateToken, getUserProfileFn);
 
-module.exports=app
+module.exports=app;

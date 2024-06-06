@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const User = require("../model/user"); 
 const tokenData = require("../model/token"); 
 
+//Function For update Token  
 const tokenUpdate = async (userId, role) => {
     let token;
     let JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;

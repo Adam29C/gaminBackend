@@ -17,7 +17,8 @@ const getAllMatchesList = async (req, res) => {
             msg: messages.failure
         });
     }
-}
+};
+
 const getSeriesList = async (req, res) => {
     try {
         const response = await axios.get(`https://rest.entitysport.com/exchange/competitions?token=${match_token}&status=live`);
@@ -34,7 +35,7 @@ const getSeriesList = async (req, res) => {
             msg: messages.failure
         });
     }
-}
+};
 
 const getMatchList = async (req, res) => {
     try {
@@ -61,7 +62,7 @@ const getMatchList = async (req, res) => {
             msg: messages.failure
         });
     }
-}
+};
 
 const matchDetails =async(req,res)=>{
     try{
@@ -87,7 +88,8 @@ const matchDetails =async(req,res)=>{
             msg: messages.failure
         });
     }
-}
+};
+
 const getMatchScore=async(req,res)=>{
     try{
         const {matchId}=req.params;
@@ -112,7 +114,7 @@ const getMatchScore=async(req,res)=>{
             msg: messages.failure
         });
     }
-}
+};
 
 module.exports={
     getAllMatchesList,

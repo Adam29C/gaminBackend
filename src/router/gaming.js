@@ -8,4 +8,4 @@ app.get("/getSeriesList", authenticateToken, getSeriesList);
 app.get("/getMatchList/:seriesId", authenticateToken, getMatchList);
 app.get("/matchDetails/:matchId", authenticateToken, matchDetails);
 app.get("/getMatchScore/:matchId", authenticateToken, getMatchScore);
-module.exports = app
+module.exports = app;

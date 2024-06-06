@@ -32,6 +32,6 @@ app.get('/countDashboard', authenticateToken, countDashboard);
 app.patch('/deactivateUser',authenticateToken,deactivateUser)
 app.put('/updatePaymentRequestStatus',authenticateToken,updatePaymentRequestStatus)
 app.post("/transectionAndBankingList",authenticateToken,transectionAndBankingList)
-app.post("/transectionDetailsBankingById",transectionDetailsBankingById)
+app.post("/transectionDetailsBankingById",authenticateToken,transectionDetailsBankingById)
  
 module.exports = app

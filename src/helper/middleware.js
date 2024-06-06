@@ -13,7 +13,7 @@ exports.hashPassword = async (password, saltRounds = 10) => {
         const salt = await bcrypt.genSalt(saltRounds);
         return await bcrypt.hash(password, salt);
     } catch (error) {
-        console.log(error);
+        return error;
     }
     return null;
 };
@@ -26,7 +26,7 @@ exports.comparePassword = async (pass, hash) => {
             return match;
         }
     } catch (error) {
-        console.log(error);
+        return error;
     }
     return false;
 };

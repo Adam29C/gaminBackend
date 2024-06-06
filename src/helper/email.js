@@ -30,9 +30,9 @@ module.exports.mail = async function (email, otp) {
     // Send email using transporter
     transporter.sendMail(mailOptions, function (err, info) {
         if (err) { // If error occurs while sending email
-            console.log("Error " + err); // Log the error
+            throw err;
         } else { // If email sent successfully
-            console.log("Email sent successfully", info.response); // Log the success message with email response info
+            
         }
     });
 

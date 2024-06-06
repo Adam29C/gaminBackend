@@ -55,7 +55,6 @@ const getMatchList = async (req, res) => {
             data: allMatchesList
         });
     } catch (error) {
-        console.log(error)
         return res.status(500).send({
             statusCode: 500,
             status: "failure",

@@ -30,6 +30,8 @@ exports.comparePassword = async (pass, hash) => {
     }
     return false;
 };
+
+//AuthenticateToken Function authenticate the user provided token
 exports.authenticateToken = async (req, res, next) => {
     try {
         if (
@@ -103,6 +105,7 @@ exports.authenticateToken = async (req, res, next) => {
         });
     }
 }
+
 // Function to generate a random number within the specified range
 exports.generateRandomNumber = async (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;

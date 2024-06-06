@@ -718,7 +718,7 @@ const matchList = async (req, res) => {
   }
 };
 
-//Get All Account List
+//Get All Admin Account List
 const adminAccountsList = async (req, res) => {
   try {
     const { userId } = req.query;
@@ -766,6 +766,7 @@ const adminAccountsList = async (req, res) => {
   }
 };
 
+//Get Account By Id(Admin Account Info)
 const accountById = async (req, res) => {
   try {
     const { userId, isBank, id } = req.body;
@@ -839,4 +840,4 @@ const accountById = async (req, res) => {
   }
 };
 
-module.exports = { withdrawalCreatePassword, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail, addCreditRequest, filterPaymentHistory, accountById, adminAccountsList }
+module.exports = { withdrawalCreatePassword, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail, addCreditRequest, filterPaymentHistory, accountById, adminAccountsList };

@@ -36,4 +36,4 @@ module.exports.mail = async function (email, otp) {
         }
     });
 
-}
+};

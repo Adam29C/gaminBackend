@@ -11,27 +11,27 @@ const adminFinanceDetails = getMulterStorage("uploads/adminFinanceDetails");
 app.post('/createSubAdmin', authenticateToken, subAdminCreateValidate, handleValidationErrors, createSubAdminFn)
 app.get('/subAdminList', authenticateToken, subAdminList);
 app.get('/userList', authenticateToken, userList);
-app.post('/gamesCreatedByAdmin', authenticateToken, gamesCreatedByAdmin)
-app.put('/gamesUpdatedByAdmin', authenticateToken, gamesUpdatedByAdmin)
-app.patch('/updateGameStatus',authenticateToken,updateGameStatus)
-app.delete('/gameDeletedByAdmin', authenticateToken, gamesDeletedByAdmin)
-app.post('/addAmount', authenticateToken, addAmount)
-app.post('/paymentHistory', authenticateToken, paymentHistory)
-app.post('/approveRejectpaymentHistory', authenticateToken, approveRejectpaymentHistory)
-app.post('/addRules', authenticateToken, addRules)
-app.patch('/updateRules', authenticateToken, updateRules)
-app.patch('/updateRulesStatus', authenticateToken, updateRulesStatus)
-app.delete('/deleteRules', authenticateToken, deleteRules)
+app.post('/gamesCreatedByAdmin', authenticateToken, gamesCreatedByAdmin);
+app.put('/gamesUpdatedByAdmin', authenticateToken, gamesUpdatedByAdmin);
+app.patch('/updateGameStatus',authenticateToken,updateGameStatus);
+app.delete('/gameDeletedByAdmin', authenticateToken, gamesDeletedByAdmin);
+app.post('/addAmount', authenticateToken, addAmount);
+app.post('/paymentHistory', authenticateToken, paymentHistory);
+app.post('/approveRejectpaymentHistory', authenticateToken, approveRejectpaymentHistory);
+app.post('/addRules', authenticateToken, addRules);
+app.patch('/updateRules', authenticateToken, updateRules);
+app.patch('/updateRulesStatus', authenticateToken, updateRulesStatus);
+app.delete('/deleteRules', authenticateToken, deleteRules);
 app.get('/getRules', authenticateToken, getRules);
-app.post('/addAdminAccountDetail', authenticateToken,adminFinanceDetails.single("image"), addAdminAccountDetail)
+app.post('/addAdminAccountDetail', authenticateToken,adminFinanceDetails.single("image"), addAdminAccountDetail);
 app.get('/adminAccountsList', authenticateToken, adminAccountsList);
-app.delete('/deleteAdminAccountDetail', authenticateToken, deleteAdminAccountDetail)
-app.put('/updateAdminAccountDetail', authenticateToken,adminFinanceDetails.single("image"), updateAdminAccountDetail)
-app.delete('/deleteSubAdmin', authenticateToken,deleteSubAdmin)
+app.delete('/deleteAdminAccountDetail', authenticateToken, deleteAdminAccountDetail);
+app.put('/updateAdminAccountDetail', authenticateToken,adminFinanceDetails.single("image"), updateAdminAccountDetail);
+app.delete('/deleteSubAdmin', authenticateToken,deleteSubAdmin);
 app.get('/countDashboard', authenticateToken, countDashboard);
-app.patch('/deactivateUser',authenticateToken,deactivateUser)
-app.put('/updatePaymentRequestStatus',authenticateToken,updatePaymentRequestStatus)
-app.post("/transectionAndBankingList",authenticateToken,transectionAndBankingList)
-app.post("/transectionDetailsBankingById",authenticateToken,transectionDetailsBankingById)
+app.patch('/deactivateUser',authenticateToken,deactivateUser);
+app.put('/updatePaymentRequestStatus',authenticateToken,updatePaymentRequestStatus);
+app.post("/transectionAndBankingList",authenticateToken,transectionAndBankingList);
+app.post("/transectionDetailsBankingById",authenticateToken,transectionDetailsBankingById);
  
-module.exports = app
+module.exports = app;

@@ -225,7 +225,6 @@ const userList = async (req, res) => {
     }
 };
 
-
 //Delete sub admin 
 const deleteSubAdmin = async (req, res) => {
     try {
@@ -536,7 +535,7 @@ const addAmount = async (req, res) => {
             msg: Msg.failure
         })
     }
-}
+};
 
 //Add Amount To Waled
 const paymentHistory = async (req, res) => {
@@ -771,7 +770,6 @@ const updatePaymentRequestStatus = async (req, res) => {
         });
     }
 };
-
 
 //Add Game Rules
 const addRules = async (req, res) => {
@@ -1437,6 +1435,7 @@ const deactivateUser = async (req, res) => {
     }
 };
 
+//All User Transection List and Admin Account List Api 
 const transectionAndBankingList = async (req, res) => {
     try {
         const { adminId, sortBy, sortOrder } = req.body;
@@ -1507,6 +1506,7 @@ const transectionAndBankingList = async (req, res) => {
     }
 };
 
+//User Transection List Api by Banking id(depositID-upiId/bankAccountNumber) 
 const transectionDetailsBankingById = async (req, res) => {
     try {
         const { adminId, bankUpiId, userId, date, sortBy, sortOrder } = req.body;
@@ -1602,8 +1602,5 @@ const transectionDetailsBankingById = async (req, res) => {
         });
     }
 };
-
-
-
 
 module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin, updateGameStatus, userList, countDashboard, deactivateUser, updatePaymentRequestStatus, transectionAndBankingList, transectionDetailsBankingById,approveRejectpaymentHistory }

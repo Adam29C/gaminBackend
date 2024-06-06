@@ -6,6 +6,7 @@ const paymentRequestSchema = new Schema({
     amount: { type: Number },
     utr: { type: String },
     description: { type: String },
+    depositId:{type:String},
     status: {
         type: String,
         enum: ['approve', 'pending', 'decline'],

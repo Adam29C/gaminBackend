@@ -1509,30 +1509,128 @@ const transectionAndBankingList = async (req, res) => {
 
 
 
+// const transectionDetailsBankingById = async (req, res) => {
+//     try {
+//         const { adminId, bankUpiId, userId, date, sortBy } = req.body;
+//         // let role = req.decoded.info.roles;
+
+//         // Required field check
+//         if (!adminId ) {
+//             return res.status(400).send({
+//                 statusCode: 400,
+//                 status: "Failure",
+//                 message: "Required fields: adminId, bankUpiId"
+//             });
+//         };
+
+//         // if (role !== 0) {
+//         //     return res.status(403).send({
+//         //         statusCode: 403,
+//         //         status: "Failure",
+//         //         msg: Msg.adminCanAccess
+//         //     });
+//         // }
+
+//         // Initialize query object
+//         let query = { depositId: bankUpiId, status: "approve" };
+
+//         // Add userId filter if provided
+//         if (userId) {
+//             query.userId = userId;
+//         }
+
+//         // Add date filter if provided
+//         if (date) {
+//             const dateObj = moment(date, "DD/MM/YYYY").startOf('day'); // Parse and set to start of the day
+//             if (!dateObj.isValid()) {
+//                 return res.status(400).json({
+//                     status: "Failure",
+//                     message: "Invalid date format."
+//                 });
+//             }
+//             query.updatedAt = {
+//                 $gte: dateObj.toDate(),
+//                 $lt: moment(dateObj).endOf('day').toDate() // Get all records within that day
+//             };
+//         }
+
+//         // Fetch the user transaction list
+//         let bankTransectionInfo = [];
+//         let userTransectionList = await paymentRequest.find(query, { _id: 1, userId: 1 ,utr : 1,amount:1,status:1,createdAt:1});
+        
+//         for (let info of userTransectionList) {
+//             let a = await user.findOne({ _id: info.userId });
+//             bankTransectionInfo.push({ _id: info._id, userId: info.userId,amount:info.amount,utr:info.utr, status:info.status,createdAt:info.createdAt, name: a.name, mobile: a.mobileNumber});
+//         }
+
+//         // Fetching bank or UPI name based on bankUpiId
+//         let bankUpiName = "";
+//         const bankInfo = await adminAccountDetails.findOne({ "bank.accountNumber": bankUpiId });
+//         const upiInfo = await adminAccountDetails.findOne({ "upi.upiId": bankUpiId });
+
+//         if (bankInfo) {
+//             const bank = bankInfo.bank.find(bank => bank.accountNumber === bankUpiId);
+//             if (bank) {
+//                 bankUpiName = bank.accountHolderName;
+//             }
+//         } else if (upiInfo) {
+//             const upi = upiInfo.upi.find(upi => upi.upiId === bankUpiId);
+//             if (upi) {
+//                 bankUpiName = upi.upiName;
+//             }
+//         }
+
+//         // Add bankUpiName to each object in bankTransectionInfo
+//         bankTransectionInfo = bankTransectionInfo.map(transaction => {
+//             return { ...transaction, bankUpiName };
+//         });
+
+//         // Sorting logic
+//         if (sortBy) {
+//             const order = sortOrder && sortOrder.toLowerCase() === 'desc' ? -1 : 1;
+//             bankTransectionInfo = bankTransectionInfo.sort((a, b) => {
+//                 if (a[sortBy] < b[sortBy]) return -1 * order;
+//                 if (a[sortBy] > b[sortBy]) return 1 * order;
+//                 return 0;
+//             });
+//         }
+
+//         return res.status(200).send({
+//             statusCode: 200,
+//             status: "Success",
+//             message: "Account Transaction History Shown Successfully",
+//             data: { bankTransectionInfo }
+//         });
+
+//     } catch (error) {
+//         return res.status(400).send({
+//             statusCode: 400,
+//             status: "Failure",
+//             message: Msg.failure
+//         });
+//     }
+// };
+
 const transectionDetailsBankingById = async (req, res) => {
     try {
-        const { adminId, bankUpiId, userId, date, sortBy } = req.body;
-        let role = req.decoded.info.roles;
+        const { adminId, bankUpiId, userId, date, sortBy, sortOrder } = req.body;
 
         // Required field check
-        if (!adminId || !bankUpiId) {
+        if (!adminId) {
             return res.status(400).send({
                 statusCode: 400,
                 status: "Failure",
-                message: "Required fields: adminId, bankUpiId"
+                message: "Required fields: adminId"
             });
         };
 
-        if (role !== 0) {
-            return res.status(403).send({
-                statusCode: 403,
-                status: "Failure",
-                msg: Msg.adminCanAccess
-            });
-        }
-
         // Initialize query object
-        let query = { depositId: bankUpiId, status: "approve" };
+        let query = { status: "approve" };
+
+        // Add depositId filter if provided
+        if (bankUpiId) {
+            query.depositId = bankUpiId;
+        }
 
         // Add userId filter if provided
         if (userId) {
@@ -1541,7 +1639,7 @@ const transectionDetailsBankingById = async (req, res) => {
 
         // Add date filter if provided
         if (date) {
-            const dateObj = moment(date, "DD/MM/YYYY").startOf('day'); // Parse and set to start of the day
+            const dateObj = moment(date, "DD/MM/YYYY").startOf('day');
             if (!dateObj.isValid()) {
                 return res.status(400).json({
                     status: "Failure",
@@ -1550,48 +1648,45 @@ const transectionDetailsBankingById = async (req, res) => {
             }
             query.updatedAt = {
                 $gte: dateObj.toDate(),
-                $lt: moment(dateObj).endOf('day').toDate() // Get all records within that day
+                $lt: moment(dateObj).endOf('day').toDate()
             };
         }
 
-        // Fetch the user transaction list
-        let bankTransectionInfo = [];
-        let userTransectionList = await paymentRequest.find(query, { _id: 1, userId: 1 ,utr : 1,amount:1,status:1,createdAt:1});
-        
-        for (let info of userTransectionList) {
+        let adminAccountInfo = await adminAccountDetails.find({}, { bank: 1, upi: 1 });
+        let mergedArray = adminAccountInfo.reduce((acc, curr) => acc.concat(curr.bank, curr.upi), []);
+        let userTransactionList = await paymentRequest.find(query);
+        let bankTransactionInfo = [];
+
+        // Match depositId from userTransactionList with mergedArray
+        for (let info of userTransactionList) {
             let a = await user.findOne({ _id: info.userId });
-            bankTransectionInfo.push({ _id: info._id, userId: info.userId,amount:info.amount,utr:info.utr, status:info.status,createdAt:info.createdAt, name: a.name, mobile: a.mobileNumber});
-        }
-
-        // Fetching bank or UPI name based on bankUpiId
-        let bankUpiName = "";
-        const bankInfo = await adminAccountDetails.findOne({ "bank.accountNumber": bankUpiId });
-        const upiInfo = await adminAccountDetails.findOne({ "upi.upiId": bankUpiId });
-
-        if (bankInfo) {
-            const bank = bankInfo.bank.find(bank => bank.accountNumber === bankUpiId);
-            if (bank) {
-                bankUpiName = bank.accountHolderName;
+            let bankUpiName;
+            for (let t of mergedArray) {
+                if (t.accountNumber == info.depositId) {
+                    bankUpiName = t.bankName
+                    break;
+                }else if(t.upiId == info.depositId){
+                    bankUpiName=t.upiName;
+                }
             }
-        } else if (upiInfo) {
-            const upi = upiInfo.upi.find(upi => upi.upiId === bankUpiId);
-            if (upi) {
-                bankUpiName = upi.upiName;
-            }
+            bankTransactionInfo.push({
+                _id: info._id,
+                userId: info.userId,
+                amount: info.amount,
+                utr: info.utr,
+                status: info.status,
+                createdAt: info.createdAt,
+                name: a.name,
+                mobile: a.mobileNumber,
+                bankUpiName: bankUpiName
+            });
         }
-
-        // Add bankUpiName to each object in bankTransectionInfo
-        bankTransectionInfo = bankTransectionInfo.map(transaction => {
-            return { ...transaction, bankUpiName };
-        });
 
         // Sorting logic
         if (sortBy) {
             const order = sortOrder && sortOrder.toLowerCase() === 'desc' ? -1 : 1;
-            bankTransectionInfo = bankTransectionInfo.sort((a, b) => {
-                if (a[sortBy] < b[sortBy]) return -1 * order;
-                if (a[sortBy] > b[sortBy]) return 1 * order;
-                return 0;
+            bankTransactionInfo = bankTransactionInfo.sort((a, b) => {
+                return a[sortBy] > b[sortBy] ? order : -order;
             });
         }
 
@@ -1599,16 +1694,20 @@ const transectionDetailsBankingById = async (req, res) => {
             statusCode: 200,
             status: "Success",
             message: "Account Transaction History Shown Successfully",
-            data: { bankTransectionInfo }
+            data: { bankTransactionInfo }
         });
 
     } catch (error) {
+        console.error(error);
         return res.status(400).send({
             statusCode: 400,
             status: "Failure",
-            message: Msg.failure
+            message: "Failed to fetch transaction details."
         });
     }
 };
+
+
+
 
 module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin, updateGameStatus, userList, countDashboard, deactivateUser, updatePaymentRequestStatus, transectionAndBankingList, transectionDetailsBankingById,approveRejectpaymentHistory }

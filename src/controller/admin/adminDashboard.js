@@ -771,7 +771,6 @@ const updatePaymentRequestStatus = async (req, res) => {
     }
 };
 
-
 //Add Game Rules
 const addRules = async (req, res) => {
     try {

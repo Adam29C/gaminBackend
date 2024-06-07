@@ -1538,7 +1538,7 @@ const transectionDetailsBankingById = async (req, res) => {
             const dateObj = moment(date, "DD/MM/YYYY").startOf('day');
             if (!dateObj.isValid()) {
                 return res.status(400).json({
-                    statusCode:400,
+                    statusCode: 400,
                     status: "Failure",
                     message: "Invalid date format."
                 });
@@ -1550,7 +1550,9 @@ const transectionDetailsBankingById = async (req, res) => {
         }
 
         let adminAccountInfo = await adminAccountDetails.find({}, { bank: 1, upi: 1 });
+        let userAccountInfo = await adminAccountDetails.find({}, { bank: 1, upi: 1 });
         let mergedArray = adminAccountInfo.reduce((acc, curr) => acc.concat(curr.bank, curr.upi), []);
+        let userMergedArray = userAccountInfo.reduce((acc, curr) => acc.concat(curr.bank, curr.upi), []);
         let userTransactionList = await paymentRequest.find(query);
         let bankTransactionInfo = [];
 
@@ -1558,14 +1560,30 @@ const transectionDetailsBankingById = async (req, res) => {
         for (let info of userTransactionList) {
             let a = await user.findOne({ _id: info.userId });
             let bankUpiName;
+            
             for (let t of mergedArray) {
-                if (t.accountNumber == info.depositId) {
-                    bankUpiName = t.bankName
+                if (t.accountNumber == info.depositWithdrawId) {
+                    bankUpiName = t.bankName;
                     break;
-                }else if(t.upiId == info.depositId){
-                    bankUpiName=t.upiName;
+                } else if (t.upiId == info.depositWithdrawId) {
+                    bankUpiName = t.upiName;
+                    break;
                 }
             }
+            if (!bankUpiName) {
+                for (let u of userMergedArray) {
+                    console.log(info.depositWithdrawId,"bbb")
+                    console.log(u)
+                    if (u.accountNumber == info.depositWithdrawId) {
+                        bankUpiName = u.bankName;
+                        break;
+                    } else if (u.upiId == info.depositWithdrawId) {
+                        bankUpiName = u.upiName;
+                        break;
+                    }
+                }
+            }
+
             bankTransactionInfo.push({
                 _id: info._id,
                 userId: info.userId,
@@ -1573,7 +1591,7 @@ const transectionDetailsBankingById = async (req, res) => {
                 utr: info.utr,
                 status: info.status,
                 createdAt: info.createdAt,
-                updatedAt:info.updatedAt,
+                updatedAt: info.updatedAt,
                 name: a.name,
                 mobile: a.mobileNumber,
                 bankUpiName: bankUpiName
@@ -1603,5 +1621,6 @@ const transectionDetailsBankingById = async (req, res) => {
         });
     }
 };
+
 
 module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin, updateGameStatus, userList, countDashboard, deactivateUser, updatePaymentRequestStatus, transectionAndBankingList, transectionDetailsBankingById,approveRejectpaymentHistory }

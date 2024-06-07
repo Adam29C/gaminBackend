@@ -389,10 +389,10 @@ const deleteAccountDetail = async (req, res) => {
 //Add withdraw request
 const withdrawPayment = async (req, res) => {
   try {
-    const { userId, amount, isBank, accountId } = req.body;
+    const { userId, amount, isBank, accountId,depositWithdrawId } = req.body;
 
     // Validate input
-    if (!userId || !amount || typeof isBank === 'undefined' || !accountId) {
+    if (!userId || !amount || typeof isBank === 'undefined' || !accountId ||!depositWithdrawId) {
       return res.status(400).json({
         statusCode: 400,
         status: "Failure",
@@ -428,7 +428,8 @@ const withdrawPayment = async (req, res) => {
       isBank: isBank,
       amount: amount,
       paymentStatus: "debit",
-      utr:randomUtrNumber
+      utr:randomUtrNumber,
+      depositWithdrawId:depositWithdrawId
     }).save();
 
     await new paymentRequest({
@@ -437,6 +438,7 @@ const withdrawPayment = async (req, res) => {
       utr: randomUtrNumber,
       paymentStatus: "debit",
       paymentHistoryId:paymentHistoryId._id, 
+      depositWithdrawId:depositWithdrawId
     }).save();
 
     return res.status(200).json({
@@ -587,8 +589,8 @@ const filterPaymentHistory = async (req, res) => {
 //add credit request
 const addCreditRequest = async (req, res) => {
   try {
-    const { userId, amount, utr, isBank,depositId } = req.body;
-    if (!userId || !amount || !utr||!depositId) {
+    const { userId, amount, utr, isBank,depositWithdrawId } = req.body;
+    if (!userId || !amount || !utr||!depositWithdrawId) {
       return res.status(400).json({
         statusCode: 400,
         status: "failure",
@@ -612,7 +614,7 @@ const addCreditRequest = async (req, res) => {
           paymentStatus: "credit",
           utr: utr,
           isBank: isBank,
-          depositId:depositId
+          depositWithdrawId:depositWithdrawId
         };
 
         const paymentHistoryId = await paymentHistory.create(paymentObj);
@@ -628,7 +630,7 @@ const addCreditRequest = async (req, res) => {
           imageUrl: image,
           paymentStatus: "credit",
           paymentHistoryId: paymentHistoryId._id,
-          depositId:depositId
+          depositWithdrawId:depositWithdrawId
         };
         await paymentRequest.create(paymentReqObj);
         return res.status(200).json({

@@ -1458,7 +1458,7 @@ const transectionAndBankingList = async (req, res) => {
 
         for (info of userTransectionList) {
             let a = await user.findOne({ _id: info.userId })
-            userTransectionInfo.push({ _id: info._id, userId: info.userId,name: a.name, mobile: a.mobileNumber,amount:info.amount,utr:info.utr,status:info.status,image:info.imageUrl,createdAt:info.createdAt})
+            userTransectionInfo.push({ _id: info._id, userId: info.userId,name: a.name, mobile: a.mobileNumber,amount:info.amount,utr:info.utr,status:info.status,image:info.imageUrl,createdAt:info.createdAt,updatedAt:info.updatedAt})
 
         }
 
@@ -1573,6 +1573,7 @@ const transectionDetailsBankingById = async (req, res) => {
                 utr: info.utr,
                 status: info.status,
                 createdAt: info.createdAt,
+                updatedAt:info.updatedAt,
                 name: a.name,
                 mobile: a.mobileNumber,
                 bankUpiName: bankUpiName

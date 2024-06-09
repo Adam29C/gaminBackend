@@ -13,6 +13,7 @@ const mongoose = require('mongoose');
 const paymentRequest = require('../../model/paymentRequest');
 const ObjectId = mongoose.Types.ObjectId;
 const moment = require("moment");
+const accountDetails = require('../../model/accountDetails');
 // Function to handle creation of sub-admin
 const createSubAdminFn = async (req, res) => {
     try {
@@ -1550,7 +1551,7 @@ const transectionDetailsBankingById = async (req, res) => {
         }
 
         let adminAccountInfo = await adminAccountDetails.find({}, { bank: 1, upi: 1 });
-        let userAccountInfo = await adminAccountDetails.find({}, { bank: 1, upi: 1 });
+        let userAccountInfo = await accountDetails.find({}, { bank: 1, upi: 1 });
         let mergedArray = adminAccountInfo.reduce((acc, curr) => acc.concat(curr.bank, curr.upi), []);
         let userMergedArray = userAccountInfo.reduce((acc, curr) => acc.concat(curr.bank, curr.upi), []);
         let userTransactionList = await paymentRequest.find(query);
@@ -1572,8 +1573,6 @@ const transectionDetailsBankingById = async (req, res) => {
             }
             if (!bankUpiName) {
                 for (let u of userMergedArray) {
-                    console.log(info.depositWithdrawId,"bbb")
-                    console.log(u)
                     if (u.accountNumber == info.depositWithdrawId) {
                         bankUpiName = u.bankName;
                         break;

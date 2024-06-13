@@ -444,4 +444,4 @@ const deleteSubAdminUser = async (req, res) => {
     }
 };
 
-module.exports = { userRegisterBySubAdmin, gamesCreatedBySubAdmin, gamesUpdatedSubAdmin, gameDeletedBySubAdmin, gamesList, getSubAdminProfileFn, updateSubAdminProfileFn,subAdminPermissions,subAdminUserList,deleteSubAdminUser,countDashboardUser }
+module.exports = { userRegisterBySubAdmin, gamesCreatedBySubAdmin, gamesUpdatedSubAdmin, gameDeletedBySubAdmin, gamesList, getSubAdminProfileFn, updateSubAdminProfileFn,subAdminPermissions,subAdminUserList,deleteSubAdminUser,countDashboardUser };

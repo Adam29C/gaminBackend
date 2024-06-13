@@ -218,7 +218,8 @@ const userRegister = async (req, res) => {
                     name: name,
                     password: newPassword,
                     role: 2,
-                    knowPassword: password
+                    knowPassword: password,
+                    isSignUp:true
                 }
             });
             let obj = {

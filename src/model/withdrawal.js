@@ -7,4 +7,4 @@ const withdrawlSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
-module.exports = mongoose.model('withdrawl', withdrawlSchema)
+module.exports = mongoose.model('withdrawl', withdrawlSchema);

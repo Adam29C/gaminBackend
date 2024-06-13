@@ -13,7 +13,7 @@ exports.hashPassword = async (password, saltRounds = 10) => {
         const salt = await bcrypt.genSalt(saltRounds);
         return await bcrypt.hash(password, salt);
     } catch (error) {
-        console.log(error);
+        return error;
     }
     return null;
 };
@@ -26,10 +26,12 @@ exports.comparePassword = async (pass, hash) => {
             return match;
         }
     } catch (error) {
-        console.log(error);
+        return error;
     }
     return false;
 };
+
+//AuthenticateToken Function authenticate the user provided token
 exports.authenticateToken = async (req, res, next) => {
     try {
         if (
@@ -65,10 +67,10 @@ exports.authenticateToken = async (req, res, next) => {
                         userId: decoded.info.id,
                     });
                     if (!data) {
-                        return res.status(400).send({
-                            statusCode: 400,
+                        return res.status(401).send({
+                            statusCode: 401,
                             status: Msg.failure,
-                            msg: "Token Not Found",
+                            msg: "Token Not Found In Db",
                         });
                     }
                 }
@@ -79,10 +81,10 @@ exports.authenticateToken = async (req, res, next) => {
                     deviceId: decoded.info.deviceId,
                 });
                 if (!data) {
-                    return res.status(400).send({
-                        statusCode: 400,
+                    return res.status(401).send({
+                        statusCode: 401,
                         status:"Failure",
-                        msg:  Msg.failure,
+                        msg:  "Token Not Found In Db",
                     });
                 }
                 req.decoded = decoded;
@@ -103,6 +105,7 @@ exports.authenticateToken = async (req, res, next) => {
         });
     }
 }
+
 // Function to generate a random number within the specified range
 exports.generateRandomNumber = async (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;

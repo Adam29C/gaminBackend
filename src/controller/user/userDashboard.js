@@ -20,7 +20,9 @@ const AccountDetail = require("../../model/accountDetails");
 const adminAccountDetails = require("../../model/adminAccountDetails");
 const { UserDefinedMessageInstance } = require("twilio/lib/rest/api/v2010/account/call/userDefinedMessage");
 const mongoose = require('mongoose');
+const paymentRequest = require("../../model/paymentRequest");
 const ObjectId = mongoose.Types.ObjectId;
+const moment = require('moment');
 // user can create withdrawalCreatePassword
 const withdrawalCreatePassword = async (req, res) => {
   try {
@@ -205,6 +207,15 @@ const addAccountDetail = async (req, res) => {
     }
 
     const oldPassword = findUser.withdrawalPassword;
+
+    if (oldPassword === undefined) {
+      return res.status(400).send({
+        statusCode: 400,
+        status: "Failure",
+        msg: "Pleaes Create The User withdrawal Password"
+      });
+    }
+
     const checkPassword = await bcrypt.compare(password, oldPassword);
     if (!checkPassword) {
       return res.status(400).send({
@@ -378,10 +389,10 @@ const deleteAccountDetail = async (req, res) => {
 //Add withdraw request
 const withdrawPayment = async (req, res) => {
   try {
-    const { userId, amount, isBank, accountId } = req.body;
+    const { userId, amount, isBank, accountId,depositWithdrawId } = req.body;
 
     // Validate input
-    if (!userId || !amount || typeof isBank === 'undefined' || !accountId) {
+    if (!userId || !amount || typeof isBank === 'undefined' || !accountId ||!depositWithdrawId) {
       return res.status(400).json({
         statusCode: 400,
         status: "Failure",
@@ -407,16 +418,27 @@ const withdrawPayment = async (req, res) => {
       });
     }
 
-    const updateAmt = walletInfo.amount - amount;
     const updateDebitBuffer = walletInfo.debitBuffer + amount;
-    await wallet.updateOne({ userId }, { $set: { amount: updateAmt, debitBuffer: updateDebitBuffer } });
+    await wallet.updateOne({ userId }, { $set: { debitBuffer: updateDebitBuffer } });
+    const randomUtrNumber = await generateRandomNumber(100000000,80000000);
 
-    await new paymentHistory({
+    let paymentHistoryId=await new paymentHistory({
       userId: userId,
       accountId: accountId,
       isBank: isBank,
       amount: amount,
       paymentStatus: "debit",
+      utr:randomUtrNumber,
+      depositWithdrawId:depositWithdrawId
+    }).save();
+
+    await new paymentRequest({
+      userId: userId,
+      amount: amount,
+      utr: randomUtrNumber,
+      paymentStatus: "debit",
+      paymentHistoryId:paymentHistoryId._id, 
+      depositWithdrawId:depositWithdrawId
     }).save();
 
     return res.status(200).json({
@@ -490,7 +512,7 @@ const viewPaymentHistory = async (req, res) => {
 // User All Transaction History  based on credit or debit  
 const filterPaymentHistory = async (req, res) => {
   try {
-    let { userId, paymentstatus } = req.body;
+    let { userId, paymentstatus, date, sortField, sortOrder } = req.body;
 
     // Validate userId and paymentStatus
     if (!userId || !paymentstatus) {
@@ -500,25 +522,62 @@ const filterPaymentHistory = async (req, res) => {
       });
     }
 
-    // Find payment history with userId and paymentStatus
-    let findInfo = await paymentHistory.find({ userId: userId, paymentStatus: paymentstatus });
+    // Validate and parse date if provided
+    let dateObj;
+    if (date) {
+      dateObj = moment(date, "DD/MM/YYYY").startOf('day'); // Parse and set to start of the day
+      if (!dateObj.isValid()) {
+        return res.status(400).json({
+          status: "Failure",
+          message: "Invalid date format."
+        });
+      }
+    }
+
+    // Build query object
+    let query = { userId: userId };
+    if (paymentstatus !== "all") {
+      query.paymentStatus = paymentstatus;
+    }
+    if (dateObj) {
+      query.updatedAt = {
+        $gte: dateObj.toDate(),
+        $lt: dateObj.add(1, 'days').toDate() // Get all records within that day
+      };
+    }
+
+    // Set default sorting parameters if not provided
+    if (!sortField) {
+      sortField = 'updatedAt';
+    }
+    if (!sortOrder) {
+      sortOrder = 'desc';
+    }
+
+    // Construct sort object
+    let sort = {};
+    sort[sortField] = sortOrder === 'asc' ? 1 : -1;
+
+    // Find payment history with the constructed query and sort order
+    let findInfo = await paymentRequest.find(query).sort(sort);
 
     if (findInfo.length > 0) { // Check if any records are found
       return res.status(200).json({
-        statusCode:200,
+        statusCode: 200,
         status: "Success",
         message: Msg.userTransactionHistory,
         paymentInfo: findInfo
       });
     } else {
       return res.status(200).json({
-        statusCode:200,
+        statusCode: 200,
         status: "Failure",
         message: Msg.noTransactionFound,
         paymentInfo: []
       });
     }
   } catch (error) {
+    console.error(error); // Log error for debugging
     return res.status(500).json({
       statusCode: 500,
       status: "Failure",
@@ -530,12 +589,12 @@ const filterPaymentHistory = async (req, res) => {
 //add credit request
 const addCreditRequest = async (req, res) => {
   try {
-    const { userId, amount } = req.body;
-    if (!userId || !amount) {
+    const { userId, amount, utr, isBank,depositWithdrawId } = req.body;
+    if (!userId || !amount || !utr||!depositWithdrawId) {
       return res.status(400).json({
         statusCode: 400,
         status: "failure",
-        message: "Please provide valid data: userId and amount are required"
+        message: "Please provide valid data: userId and amount,utr, depositId are required"
       });
     }
 
@@ -544,19 +603,36 @@ const addCreditRequest = async (req, res) => {
       const walletInfo = await wallet.findOne({ userId: userId });
 
       if (walletInfo) {
-        const updateAmt = walletInfo.amount + amount;
-        const updateCreditBuffer = walletInfo.creditBuffer + amount;
+        let finalAmount = Number(amount);
+        const updateCreditBuffer = walletInfo.creditBuffer + finalAmount;
 
-        await wallet.updateOne({ userId }, { $set: { amount: updateAmt, creditBuffer: updateCreditBuffer } });
+        await wallet.updateOne({ userId }, { $set: { creditBuffer: updateCreditBuffer } });
 
         const paymentObj = {
           userId: userId,
-          amount: amount,
+          amount: finalAmount,
           paymentStatus: "credit",
+          utr: utr,
+          isBank: isBank,
+          depositWithdrawId:depositWithdrawId
         };
 
-        await paymentHistory.create(paymentObj);
+        const paymentHistoryId = await paymentHistory.create(paymentObj);
 
+        let image = null;
+        if (req.file) {
+          image = req.file.location
+        }
+        const paymentReqObj = {
+          userId: userId,
+          amount: finalAmount,
+          utr: utr,
+          imageUrl: image,
+          paymentStatus: "credit",
+          paymentHistoryId: paymentHistoryId._id,
+          depositWithdrawId:depositWithdrawId
+        };
+        await paymentRequest.create(paymentReqObj);
         return res.status(200).json({
           statusCode: 200,
           status: "Success",
@@ -644,7 +720,7 @@ const matchList = async (req, res) => {
   }
 };
 
-//Get All Account List
+//Get All Admin Account List
 const adminAccountsList = async (req, res) => {
   try {
     const { userId } = req.query;
@@ -692,6 +768,7 @@ const adminAccountsList = async (req, res) => {
   }
 };
 
+//Get Account By Id(Admin Account Info)
 const accountById = async (req, res) => {
   try {
     const { userId, isBank, id } = req.body;
@@ -765,4 +842,4 @@ const accountById = async (req, res) => {
   }
 };
 
-module.exports = { withdrawalCreatePassword, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail, addCreditRequest, filterPaymentHistory, accountById,adminAccountsList }
+module.exports = { withdrawalCreatePassword, gamesList, seriesList, matchList, viewWallet, withdrawPayment, viewPaymentHistory, withdrawalPasswordSendOtp, withdrawalPasswordVerifyOtp, addAccountDetail, userAccountDetail, deleteAccountDetail, addCreditRequest, filterPaymentHistory, accountById, adminAccountsList };

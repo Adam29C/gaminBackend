@@ -10,7 +10,10 @@ const PaymentHistory = require('../../model/paymentHistory');
 const rule = require("../../model/rule");
 const adminAccountDetails = require('../../model/adminAccountDetails');
 const mongoose = require('mongoose');
+const paymentRequest = require('../../model/paymentRequest');
 const ObjectId = mongoose.Types.ObjectId;
+const moment = require("moment");
+const accountDetails = require('../../model/accountDetails');
 // Function to handle creation of sub-admin
 const createSubAdminFn = async (req, res) => {
     try {
@@ -138,7 +141,7 @@ const subAdminList = async (req, res) => {
                 isDeleted: details.isDeleted,
                 createdAt: details.createdAt,
                 subAdminId: details._id,
-                isActive:details.isActive
+                isActive: details.isActive
             }
 
             )
@@ -163,7 +166,8 @@ const subAdminList = async (req, res) => {
 const userList = async (req, res) => {
     try {
         let role = req.decoded.info.roles;
-        const { adminId } = req.query;
+        const { adminId, sortField, sortOrder } = req.query;
+
         if (role !== 0) {
             return res.status(403).send({
                 statusCode: 403,
@@ -171,6 +175,7 @@ const userList = async (req, res) => {
                 msg: Msg.adminCanAccess
             });
         }
+
         if (!adminId) {
             return res.status(500).send({
                 statusCode: 500,
@@ -179,40 +184,48 @@ const userList = async (req, res) => {
             });
         }
 
-        const subAdminData = await user.find({ createdBy: "self", isDeleted: false, });
-        let arrVal = [];
-        for (let details of subAdminData) {
-            arrVal.push({
-                name: details.name,
-                mobileNumber: details.mobileNumber,
-                isVerified: details.isVerified,
-                createdBy: details.createdBy,
-                loginStatus: details.loginStatus,
-                role: details.role,
-                isDeleted: details.isDeleted,
-                createdAt: details.createdAt,
-                userId: details._id,
-                isActive:details.isActive,
-            },
+        const subAdminData = await user.find({ createdBy: "self", isDeleted: false, isSignUp: true });
 
-            )
-        }
-        if (subAdminData) {
-            return res.status(200).send({
-                statusCode: 200,
-                status: "Success",
-                msg: "User List Show Successfully",
-                data: arrVal
-            });
-        }
+        let arrVal = subAdminData.map(details => ({
+            name: details.name,
+            mobileNumber: details.mobileNumber,
+            isVerified: details.isVerified,
+            createdBy: details.createdBy,
+            loginStatus: details.loginStatus,
+            role: details.role,
+            isDeleted: details.isDeleted,
+            createdAt: details.createdAt,
+            userId: details._id,
+            isActive: details.isActive,
+        }));
+
+        // Set default sorting parameters if not provided
+        let sortFieldFinal = sortField || 'createdAt';
+        let sortOrderFinal = sortOrder === 'asc' ? 1 : -1; // Ascending: 1, Descending: -1
+
+        // Sort the array
+        arrVal.sort((a, b) => {
+            if (a[sortFieldFinal] < b[sortFieldFinal]) return -1 * sortOrderFinal;
+            if (a[sortFieldFinal] > b[sortFieldFinal]) return 1 * sortOrderFinal;
+            return 0;
+        });
+
+        return res.status(200).send({
+            statusCode: 200,
+            status: "Success",
+            msg: "User List Show Successfully",
+            data: arrVal
+        });
+
     } catch (error) {
-        return res.json(500).send({
+        return res.status(500).send({
             statusCode: 500,
             status: false,
             msg: Msg.failure
-        })
+        });
     }
 };
+
 //Delete sub admin 
 const deleteSubAdmin = async (req, res) => {
     try {
@@ -368,7 +381,6 @@ const gamesUpdatedByAdmin = async (req, res) => {
 const updateGameStatus = async (req, res) => {
     try {
         const role = req.decoded.info.roles;
-        console
         const { gameId, isShow } = req.body;
 
         if (role !== 0) {
@@ -524,39 +536,239 @@ const addAmount = async (req, res) => {
             msg: Msg.failure
         })
     }
-}
+};
 
 //Add Amount To Waled
 const paymentHistory = async (req, res) => {
     try {
-        let Role = req.decoded.info.roles;
-        if (Role === 0) {
-            let findPaymentHistory = await PaymentHistory.find();
-            if (findPaymentHistory) {
-                return res.status(200).send({
-                    status: true,
-                    msg: Msg.paymentHistory,
-                    data: findPaymentHistory
-                });
-            } else {
-                return res.status(200).send({
-                    status: false,
-                    msg: Msg.paymentHistory,
-                    data: []
-                });
-            }
-        } else {
-            return res.status(200).send({
-                status: false,
+        const { paymentStatus, adminId } = req.body;
+        const Role = req.decoded.info.roles;
+        if (!paymentStatus || !adminId) {
+            return res.status(400).send({
+                statusCode: 400,
+                msg: "Failure",
+                data: "Payment Status And AdminId is required"
+            });
+        }
+
+        if (Role !== 0) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "failure",
                 msg: Msg.adminCanAccess
             });
         }
+        let findPaymentHistory;
+        if(paymentStatus == "all"){
+            findPaymentHistory=await paymentRequest.find({status:'pending'})
+        }else{
+            findPaymentHistory=await paymentRequest.find({paymentStatus:paymentStatus,status:'pending'})
+        }
+
+        if (!findPaymentHistory) {
+            return res.status(404).send({
+                status: "Failure",
+                msg: "No payment history found",
+                data: []
+            });
+        }
+
+        // Fetch user details for each payment history item
+        const userIds = findPaymentHistory.map(payment => payment.userId);
+        const users = await user.find({ _id: { $in: userIds } }).select('name mobileNumber');
+        const userMap = users.reduce((map, user) => {
+            map[user._id] = user;
+            return map;
+        }, {});
+
+        // Merge user details with payment history
+        const paymentHistoryWithUserDetails = findPaymentHistory.map(payment => {
+            const user = userMap[payment.userId];
+            return {
+                ...payment._doc,
+                userName: user ? user.name : null,
+                mobileNumber: user ? user.mobileNumber : null
+            };
+        });
+
+        return res.status(200).send({
+            status: "Success",
+            msg: Msg.paymentHistory,
+            data: paymentHistoryWithUserDetails
+        });
+
     } catch (error) {
-        return res.json(500).send({
+        return res.status(500).send({
             statusCode: 500,
-            status: false,
+            status: "Failure",
             msg: Msg.failure
         })
+    }
+};
+
+//Add Amount To Waled
+const approveRejectpaymentHistory = async (req, res) => {
+    try {
+        const { paymentStatus, adminId } = req.body;
+        const Role = req.decoded.info.roles;
+        if (!paymentStatus || !adminId) {
+            return res.status(400).send({
+                statusCode: 400,
+                msg: "Failure",
+                data: "Payment Status And AdminId is required"
+            });
+        }
+
+        if (Role !== 0) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "failure",
+                msg: Msg.adminCanAccess
+            });
+        }
+        let findPaymentHistory;
+        if(paymentStatus == "all"){
+            findPaymentHistory = await paymentRequest.find({ $or: [{ status: 'approve' }, { status: 'decline' }] });
+
+        }else{
+            findPaymentHistory = await paymentRequest.find({
+                paymentStatus: paymentStatus,
+                $or: [{ status: 'approve' }, { status: 'decline' }]
+            });
+        }
+
+        if (!findPaymentHistory) {
+            return res.status(404).send({
+                status: "Failure",
+                msg: "No payment history found",
+                data: []
+            });
+        }
+
+        // Fetch user details for each payment history item
+        const userIds = findPaymentHistory.map(payment => payment.userId);
+        const users = await user.find({ _id: { $in: userIds } }).select('name mobileNumber');
+        const userMap = users.reduce((map, user) => {
+            map[user._id] = user;
+            return map;
+        }, {});
+
+        // Merge user details with payment history
+        const paymentHistoryWithUserDetails = findPaymentHistory.map(payment => {
+            const user = userMap[payment.userId];
+            return {
+                ...payment._doc,
+                userName: user ? user.name : null,
+                mobileNumber: user ? user.mobileNumber : null
+            };
+        });
+
+        return res.status(200).send({
+            status: "Success",
+            msg: Msg.paymentHistory,
+            data: paymentHistoryWithUserDetails
+        });
+
+    } catch (error) {
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: Msg.failure
+        })
+    }
+};
+
+//Admin update Payment Request Status
+const updatePaymentRequestStatus = async (req, res) => {
+    try {
+        const { adminId, paymentHistoryId, status, description } = req.body;
+        const Role = req.decoded.info.roles;
+
+        // Check for required fields
+        if (!paymentHistoryId || !adminId || !status) {
+            return res.status(400).send({
+                statusCode: 400,
+                msg: "Failure",
+                data: "PaymentHistoryId, AdminId, and status are required"
+            });
+        }
+        // Check for admin role
+        if (Role !== 0) {
+            return res.status(403).send({
+                statusCode: 403,
+                status: "failure",
+                msg: "Admin access required"
+            });
+        }
+
+
+        // Find the payment history
+        const findPaymentHistory = await paymentRequest.findOne({ paymentHistoryId: paymentHistoryId });
+        if (!findPaymentHistory) {
+            return res.status(404).send({
+                statusCode: 404,
+                status: "Failure",
+                msg: "Payment history not found"
+            });
+        }
+
+        // Check payment history status
+        if (findPaymentHistory.status == "approve" || findPaymentHistory.status == "decline") {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "Payment Is Already Approve Or Decline"
+            });
+        }
+
+        // Define the update object
+        const updateData = { status: status };
+        if (description !== undefined) {
+            updateData.description = description;
+        }
+
+        // Update the payment status
+        const updateStatus = await paymentRequest.updateOne({ paymentHistoryId: paymentHistoryId }, { $set: updateData });
+        await PaymentHistory.updateOne({ _id: paymentHistoryId }, { $set: updateData });
+
+        // Retrieve the updated payment request
+        const check = await paymentRequest.findOne({ paymentHistoryId: paymentHistoryId });
+        if (check.status === "approve") {
+            const wallet = await waled.findOne({ userId: check.userId });
+
+            if (check.paymentStatus === "debit") {
+                let finaldebitAmount = wallet.amount - check.amount;
+                let finalDebitBuffer = wallet.debitBuffer - check.amount;
+                await waled.updateOne({ userId: check.userId }, { amount: finaldebitAmount, debitBuffer: finalDebitBuffer });
+            } else if (check.paymentStatus === "credit") {
+                let finalCreditAmount = wallet.amount + check.amount;
+                let finalCreditBuffer = wallet.creditBuffer - check.amount;
+                await waled.updateOne({ userId: check.userId }, { amount: finalCreditAmount, creditBuffer: finalCreditBuffer });
+            }
+        }
+
+        // Check if the update was successful
+        if (updateStatus.modifiedCount === 0) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                msg: "Payment status not updated"
+            });
+        }
+
+        // Successful response
+        return res.status(200).send({
+            statusCode: 200,
+            status: "Success",
+            msg: "Payment status updated successfully"
+        });
+
+    } catch (error) {
+        return res.status(500).send({
+            statusCode: 500,
+            status: "Failure",
+            msg: "Internal Server Error"
+        });
     }
 };
 
@@ -1164,7 +1376,6 @@ const countDashboard = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
         return res.status(500).send({
             statusCode: 500,
             status: "Failure",
@@ -1177,7 +1388,7 @@ const countDashboard = async (req, res) => {
 const deactivateUser = async (req, res) => {
     try {
         const role = req.decoded.info.roles;
-        const { adminId, id,isActive } = req.body;
+        const { adminId, id, isActive } = req.body;
 
         if (!adminId || !id) {
             return res.status(400).send({
@@ -1217,7 +1428,6 @@ const deactivateUser = async (req, res) => {
 
 
     } catch (error) {
-        console.error(error);
         return res.status(500).send({
             statusCode: 500,
             status: "Failure",
@@ -1226,4 +1436,190 @@ const deactivateUser = async (req, res) => {
     }
 };
 
-module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin, updateGameStatus, userList, countDashboard,deactivateUser }
+//All User Transection List and Admin Account List Api 
+const transectionAndBankingList = async (req, res) => {
+    try {
+        const { adminId, sortBy, sortOrder } = req.body;
+
+        // Required field check
+        if (!adminId) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                message: "Required field AdminId"
+            });
+        };
+
+        // Fetch the admin account info
+        const adminAccountInfo = await adminAccountDetails.find({ adminId: adminId });
+
+        // Fetch the user transaction list
+        let userTransectionInfo = [];
+        let userTransectionList = await paymentRequest.find({ status: "approve" },{ _id: 1, userId: 1,amount:1,utr:1,status:1,createdAt:1,imageUrl:1 } );
+
+        for (info of userTransectionList) {
+            let a = await user.findOne({ _id: info.userId })
+            userTransectionInfo.push({ _id: info._id, userId: info.userId,name: a.name, mobile: a.mobileNumber,amount:info.amount,utr:info.utr,status:info.status,image:info.imageUrl,createdAt:info.createdAt,updatedAt:info.updatedAt})
+
+        }
+
+        // Extracting required fields from bank and upi arrays
+        const extractedBankInfo = adminAccountInfo.map(admin => ({
+            _id: admin._id,
+            bank: admin.bank.map(bank => ({
+                accountNumber: bank.accountNumber,
+                accountHolderName: bank.accountHolderName,
+                bankName:bank.bankName,
+                _id: bank._id
+            })),
+            upi: admin.upi.map(upi => ({
+                upiId: upi.upiId,
+                upiName: upi.upiName,
+                _id: upi._id
+            }))
+        }));
+
+        // Sorting logic
+        if (sortBy) {
+            const order = sortOrder && sortOrder.toLowerCase() === 'desc' ? -1 : 1;
+            userTransectionList = userTransectionList.sort((a, b) => {
+                if (a[sortBy] < b[sortBy]) return -1 * order;
+                if (a[sortBy] > b[sortBy]) return 1 * order;
+                return 0;
+            });
+        }
+
+        const data = { adminAccountInfo: extractedBankInfo, userTransectionInfo };
+
+        return res.status(200).send({
+            statusCode: 200,
+            status: "Success",
+            message: "Admin Account Info And User Transaction History shown successfully",
+            data: data
+        });
+
+    } catch (error) {
+        return res.status(400).send({
+            statusCode: 400,
+            status: "Failure",
+            message: Msg.failure
+        });
+    }
+};
+
+//User Transection List Api by Banking id(depositID-upiId/bankAccountNumber) 
+const transectionDetailsBankingById = async (req, res) => {
+    try {
+        const { adminId, bankUpiId, userId, date, sortBy, sortOrder } = req.body;
+
+        // Required field check
+        if (!adminId) {
+            return res.status(400).send({
+                statusCode: 400,
+                status: "Failure",
+                message: "Required fields: adminId"
+            });
+        };
+
+        // Initialize query object
+        let query = { status: "approve" };
+
+        // Add depositId filter if provided
+        if (bankUpiId) {
+            query.depositId = bankUpiId;
+        }
+
+        // Add userId filter if provided
+        if (userId) {
+            query.userId = userId;
+        }
+
+        // Add date filter if provided
+        if (date) {
+            const dateObj = moment(date, "DD/MM/YYYY").startOf('day');
+            if (!dateObj.isValid()) {
+                return res.status(400).json({
+                    statusCode: 400,
+                    status: "Failure",
+                    message: "Invalid date format."
+                });
+            }
+            query.updatedAt = {
+                $gte: dateObj.toDate(),
+                $lt: moment(dateObj).endOf('day').toDate()
+            };
+        }
+
+        let adminAccountInfo = await adminAccountDetails.find({}, { bank: 1, upi: 1 });
+        let userAccountInfo = await accountDetails.find({}, { bank: 1, upi: 1 });
+        let mergedArray = adminAccountInfo.reduce((acc, curr) => acc.concat(curr.bank, curr.upi), []);
+        let userMergedArray = userAccountInfo.reduce((acc, curr) => acc.concat(curr.bank, curr.upi), []);
+        let userTransactionList = await paymentRequest.find(query);
+        let bankTransactionInfo = [];
+
+        // Match depositId from userTransactionList with mergedArray
+        for (let info of userTransactionList) {
+            let a = await user.findOne({ _id: info.userId });
+            let bankUpiName;
+            
+            for (let t of mergedArray) {
+                if (t.accountNumber == info.depositWithdrawId) {
+                    bankUpiName = t.bankName;
+                    break;
+                } else if (t.upiId == info.depositWithdrawId) {
+                    bankUpiName = t.upiName;
+                    break;
+                }
+            }
+            if (!bankUpiName) {
+                for (let u of userMergedArray) {
+                    if (u.accountNumber == info.depositWithdrawId) {
+                        bankUpiName = u.bankName;
+                        break;
+                    } else if (u.upiId == info.depositWithdrawId) {
+                        bankUpiName = u.upiName;
+                        break;
+                    }
+                }
+            }
+
+            bankTransactionInfo.push({
+                _id: info._id,
+                userId: info.userId,
+                amount: info.amount,
+                utr: info.utr,
+                status: info.status,
+                createdAt: info.createdAt,
+                updatedAt: info.updatedAt,
+                name: a.name,
+                mobile: a.mobileNumber,
+                bankUpiName: bankUpiName
+            });
+        }
+
+        // Sorting logic
+        if (sortBy) {
+            const order = sortOrder && sortOrder.toLowerCase() === 'desc' ? -1 : 1;
+            bankTransactionInfo = bankTransactionInfo.sort((a, b) => {
+                return a[sortBy] > b[sortBy] ? order : -order;
+            });
+        }
+
+        return res.status(200).send({
+            statusCode: 200,
+            status: "Success",
+            message: "Account Transaction History Shown Successfully",
+            data: { bankTransactionInfo }
+        });
+
+    } catch (error) {
+        return res.status(400).send({
+            statusCode: 400,
+            status: "Failure",
+            message: Msg.failure
+        });
+    }
+};
+
+
+module.exports = { addAdminAccountDetail, createSubAdminFn, subAdminList, gamesCreatedByAdmin, gamesUpdatedByAdmin, gamesDeletedByAdmin, gamesList, addAmount, paymentHistory, addRules, updateRules, deleteRules, getRules, updateRulesStatus, checkToken, adminAccountsList, deleteAdminAccountDetail, updateAdminAccountDetail, deleteSubAdmin, updateGameStatus, userList, countDashboard, deactivateUser, updatePaymentRequestStatus, transectionAndBankingList, transectionDetailsBankingById,approveRejectpaymentHistory }
